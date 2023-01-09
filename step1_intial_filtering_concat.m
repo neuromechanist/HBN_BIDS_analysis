@@ -1,16 +1,16 @@
 function step1_intial_filtering_concat(subj)
-% 
-% This function imports EEG datasets for a specific subject. Note that
-% while this function only has one input, there are several files and
-% settings that are set or loaded to the function along the way. The best
-% way to get used to the settings of this function is to run it on a
-% samples dataset and then create similar structure for your source files
-% and folders to have the best experience for importing your files.
-% Also,for importing multiple subjects, you can use "run_eeg_in_batch.m"
-% with your datasets once you made sure that your data fits the settings
-% needed for this function.
+%STEP1_INITIAL_FILTERING_CONCAT firstline filtering and concatenation of the datasets. 
+%   This function imports EEG datasets for a specific subject. Note that
+%   while this function only has one input, there are several files and
+%   settings that are set or loaded to the function along the way. The best
+%   way to get used to the settings of this function is to run it on a
+%   samples dataset and then create similar structure for your source files
+%   and folders to have the best experience for importing your files.
+%   Also,for importing multiple subjects, you can use "run_eeg_in_batch.m"
+%   with your datasets once you made sure that your data fits the settings
+%   needed for this function.
 %
-% Seyed Yahya Shirazi, 12/2022 UCSD, INC, SCCN
+% (c) Seyed Yahya Shirazi, 12/2022 UCSD, INC, SCCN
 
 %% intialize
 
@@ -42,7 +42,6 @@ p2l.eeglab = p2l.git + fs + "eeglab_dev" + fs;
 
 p2l.eegRepo = p2l.root + fs;
 p2l.prcsd = "/home/yahya/data/HBN/EEG/" + fs;
-% p2l.events = p2l.eegRepo + subj + fs + "Events" + fs;
 p2l.rawEEG = p2l.eegRepo + subj + fs + "EEG/raw/mat_format" + fs;  % Where your raw .bdf files are stored
 p2l.rawEEG_updated = p2l.prcsd + subj + fs + "EEG/remedied_raw/mat_format" + fs;
 p2l.EEGsets = p2l.prcsd + subj + fs + "EEG_sets" + fs;  % Where you want to save your .set files
