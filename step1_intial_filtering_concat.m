@@ -32,19 +32,22 @@ mergedSetName = "everyEEG";
 %% construct necessary paths and files & adding paths
 
 if ispc
-    p2l.root = "Z:\\BRaIN\\"; p2l.git = "C:\\~git\\";  % p2l = path to load
+    p2l.root = "Z:\\BRaIN\\"; p2l.git = "C:\\_git\\";  % p2l = path to load
 elseif isunix
-    p2l.root = "/Volumes/Yahya/Datasets/HBN/"; p2l.git = "~/Documents/git/";
+    p2l.root = "/data/qumulo/child-mind-uncompressed";  % the HBN data path at SCCN
+%     p2l.root = "/Volumes/Yahya/Datasets/HBN/"; p2l.git = "~/Documents/git/";  % the local data Path
+    p2l.git = "/home/yahya/_git";  % SCCN git path
 end
 p2l.eeglab = p2l.git + fs + "eeglab_dev" + fs;
 
-p2l.eegRepo = p2l.root + "EEG" + fs;
+p2l.eegRepo = p2l.root + fs;
+p2l.prcsd = "/home/yahya/data/HBN/EEG/" + fs;
 % p2l.events = p2l.eegRepo + subj + fs + "Events" + fs;
 p2l.rawEEG = p2l.eegRepo + subj + fs + "EEG/raw/mat_format" + fs;  % Where your raw .bdf files are stored
-p2l.rawEEG_updated = p2l.eegRepo + subj + fs + "EEG/remedied_raw/mat_format" + fs;
-p2l.EEGsets = p2l.eegRepo + subj + fs + "EEG_sets" + fs;  % Where you want to save your .set files
-p2l.ICA = p2l.eegRepo + subj + fs + "ICA" + fs;   % Where you want to save your ICA files
-p2l.elocs = p2l.eegRepo;  % we need to use a template for now.
+p2l.rawEEG_updated = p2l.prcsd + subj + fs + "EEG/remedied_raw/mat_format" + fs;
+p2l.EEGsets = p2l.prcsd + subj + fs + "EEG_sets" + fs;  % Where you want to save your .set files
+p2l.ICA = p2l.prcsd + subj + fs + "ICA" + fs;   % Where you want to save your ICA files
+p2l.elocs = p2l.prcsd;  % we need to use a template for now.
 p2l.powerSpectPlot = p2l.EEGsets + "freq_spec_plots" + fs ;
 
 for i = ["EEGsets", "ICA", "elocs", "powerSpectPlot", "rawEEG_updated"]
@@ -54,6 +57,8 @@ end
 addpath(genpath(fPath))
 addpath(genpath(fPath+fs+"funcs"))
 addpath(p2l.eeglab)
+rmpath('/data/common/matlab/eeglab')  % to remove the default SCCN eeglab path.
+
 if ~exist("pop_multifit.m","file"), eeglab; close; clear("EEG"); end
 % rmpath(p2l.eeglab + "plugins\MPT\dependency\propertyGrid\") % contains a faulty strjoin.m that crashes MATLAB
 
@@ -93,7 +98,6 @@ for f = string(fieldnames(EEG))'
 %     saveas(gcf, p2l.powerSpectPlot + string(EEG.(f).setname) + "_raw_freqspectra.fig");
     saveas(gcf, p2l.powerSpectPlot + string(EEG.(f).setname) + "_raw_freqspectra.png");
 
-    
     % low-pass filter
     EEG.(f) = pop_eegfiltnew(EEG.(f),filterParam.low,filterParam.high);
     EEG.(f).etc.filter = 'pop_eegfilt(EEG,filter_lo,filter_hi)';
@@ -104,11 +108,22 @@ for f = string(fieldnames(EEG))'
 %     saveas(gcf, p2l.powerSpectPlot + string(EEG.(f).setname) + "_filtered_freqspectra.fig");
     saveas(gcf, p2l.powerSpectPlot + string(EEG.(f).setname) + "_filtered_freqspectra.png");
 
+    % channel rejection
+    % while we will do some rejection later on on step2, it might be good if we
+    % have the very liberal cleaning for off channels here as well.
+    [~,EEG.(f).etc.bad_chans,~] = pop_rejchan(EEG.(f),'threshold',[-5 5],'elec',1:EEG.(f).nbchans-1, ...
+        'norm','on','measure','spec');
+    EEG.(f) = pop_interp(EEG.(f),EEG.(f).etc.bad_chans,'spherical');
+    figure("Name",string(EEG.(f).setname) + "_chanrej_5std-wrt-spec");
+    pop_spectopo(EEG.(f), 1, [0 EEG.(f).times(end)], 'EEG' ,'percent',100,'freq', [6 10 22], 'freqrange',[2 200],'electrodes','off');
+%     saveas(gcf, p2l.powerSpectPlot + string(EEG.(f).setname) + "_filtered_freqspectra.fig");
+    saveas(gcf, p2l.powerSpectPlot + string(EEG.(f).setname) + "_chanrej_5std-wrt-spec.png");
+    
     % now cleanline
     EEG.(f) = pop_cleanline(EEG.(f), 'bandwidth',2,'chanlist',1:128,...
         'computepower',1,'linefreqs',[60 120 180] ,'normSpectrum',0,'p',0.05,'pad',2,'plotfigures',0,...
         'scanforlines',1,'sigtype','Channels','tau',100,'verb',1,'winsize',2.1992,'winstep',2.1992);
-    EEG.(f) = eeg_checkset(EEG.(f)); % alway checkset
+    EEG.(f) = eeg_checkset(EEG.(f)); % always checkset
     EEG.(f).(i) = EEG.(f);
     
     figure("Name",string(EEG.(f).setname) + "_cleanline2_freqspectra");
