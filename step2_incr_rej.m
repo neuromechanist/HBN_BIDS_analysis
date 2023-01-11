@@ -1,4 +1,4 @@
-function step2_incr_rej(subj,gTD,stokes,saveFloat)
+function step2_incr_rej(subj,gTD,stokes,saveFloat, machine)
 %STEP2_INCR_REJ Script to reject channels and frames
 %   Runs the step-wisre rejection process descirbed in Shirazi and Huang,
 %   TNSRE 2021. The output is in the ICA folder for each subject as
@@ -7,7 +7,7 @@ function step2_incr_rej(subj,gTD,stokes,saveFloat)
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% initialize
-clearvars -except subj gTD stokes saveFloat
+clearvars -except subj gTD stokes saveFloat machine
 close all; clc;
 fs = string(filesep)+string(filesep);
 fPath = split(string(mfilename("fullpath")),string(mfilename));
@@ -21,6 +21,8 @@ if ~exist('stokes','var') || isempty(stokes), stokes = 0; end
 % save float, choose 0 for skipping saving float file, and actually all the cleaning
 % method all together to re-write parameter or batch files, Default is 1.
 if ~exist('saveFloat','var') || isempty(saveFloat), saveFloat = 1; end
+% if the code is being accessed from Expanse
+if ~exist('machine','var') || isempty(machine), machine = "sccn"; else, machine = string(machine); end
 
 mergedSetName = "everyEEG";
 % Target k value
@@ -28,15 +30,7 @@ desired_k = 60;
 
 %% construct necessary paths and files & adding paths
 
-if ispc
-    p2l.root = "Z:\\BRaIN\\"; p2l.git = "C:\\_git\\";  % p2l = path to load
-elseif isunix
-    p2l.root = "/data/qumulo/yahya/HBN/EEG/";  % We only need the pre-processed data from step1
-%     p2l.root = "/Volumes/Yahya/Datasets/HBN/"; p2l.git = "~/Documents/git/";  % the local data Path
-    p2l.git = "/home/yahya/_git";  % SCCN git path
-end
-p2l.eeglab = p2l.git + fs + "eeglab_dev" + fs;
-p2l.eegRepo = p2l.root + fs;
+p2l = init_paths("unix", machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
 p2l.EEGsets = p2l.eegRepo + subj + fs + "EEG_sets" + fs; % Where .set files are saved
 p2l.ICA = p2l.eegRepo + subj + fs + "ICA" + fs; % Where you want to save your ICA files
 p2l.incr0 = p2l.ICA + "incr0" + fs; % pre-process directory
@@ -50,11 +44,6 @@ f2l.icaIncr = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_INCR_" + "increment
 
 addpath(genpath(fPath))
 addpath(genpath(fPath+fs+"funcs"))
-addpath(p2l.eeglab)
-rmpath('/data/common/matlab/eeglab')  % to remove the default SCCN eeglab path.
-
-if ~exist("pop_multifit.m","file"), eeglab; close; clear("EEG"); end
-% rmpath(p2l.eeglab + "plugins\MPT\dependency\propertyGrid\") % contains a faulty strjoin.m that crashes MATLAB
 
 %% reject bad channels
 all_bad_chans =[129];

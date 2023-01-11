@@ -1,4 +1,4 @@
-function step1_intial_filtering_concat(subj)
+function step1_intial_filtering_concat(subj, isExpanse)
 %STEP1_INITIAL_FILTERING_CONCAT firstline filtering and concatenation of the datasets. 
 %   This function imports EEG datasets for a specific subject. Note that
 %   while this function only has one input, there are several files and
@@ -26,27 +26,19 @@ filterParam.low = 1;
 filterParam.high = 0;
 
 if ~exist('subj','var') || isempty(subj), subj = "NDARAA075AMK"; else, subj = string(subj); end
+% if the code is being accessed from Expanse
+if ~exist('isExpanse','var') || isempty(isExpanse), isExpanse = 0; end
 
 mergedSetName = "everyEEG";
 
 %% construct necessary paths and files & adding paths
 
-if ispc
-    p2l.root = "Z:\\BRaIN\\"; p2l.git = "C:\\_git\\";  % p2l = path to load
-elseif isunix
-    p2l.root = "/data/qumulo/child-mind-uncompressed";  % the HBN data path at SCCN
-%     p2l.root = "/Volumes/Yahya/Datasets/HBN/"; p2l.git = "~/Documents/git/";  % the local data Path
-    p2l.git = "/home/yahya/_git";  % SCCN git path
-end
-p2l.eeglab = p2l.git + fs + "eeglab_dev" + fs;
-
-p2l.eegRepo = p2l.root + fs;
-p2l.prcsd = "/home/yahya/data/HBN/EEG/" + fs;
-p2l.rawEEG = p2l.eegRepo + subj + fs + "EEG/raw/mat_format" + fs;  % Where your raw .bdf files are stored
-p2l.rawEEG_updated = p2l.prcsd + subj + fs + "EEG/remedied_raw/mat_format" + fs;
-p2l.EEGsets = p2l.prcsd + subj + fs + "EEG_sets" + fs;  % Where you want to save your .set files
-p2l.ICA = p2l.prcsd + subj + fs + "ICA" + fs;   % Where you want to save your ICA files
-p2l.elocs = p2l.prcsd;  % we need to use a template for now.
+p2l = init_paths("unix", machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
+p2l.rawEEG = p2l.raw + subj + fs + "EEG/raw/mat_format" + fs;  % Where your raw .bdf files are stored
+p2l.rawEEG_updated = p2l.eegRepo + subj + fs + "EEG/remedied_raw/mat_format" + fs;
+p2l.EEGsets = p2l.eegRepo + subj + fs + "EEG_sets" + fs;  % Where you want to save your .set files
+p2l.ICA = p2l.eegRepo + subj + fs + "ICA" + fs;   % Where you want to save your ICA files
+p2l.elocs = p2l.eegRepo;  % we need to use a template for now.
 p2l.powerSpectPlot = p2l.EEGsets + "freq_spec_plots" + fs ;
 
 for i = ["EEGsets", "ICA", "elocs", "powerSpectPlot", "rawEEG_updated"]
@@ -55,11 +47,6 @@ end
 
 addpath(genpath(fPath))
 addpath(genpath(fPath+fs+"funcs"))
-addpath(p2l.eeglab)
-rmpath('/data/common/matlab/eeglab')  % to remove the default SCCN eeglab path.
-
-if ~exist("pop_multifit.m","file"), eeglab; close; clear("EEG"); end
-% rmpath(p2l.eeglab + "plugins\MPT\dependency\propertyGrid\") % contains a faulty strjoin.m that crashes MATLAB
 
 f2l.elocs = p2l.elocs + "GSN_HydroCel_129.sfp";  % f2l = file to load
 
