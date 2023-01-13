@@ -30,6 +30,7 @@ desired_k = 60;
 
 %% construct necessary paths and files & adding paths
 
+addpath(genpath(fPath))
 p2l = init_paths("unix", machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
 p2l.EEGsets = p2l.eegRepo + subj + fs + "EEG_sets" + fs; % Where .set files are saved
 p2l.ICA = p2l.eegRepo + subj + fs + "ICA" + fs; % Where you want to save your ICA files
@@ -41,9 +42,6 @@ if ~isfolder(p2l.figs), mkdir(p2l.figs); end
 f2l.alltasks = subj + "_" + mergedSetName + ".set"; % as an Exception, path is NOT included
 f2l.icaStruct = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_" + "incremental";
 f2l.icaIncr = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_INCR_" + "incremental";
-
-addpath(genpath(fPath))
-addpath(genpath(fPath+fs+"funcs"))
 
 %% reject bad channels
 all_bad_chans =[129];
@@ -166,8 +164,8 @@ write_linux_bash(f2l.bash + "_" + string(2),subj,length(ICA_INCR)/2+1,length(ICA
 % write_windows_batch(f2l.batch + "_" + string(1),subj,1,length(ICA_INCR)/2)
 % write_windows_batch(f2l.batch + "_" + string(2),subj,length(ICA_INCR)/2+1,length(ICA_INCR))
 
-%% wirte bash files to run on UCF Stokes
-if stokes == 0, return; end
+%% wirte bash files to run on SDSC Expanse
+if expanse == 0, return; end
 % write batch files for each increment
 stokes_root = "EEG/";
 for i = 1:length(ICA_INCR)
