@@ -1,4 +1,4 @@
-function step1_intial_filtering_concat(subj, isExpanse)
+    function step1_intial_filtering_concat(subj, machine)
 %STEP1_INITIAL_FILTERING_CONCAT firstline filtering and concatenation of the datasets. 
 %   This function imports EEG datasets for a specific subject. Note that
 %   while this function only has one input, there are several files and
@@ -14,7 +14,7 @@ function step1_intial_filtering_concat(subj, isExpanse)
 
 %% intialize
 
-clearvars -except subj;
+clearvars -except subj machine;
 close all; clc;
 
 fs = string(filesep) + string(filesep);  % file seperator, doubled to avoid char shortcuts in PCs
@@ -27,12 +27,13 @@ filterParam.high = 0;
 
 if ~exist('subj','var') || isempty(subj), subj = "NDARAA075AMK"; else, subj = string(subj); end
 % if the code is being accessed from Expanse
-if ~exist('isExpanse','var') || isempty(isExpanse), isExpanse = 0; end
+if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
 
 mergedSetName = "everyEEG";
 
 %% construct necessary paths and files & adding paths
 
+addpath(genpath(fPath))
 p2l = init_paths("unix", machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
 p2l.rawEEG = p2l.raw + subj + fs + "EEG/raw/mat_format" + fs;  % Where your raw .bdf files are stored
 p2l.rawEEG_updated = p2l.eegRepo + subj + fs + "EEG/remedied_raw/mat_format" + fs;
@@ -44,10 +45,7 @@ p2l.powerSpectPlot = p2l.EEGsets + "freq_spec_plots" + fs ;
 for i = ["EEGsets", "ICA", "elocs", "powerSpectPlot", "rawEEG_updated"]
     if ~isfolder(p2l.(i)), mkdir(p2l.(i)); end
 end
-
-addpath(genpath(fPath))
-addpath(genpath(fPath+fs+"funcs"))
-
+clear EEG
 f2l.elocs = p2l.elocs + "GSN_HydroCel_129.sfp";  % f2l = file to load
 
 %% import EEG datasets
@@ -108,9 +106,9 @@ for f = string(fieldnames(EEG))'
     % now cleanline
     EEG.(f) = pop_cleanline(EEG.(f), 'bandwidth',2,'chanlist',1:128,...
         'computepower',1,'linefreqs',[60 120 180] ,'normSpectrum',0,'p',0.05,'pad',2,'plotfigures',0,...
-        'scanforlines',1,'sigtype','Channels','tau',100,'verb',1,'winsize',2.1992,'winstep',2.1992);
+        'scanforlines',1,'sigtype','Channels','tau',100,'verb',1,'winsize',2.1992,'winstep',2.1992, 'newversion', true);
     EEG.(f) = eeg_checkset(EEG.(f)); % always checkset
-    EEG.(f).(i) = EEG.(f);
+%     EEG.(f).(i) = EEG.(f);
     
     figure("Name",string(EEG.(f).setname) + "_cleanline2_freqspectra");
     pop_spectopo(EEG.(f), 1, [0 EEG.(f).times(end)], 'EEG' ,'percent',100,'freq', [6 10 22], 'freqrange',[2 200],'electrodes','off');

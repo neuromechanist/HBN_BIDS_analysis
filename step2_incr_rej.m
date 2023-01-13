@@ -1,4 +1,4 @@
-function step2_incr_rej(subj,gTD,stokes,saveFloat, machine)
+function step2_incr_rej(subj, gTD, expanse, saveFloat, machine)
 %STEP2_INCR_REJ Script to reject channels and frames
 %   Runs the step-wisre rejection process descirbed in Shirazi and Huang,
 %   TNSRE 2021. The output is in the ICA folder for each subject as
@@ -7,7 +7,7 @@ function step2_incr_rej(subj,gTD,stokes,saveFloat, machine)
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% initialize
-clearvars -except subj gTD stokes saveFloat machine
+clearvars -except subj gTD expanse saveFloat machine
 close all; clc;
 fs = string(filesep)+string(filesep);
 fPath = split(string(mfilename("fullpath")),string(mfilename));
@@ -17,7 +17,7 @@ if ~exist('subj','var') || isempty(subj), subj = "NDARAA075AMK"; else, subj = st
 % "gTD" : going to detail, usually only lets the function to create plots. Default is 1.
 if ~exist('gTD','var') || isempty(gTD), gTD = 1; end
 % create bash/batch files to run on UCF Stokes. Default is 0.
-if ~exist('stokes','var') || isempty(stokes), stokes = 0; end
+if ~exist('expanse','var') || isempty(expanse), expanse = 0; end
 % save float, choose 0 for skipping saving float file, and actually all the cleaning
 % method all together to re-write parameter or batch files, Default is 1.
 if ~exist('saveFloat','var') || isempty(saveFloat), saveFloat = 1; end
