@@ -1,4 +1,4 @@
-    function step1_intial_filtering_concat(subj, machine, have_gui)
+function step1_intial_filtering_concat(subj, machine, have_gui, no_process)
 %STEP1_INITIAL_FILTERING_CONCAT firstline filtering and concatenation of the datasets. 
 %   This function imports EEG datasets for a specific subject. Note that
 %   while this function only has one input, there are several files and
@@ -29,8 +29,11 @@ if ~exist('subj','var') || isempty(subj), subj = "NDARAA075AMK"; else, subj = st
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
 if ~exist('have_gui','var') || isempty(have_gui), have_gui = true; end
+if ~exist('no_process','var') || isempty(no_process), no_process = 8; end  % no of processors for parpool
 
 mergedSetName = "everyEEG";
+
+if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
 
 %% construct necessary paths and files & adding paths
 
