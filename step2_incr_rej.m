@@ -1,4 +1,4 @@
-function step2_incr_rej(subj, gTD, expanse, saveFloat, machine)
+function step2_incr_rej(subj, gTD, expanse, saveFloat, machine, no_process)
 %STEP2_INCR_REJ Script to reject channels and frames
 %   Runs the step-wisre rejection process descirbed in Shirazi and Huang,
 %   TNSRE 2021. The output is in the ICA folder for each subject as
@@ -7,7 +7,7 @@ function step2_incr_rej(subj, gTD, expanse, saveFloat, machine)
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% initialize
-clearvars -except subj gTD expanse saveFloat machine
+clearvars -except subj gTD expanse saveFloat machine no_process
 close all; clc;
 fs = string(filesep)+string(filesep);
 fPath = split(string(mfilename("fullpath")),string(mfilename));
@@ -23,10 +23,13 @@ if ~exist('expanse','var') || isempty(expanse), expanse = 0; end
 if ~exist('saveFloat','var') || isempty(saveFloat), saveFloat = 1; end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "sccn"; else, machine = string(machine); end
+if ~exist('no_process','var') || isempty(no_process), no_process = 30; end
 
 mergedSetName = "everyEEG";
 % Target k value
 desired_k = 60;
+
+if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
 
 %% construct necessary paths and files & adding paths
 
