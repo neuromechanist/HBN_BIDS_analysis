@@ -14,7 +14,7 @@ function step1_intial_filtering_concat(subj, machine, have_gui, no_process)
 
 %% intialize
 
-clearvars -except subj machine have_gui;
+clearvars -except subj machine have_gui no_process;
 close all; clc;
 
 fs = string(filesep) + string(filesep);  % file seperator, doubled to avoid char shortcuts in PCs
