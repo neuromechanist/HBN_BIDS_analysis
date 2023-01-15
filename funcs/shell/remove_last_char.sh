@@ -1,4 +1,7 @@
 #!/bin/bash
+# It turns out that the there is a hidden char that avoids looping through the
+# subjects' code to find which EEG files they have. The follwing script will rmove those chars.
+
 input="./eeg_participants.tsv"
 while IFS= read -r line
 do
