@@ -9,6 +9,6 @@
 #SBATCH -e /home/sshirazi/runlog/%x.err
 #SBATCH --export=ALL
 
-load module matlab
+module load matlab
 matlab -nodisplay -r 'step1_intial_filtering_concat(%x, "expanse", 1, 30); end'
-maltab -nodisplay -r 'step2_incr_rej(%x, 1, 1, "expanse",  30); end'
+matlab -nodisplay -r 'step2_incr_rej(%x, 1, 1, "expanse",  30); end'
