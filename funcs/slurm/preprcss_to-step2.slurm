@@ -5,8 +5,8 @@
 #SBATCH --mem=64G
 #SBATCH -t 01:30:00
 #SBATCH -A csd403
-#SBATCH -o %x.out
-#SBATCH -e %x.err
+#SBATCH -o /home/sshirazi/runlog/%x.out
+#SBATCH -e /home/sshirazi/runlog/%x.err
 #SBATCH --export=ALL
 
 load module matlab
