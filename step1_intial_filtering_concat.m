@@ -1,4 +1,4 @@
-function step1_intial_filtering_concat(subj, machine, have_gui, no_process)
+function step1_intial_filtering_concat(subj, platform, machine, have_gui, no_process)
 %STEP1_INITIAL_FILTERING_CONCAT firstline filtering and concatenation of the datasets. 
 %   This function imports EEG datasets for a specific subject. Note that
 %   while this function only has one input, there are several files and
@@ -14,7 +14,7 @@ function step1_intial_filtering_concat(subj, machine, have_gui, no_process)
 
 %% intialize
 
-clearvars -except subj machine have_gui no_process;
+% clearvars -except subj machine have_gui no_process;
 close all; clc;
 
 fs = string(filesep) + string(filesep);  % file seperator, doubled to avoid char shortcuts in PCs
@@ -25,7 +25,8 @@ fPath = string(pwd)+fs;
 filterParam.low = 1;
 filterParam.high = 0;
 
-if ~exist('subj','var') || isempty(subj), subj = "NDARAA075AMK"; else, subj = string(subj); end
+if ~exist('subj','var') || isempty(subj), subj = "NDARAA117NEJ"; else, subj = string(subj); end
+if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
 if ~exist('have_gui','var') || isempty(have_gui), have_gui = true; end
@@ -38,7 +39,7 @@ if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_
 %% construct necessary paths and files & adding paths
 
 addpath(genpath(fPath))
-p2l = init_paths("unix", machine, "HBN", 1, have_gui);  % Initialize p2l and eeglab.
+p2l = init_paths(platform, machine, "HBN", 1, have_gui);  % Initialize p2l and eeglab.
 p2l.rawEEG = p2l.raw + subj + fs + "EEG/raw/mat_format" + fs;  % Where your raw .bdf files are stored
 p2l.rawEEG_updated = p2l.eegRepo + subj + fs + "EEG/remedied_raw/mat_format" + fs;
 p2l.EEGsets = p2l.eegRepo + subj + fs + "EEG_sets" + fs;  % Where you want to save your .set files

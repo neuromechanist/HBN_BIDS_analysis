@@ -1,4 +1,4 @@
-function step2_incr_rej(subj, gTD, saveFloat, machine, no_process)
+function step2_incr_rej(subj, gTD, saveFloat, platform, machine, no_process)
 %STEP2_INCR_REJ Script to reject channels and frames
 %   Runs the step-wisre rejection process descirbed in Shirazi and Huang,
 %   TNSRE 2021. The output is in the ICA folder for each subject as
@@ -20,6 +20,7 @@ if ~exist('gTD','var') || isempty(gTD), gTD = 1; end
 % method all together to re-write parameter or batch files, Default is 1.
 if ~exist('saveFloat','var') || isempty(saveFloat), saveFloat = 1; end
 % if the code is being accessed from Expanse
+if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 if ~exist('machine','var') || isempty(machine), machine = "sccn"; else, machine = string(machine); end
 if ~exist('no_process','var') || isempty(no_process), no_process = 30; end
 
@@ -32,7 +33,7 @@ if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_
 %% construct necessary paths and files & adding paths
 
 addpath(genpath(fPath))
-p2l = init_paths("unix", machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
+p2l = init_paths(platform, machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
 p2l.EEGsets = p2l.eegRepo + subj + fs + "EEG_sets" + fs; % Where .set files are saved
 p2l.ICA = p2l.eegRepo + subj + fs + "ICA" + fs; % Where you want to save your ICA files
 p2l.incr0 = p2l.ICA + "incr0" + fs; % pre-process directory
