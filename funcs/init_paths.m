@@ -16,12 +16,19 @@ if ~exist('have_gui','var') || isempty(have_gui), have_gui = true; end
 
 %% Set up the paths
 if project == "HBN"
-   if subplat == "sccn", prefix = "/data/qumulo/";
-   elseif subplat == "expanse", prefix = "/expanse/projects/nemar/";
+   if platform == "linux"
+       if subplat == "sccn", prefix = "/data/qumulo/";
+       elseif subplat == "expanse", prefix = "/expanse/projects/nemar/";
+       end
+       p2l.raw = prefix + "child-mind-uncompressed/";  % Original data from CMI
+       p2l.eegRepo = prefix + "yahya/HBN/EEG/";  % EEG data repo
+       p2l.eeglab = prefix + "yahya/_git/eeglab_dev/";
    end
-   p2l.raw = prefix + "child-mind-uncompressed/";  % Original data from CMI
-   p2l.eegRepo = prefix + "yahya/HBN/EEG/";  % EEG data repo
-   p2l.eeglab = prefix + "yahya/_git/eeglab_dev/";    
+   if platform == "mac"
+        p2l.raw = "/Volumes/Yahya/Datasets/HBN/EEG/";
+        p2l.eegRepo = p2l.raw; % Data is saved in the same directory
+        p2l.eeglab = "/Users/yahya/Documents/git/eeglab_dev/";
+   end
 end
 
 
@@ -30,9 +37,8 @@ if init_eeglab
     if subplat == "sccn", rmpath('/data/common/matlab/eeglab'); end
     addpath(p2l.eeglab)
     if have_gui
-        if ~exist("pop_multifit.m","file"), eeglab; close; clear("EEG"); end 
+        if ~exist("pop_multifit.m","file"), eeglab; close; end 
     else
         eeglab nogui
-        clear EEG
     end
 end
