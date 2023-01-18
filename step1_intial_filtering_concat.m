@@ -26,7 +26,7 @@ filterParam.low = 1;
 filterParam.high = 0;
 
 if ~exist('subj','var') || isempty(subj), subj = "NDARAA117NEJ"; else, subj = string(subj); end
-if ~exist('platform','var') || isempty(platform), platform = "mac"; else, platform = string(platform); end
+if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
 if ~exist('have_gui','var') || isempty(have_gui), have_gui = true; end
