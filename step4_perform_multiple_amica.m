@@ -1,4 +1,4 @@
-function step4_perform-multiple-amica(subj, gTD, saveFloat, machine, no_process)
+function step4_perform_multiple_amica(subj, gTD, saveFloat, machine, no_process)
 %step4_perform-multiple-amica perfoming multiple AMICA with different priors.
 %
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
@@ -203,7 +203,7 @@ function write_AMICA_SLURM_file(opt)
 fid = fopen(opt.file + ".slurm", "w");
 fprintf(fid,'#!/bin/sh\n');
 fprintf(fid,"#SBATCH --job-name=" + opt.jobName + " # Job name\n");
-fprintf(fid,"#SBATCH --mail-type=ALL  # Mail events (NONE, BEGIN, END, FAIL, ALL)\n");
+% fprintf(fid,"#SBATCH --mail-type=ALL  # Mail events (NONE, BEGIN, END, FAIL, ALL)\n");
 % fprintf(fid,"#SBATCH --mail-user=" + opt.email + "  # Where to send mail\n"); % disabled as it will create so many emails for incremental ICA :D
 fprintf(fid,"#SBATCH --ntasks=" + string(opt.maxThreads) + " # Run a single task\n");
 fprintf(fid,"#SBATCH --nodes=1  # Number of CPU cores per task\n"); % only run on one node due to mpi config of amica15ub
@@ -213,4 +213,4 @@ fprintf(fid,'# Run your program with correct path and command line options\n');
 % job commands
 fprintf(fid, opt.amica + " " + opt.param);
 fclose(fid);
-% end of the main function
+% end of the function
