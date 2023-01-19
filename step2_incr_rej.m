@@ -164,7 +164,7 @@ end
 % able to submit upto 4096 jobs.
 if expanse == 0, return; end
 % write batch files for each increment
-expanse_root = "~/HBN_EEG/";
+expanse_root = "/home/sshirazi/HBN_EEG/";
 for i = 1:length(ICA_INCR)
     opt = [];
     p2l.incr = p2l.ICA + "incr" + string(i) + fs; % path to save .slurm file
@@ -211,10 +211,16 @@ fprintf(fid,"#SBATCH --ntasks=" + string(opt.maxThreads) + " # Run a single task
 fprintf(fid,"#SBATCH --mem=" + string(opt.memory) + "G # default is 1G per task/core\n");
 fprintf(fid,"#SBATCH --nodes=1  # Number of CPU cores per task\n"); % only run on one node due to mpi config of amica15ub
 fprintf(fid,"#SBATCH --time=" + opt.walltime + " # Time limit hrs:min:sec\n");
-fprintf(fid,"#SBATCH --output=" + opt.incr_path + opt.jobName + "_%%J.out # Standard output and error log\n");
-fprintf(fid,"#SBATCH --error=" + opt.incr_path + opt.jobName + "_%%J.err # Standard output and error log\n");
+fprintf(fid,"#SBATCH --output=" + opt.incr_path + opt.jobName + ".out # Standard output and error log\n");
+fprintf(fid,"#SBATCH --error=" + opt.incr_path + opt.jobName + ".err # Standard output and error log\n");
 fprintf(fid,'# Run your program with correct path and command line options\n');
 % job commands
+fprintf(fid,"module purge\n");
+fprintf(fid,"module load cpu slurm gcc openmpi\n");
+
+fprintf(fid, "#SET the number of openmp threads\n");
+fprintf(fid,"export MV2_ENABLE_AFFINITY=0\n");
+
 fprintf(fid, opt.amica + " " + opt.param);
 fclose(fid);
 % end of the function
