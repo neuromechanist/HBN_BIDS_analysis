@@ -1,4 +1,4 @@
-function step2_incr_rej(subj, gTD, saveFloat, expanse, platform, machine, no_process)
+function step2_incr_rej(subj, gTD, saveFloat, expanse, platform, machine, no_process, run_incr_ICA)
 %STEP2_INCR_REJ Script to reject channels and frames
 %   Runs the step-wisre rejection process descirbed in Shirazi and Huang,
 %   TNSRE 2021. The output is in the ICA folder for each subject as
@@ -7,7 +7,7 @@ function step2_incr_rej(subj, gTD, saveFloat, expanse, platform, machine, no_pro
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% initialize
-clearvars -except subj gTD saveFloat expanse platform machine no_process
+clearvars -except subj gTD saveFloat expanse platform machine no_process run_incr_ICA
 close all; clc;
 fs = string(filesep)+string(filesep);
 fPath = split(string(mfilename("fullpath")),string(mfilename));
@@ -24,6 +24,8 @@ if ~exist('expanse','var') || isempty(expanse), expanse = 0; end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "sccn"; else, machine = string(machine); end
 if ~exist('no_process','var') || isempty(no_process), no_process = 30; end
+% if run AMICA on the shell which matlab is running on in the end
+if ~exist('run_incr_ICA','var') || isempty(run_incr_ICA), run_incr_ICA = 0; end
 
 mergedSetName = "everyEEG";
 % Target k value, k= S/(N^2)
@@ -187,6 +189,14 @@ slurm_path = expanse_root + subj + "/ICA/incr$i/" + subj + "_incr_${i}_amica_exp
 fprintf(fid,"sbatch " + slurm_path + "\n");
 fprintf(fid,"done\n");
 fclose(fid);
+
+%% run the jobs
+% If the code is being developed on expanse, we can problably run all
+% increments as soon as the float files, param files and shell files are
+% created.
+if run_incr_ICA
+    system(sprintf("sh ~/HBN_EEG/%s/ICA/%s_expanse_batch", subj, subj))
+end
 
 function write_linux_bash(file,subj,start,stop)
 fid = fopen(file,"w");
