@@ -11,18 +11,50 @@ function augmented_list = augment_participant_list(participant_list, eeg_content
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% EEG tasks
+clearvars -except participant_list eeg_content
+if ~exist('participant_list','var') || isempty(participant_list), participant_list = "participants.tsv"; else, participant_list = string(participant_list); end
+if ~exist('eeg_content','var') || isempty(eeg_content), eeg_content = "eeg_content.txt"; else, eeg_content = string(eeg_content); end
+
 all_eeg_tasks = ["RestingState",...
                 "SAIIT_2AFC_Block1", "SAIIT_2AFC_Block2", "SAIIT_2AFC_Block3", ... % Visual Perception/Decision-making Paradigm
                 "SurroundSupp_Block1", "SurroundSupp_Block2", ... % Inhibition/Excitation Paradigm
-                "Video-DM", "Video-FF", "Video-WK", "Video-TP", ...
-                "Video1", "Video2", "Video3", "Video4", ...
                 "WISC_ProcSpeed", ... % WISC-IV Symbol Search Paradigm
-                "vis_learn"]; % Sequence Learning Paradigm
-
+                "vis_learn",... % Sequence Learning Paradigm
+                "Video-DM", "Video-FF", "Video-WK", "Video-TP", ...
+                "Video1", "Video2", "Video3", "Video4"];
 
 %% load the files
-clearvars -except participant_list eeg_content
-
 plist = readtable(participant_list, "FileType", "text");
-eegfiles = readtable(eeg_content, "FileType", "text", "DatetimeType", "text");
+plist(isnan(plist{:,"Sex"}),:)=[]; % exlude the participatn if their gender is missing.
+eegfiles = readtable(eeg_content, "FileType", "text", "DatetimeType", "text", ...
+    "ReadVariableNames", false, "NumHeaderLines", 0);
+eegfiles{end+1,"Var1"} = eegfiles{end,"Var1"}; eegfiles{end,"Var3"} = NaN;
+%% augment the table
+for p = transpose(string(plist.participant_id))
+    pindex = find(eegfiles.Var1==p);
+    if ~isempty(pindex) % the participant might not be in the eeg-content file!
+        endofp = 0; i = 1;
+        while endofp == 0
+            for t = all_eeg_tasks
+                if contains(eegfiles{pindex+i, "Var4"}, t)
+                    plist{plist.participant_id==p, t} = 1;
+                    break;
+                end
+            end
+            i = i +1;
+            if isnan(eegfiles.Var3(pindex+i))
+                endofp = 1;
+            end
+        end
+    end
+end
 
+%% save the augmented list
+% first lets reorder the table to the one we have in the all_eeg_tasks
+plist = renamevars(plist, "Var1", "subj_no");
+column_order = [["subj_no", "participant_id", "release_number", "Sex", "Age",...
+    "EHQ_Total", "Commercial_Use", "Full_Pheno"] all_eeg_tasks];
+augmented_list = plist(:,column_order);
+
+% now write the table
+writetable(augmented_list, "participants_augmented.tsv", "FileType","text");
