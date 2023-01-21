@@ -12,8 +12,8 @@ function augmented_list = augment_participant_list(participant_list, eeg_content
 
 %% EEG tasks
 clearvars -except participant_list eeg_content
-if ~exist('participant_list','var') || isempty(participant_list), participant_list = "participants.tsv"; else, participant_list = string(participant_list); end
-if ~exist('eeg_content','var') || isempty(eeg_content), eeg_content = "eeg_content.txt"; else, eeg_content = string(eeg_content); end
+if ~exist('participant_list','var') || isempty(participant_list), participant_list = "funcs/tsv/participants.tsv"; else, participant_list = string(participant_list); end
+if ~exist('eeg_content','var') || isempty(eeg_content), eeg_content = "funcs/tsv/eeg_content.txt"; else, eeg_content = string(eeg_content); end
 
 all_eeg_tasks = ["RestingState",...
                 "SAIIT_2AFC_Block1", "SAIIT_2AFC_Block2", "SAIIT_2AFC_Block3", ... % Visual Perception/Decision-making Paradigm
