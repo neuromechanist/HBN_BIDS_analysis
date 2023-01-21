@@ -76,7 +76,7 @@ for f = string(fieldnames(EEG))'
     EEG.(f) = eeg_checkset(EEG.(f), 'makeur');
     EEG.(f) = eeg_checkset(EEG.(f), 'chanlocs_homogeneous');
     % save the remedied EEG structure.
-%     pop_saveset(EEG.(f), 'filename', char(f), 'filepath', char(p2l.rawEEG_updated));
+    pop_saveset(EEG.(f), 'filename', char(f), 'filepath', char(p2l.rawEEG_updated));
 end
 
 %% highpass, cleanline, and save individual datasets
