@@ -12,9 +12,9 @@ p2l = init_paths("linux", "expanse", "HBN", 1, 1);
 f2l.elocs = p2l.eegRepo + "GSN_HydroCel_129.sfp";  % f2l = file to load
 
 plist = readtable("./funcs/tsv/participants_augmented.tsv", "FileType","text");
-plist.Full_Pheno = string(plist{:,"Full_Pheno"});
+plist.Full_Pheno = string(plist{:,"Full_Pheno"}); % to change the variable type to string
 plist.Commercial_Use = string(plist{:,"Commercial_Use"});
-datarepo = "~/nemar/child-mind-uncompressed/";
+datarepo = "~/yahya/R3/";
 remediedrepo = "~/yahya/HBN/vidBIDS/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
@@ -29,6 +29,7 @@ clear EEG
 % Let's also define the tasks and potentially the release that we want to include 
 % in the BIDS
 target_tasks = ["Video_DM", "Video_FF", "Video_TP", "Video_WK", "RestingState"];
+task_name_forBIDS = {'Resting State', 'Despicable Me', 'Fun with Fractals', 'The Present', 'Diary of a Wimpy Kid'};
 target_release = ["R3"]; %#ok<NBRAK2> 
 incl_fullset_only = true; % only subjects with all datasets avalaibe will be on the BIDS
 
@@ -45,8 +46,9 @@ for r = 1: height(target_table)
         if sum(t{1, target_tasks}) == length(target_tasks)
             data(end+1).subject = char(t.participant_id);
             remedied_path = remediedrepo + string(t.participant_id) + dpath;
-            data(end).raw_file = string(fnames{any(string(fnames.FIELD_NAME)==target_tasks,2),"FILE_NAME"})';
-            data(end).file = cellstr(remedied_path + string(fnames{any(string(fnames.FIELD_NAME)==target_tasks,2),"FILE_NAME"})');
+            data(end).raw_file = string(fnames{any(string(fnames.FIELD_NAME)==target_tasks,2),"RAW_FILE_NAME"})';
+            data(end).file = cellstr(remedied_path + string(fnames{any(string(fnames.FIELD_NAME)==target_tasks,2),"TARGET_FILE_NAME"})');
+            data(end).task = task_name_forBIDS;
             pinfo = [pinfo;cellstr(t{1,4:8})];
         end
     else
@@ -57,8 +59,11 @@ data(1) = [];
 
 %% Remedy the files
 % This step is simialr to the import and remedy sections of step1.
+unav_dataset = [];
 for i = 1:length(data)
+    try
     EEG = [];
+    subj = string(data(i).subject);
     eeg_files = data(i).raw_file;
     for f = eeg_files
         setname = split(f, ".mat");
@@ -68,7 +73,9 @@ for i = 1:length(data)
         tempload = load(p2l.rawEEG + f);
         EEG.(setname) = tempload.EEG;
     end
-
+    
+    p2l.rawEEG_updated = remediedrepo + string(data(i).subject) + dpath;
+    if ~exist(p2l.rawEEG_updated, "dir"), mkdir(p2l.rawEEG_updated); end
     for f = string(fieldnames(EEG))'
         EEG.(f).setname = char(subj + "_" + f);
         EEG.(f).subject = char(subj);
@@ -79,11 +86,16 @@ for i = 1:length(data)
         EEG.(f) = eeg_checkset(EEG.(f), 'makeur');
         EEG.(f) = eeg_checkset(EEG.(f), 'chanlocs_homogeneous');
         % save the remedied EEG structure.
-        p2l.rawEEG_updated = remediedrepo + string(data(i).subject) + dpath;
         pop_saveset(EEG.(f), 'filename', char(f), 'filepath', char(p2l.rawEEG_updated));
     end
+    catch
+        unav_dataset = [unav_dataset, string(data(i).subject)];
+        warning("data from" +string(data(i).subject)+" is not available, removing corresponding entries")
+        pinfo(i+1,:) = []; data(i) = [];
+    end
+        
 end
 
-%% Now we probably can call |bids_export|
+%% Now we probably can call bids_export
 
 bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pinfo);
