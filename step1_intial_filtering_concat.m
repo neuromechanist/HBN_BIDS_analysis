@@ -16,21 +16,19 @@ function step1_intial_filtering_concat(subj, platform, machine, have_gui, no_pro
 
 % clearvars -except subj machine have_gui no_process;
 close all; clc;
-
 fs = string(filesep) + string(filesep);  % file seperator, doubled to avoid char shortcuts in PCs
-fPath = string(pwd)+fs;
 
 % locutoff  - lower edge of the frequency pass band (Hz)  {0 -> lowpass}
 % hicutoff  - higher edge of the frequency pass band (Hz) {0 -> highpass}
 filterParam.low = 1;
 filterParam.high = 0;
 
-if ~exist('subj','var') || isempty(subj), subj = "NDARAA117NEJ"; else, subj = string(subj); end
+if ~exist('subj','var') || isempty(subj), subj = "NDARAA948VFH"; else, subj = string(subj); end
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
 if ~exist('have_gui','var') || isempty(have_gui), have_gui = true; end
-if ~exist('no_process','var') || isempty(no_process), no_process = 8; end  % no of processors for parpool
+if ~exist('no_process','var') || isempty(no_process), no_process = 30; end  % no of processors for parpool
 
 mergedSetName = "everyEEG";
 
@@ -38,9 +36,8 @@ if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_
 
 %% construct necessary paths and files & adding paths
 
-addpath(genpath(fPath))
 p2l = init_paths(platform, machine, "HBN", 1, have_gui);  % Initialize p2l and eeglab.
-p2l.rawEEG = p2l.raw + subj + fs + "EEG/raw/mat_format" + fs;  % Where your raw .bdf files are stored
+p2l.rawEEG = p2l.raw + subj + fs + "EEG/raw/mat_format" + fs;  % Where your raw files are stored
 p2l.rawEEG_updated = p2l.eegRepo + subj + fs + "EEG/remedied_raw/mat_format" + fs;
 p2l.EEGsets = p2l.eegRepo + subj + fs + "EEG_sets" + fs;  % Where you want to save your .set files
 p2l.ICA = p2l.eegRepo + subj + fs + "ICA" + fs;   % Where you want to save your ICA files
@@ -52,6 +49,7 @@ for i = ["EEGsets", "ICA", "elocs", "powerSpectPlot", "rawEEG_updated"]
 end
 clear EEG
 f2l.elocs = p2l.elocs + "GSN_HydroCel_129.sfp";  % f2l = file to load
+addpath(genpath(p2l.codebase))
 
 %% import EEG datasets
 eeg_files = find_matfiles(p2l.rawEEG);
@@ -100,9 +98,12 @@ for f = string(fieldnames(EEG))'
     % channel rejection
     % while we will do some rejection later on on step2, it might be good if we
     % have the very liberal cleaning for off channels here as well.
-    [~,EEG.(f).etc.bad_chans,~] = pop_rejchan(EEG.(f),'threshold',[-5 5],'elec',1:EEG.(f).nbchans-1, ...
+    [~,EEG.(f).etc.bad_chans_firstrun,~] = pop_rejchan(EEG.(f),'threshold',[-5 5],'elec',1:EEG.(f).nbchans-1, ...
         'norm','on','measure','spec');
-    EEG.(f) = pop_interp(EEG.(f),EEG.(f).etc.bad_chans,'spherical');
+    EEG.(f) = pop_interp(EEG.(f),EEG.(f).etc.bad_chans_firstrun,'spherical');
+    [~,EEG.(f).etc.bad_chans_secondrun,~] = pop_rejchan(EEG.(f),'threshold',[-5 5],'elec',1:EEG.(f).nbchans-1, ...
+        'norm','on','measure','spec');
+    EEG.(f) = pop_interp(EEG.(f),EEG.(f).etc.bad_chans_secondrun,'spherical');    
     figure("Name",string(EEG.(f).setname) + "_chanrej_5std-wrt-spec");
     pop_spectopo(EEG.(f), 1, [0 EEG.(f).times(end)], 'EEG' ,'percent',100,'freq', [6 10 22], 'freqrange',[2 200],'electrodes','off');
 %     saveas(gcf, p2l.powerSpectPlot + string(EEG.(f).setname) + "_filtered_freqspectra.fig");
