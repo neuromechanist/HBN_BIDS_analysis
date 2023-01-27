@@ -13,7 +13,7 @@ fs = string(filesep)+string(filesep);
 fPath = split(string(mfilename("fullpath")),string(mfilename));
 fPath = fPath(1);
 
-if ~exist('subj','var') || isempty(subj), subj = "NDARAA075AMK"; else, subj = string(subj); end
+if ~exist('subj','var') || isempty(subj), subj = "NDARAA948VFH"; else, subj = string(subj); end
 % "gTD" : going to detail, usually only lets the function to create plots. Default is 1.
 if ~exist('gTD','var') || isempty(gTD), gTD = 1; end
 % save float, choose 0 for skipping saving float file, and actually all the cleaning
@@ -21,8 +21,9 @@ if ~exist('gTD','var') || isempty(gTD), gTD = 1; end
 if ~exist('saveFloat','var') || isempty(saveFloat), saveFloat = 1; end
 % whether to run amica on expanse
 if ~exist('expanse','var') || isempty(expanse), expanse = 0; end
+if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
-if ~exist('machine','var') || isempty(machine), machine = "sccn"; else, machine = string(machine); end
+if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
 if ~exist('no_process','var') || isempty(no_process), no_process = 30; end
 % if run AMICA on the shell which matlab is running on in the end
 if ~exist('run_incr_ICA','var') || isempty(run_incr_ICA), run_incr_ICA = 0; end
@@ -34,8 +35,6 @@ desired_k = 60;
 if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
 
 %% construct necessary paths and files & adding paths
-
-addpath(genpath(fPath))
 p2l = init_paths(platform, machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
 p2l.EEGsets = p2l.eegRepo + subj + fs + "EEG_sets" + fs; % Where .set files are saved
 p2l.ICA = p2l.eegRepo + subj + fs + "ICA" + fs; % Where you want to save your ICA files
@@ -48,12 +47,14 @@ f2l.alltasks = subj + "_" + mergedSetName + ".set"; % as an Exception, path is N
 f2l.icaStruct = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_" + "incremental";
 f2l.icaIncr = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_INCR_" + "incremental";
 
+addpath(genpath(p2l.codebase))
+
 %% reject bad channels
 all_bad_chans =[129];
 EEG = pop_loadset('filename',char(f2l.alltasks),'filepath',char(p2l.EEGsets));
 if ~exist(f2l.icaStruct + "_all_inrements_rejbadchannels.mat","file")
     % now remove the channles based on different measures
-    ICA_STRUCT = incremental_chan_rej(EEG,all_bad_chans,[],[],p2l.figs,1);
+    ICA_STRUCT = incremental_chan_rej(EEG,all_bad_chans,1,[],[],p2l.figs,1);
     save(f2l.icaStruct + "_all_inrements_rejbadchannels","ICA_STRUCT");
 else
     load(f2l.icaStruct + "_all_inrements_rejbadchannels.mat","ICA_STRUCT")
@@ -64,6 +65,7 @@ close all
 if gTD
     for i = 1:length(ICA_STRUCT)
         EEG2plot = update_EEG(EEG, ICA_STRUCT(i));
+        EEG2plot = pop_reref(EEG2plot, [], 'keepref', 'on');
         figure("Name","Bad channels rejected, increment No. " + string(i));
         pop_spectopo(EEG2plot, 1, [0 EEG2plot.times(end)], 'EEG' ,'percent',100,'freq', [6 10 22], 'freqrange',[2 200],'electrodes','off');
         saveas(gcf,p2l.figs +  mergedSetName + "_rejbadchans_freqspectra_incr_" + string(i) + ".fig");
@@ -72,7 +74,6 @@ if gTD
         close
     end
 end
-
 
 %% frame rejection
 duration = 10;
@@ -86,6 +87,7 @@ if ~exist(f2l.icaIncr + "_all_inrements_rej_channels_frames.mat","file")
             ICA_temp(j) = ICA_STRUCT(i);
         end
         EEG_INCR = update_EEG(EEG, ICA_STRUCT(i));
+        EEG_INCR = pop_reref(EEG_INCR, [], 'keepref', 'on');
         ICA_temp1(n+1:n+length(iqr_thres)) = incremental_frame_rej(EEG_INCR, ...
             ICA_temp(n+1:n+length(iqr_thres)), iqr_thres, duration, spacing);
         clear EEG_INCR
@@ -113,6 +115,7 @@ for i = 1:length(ICA_INCR)
     p2l.incr = p2l.ICA + "incr" + string(i) + fs;
     f2l.float = p2l.incr + subj + "_" + mergedSetName + "_incr_" + string(i) + "_clean_float.fdt";
     EEG2write = update_EEG(EEG, ICA_INCR(i));
+    EEG2write = pop_reref(EEG2write, [], 'keepref', 'on');
     EEG2write = eeg_eegrej(EEG2write,rejFrame(i).final);
     disp("Writing float data file for incr. No " + string(i));
     floatwrite(double(EEG2write.data), f2l.float);
@@ -144,9 +147,9 @@ for i = 1:length(ICA_INCR)
     linux_opts = ["files", f2l.float_lin, "outdir", p2l.incr_lin + "amicaout/"];
     expanse_opts = ["files","~/HBN_EEG/" + f2l.float_lin,"outdir", "~/HBN_EEG/" + p2l.incr_lin + "amicaout/"];
     general_opts = ["data_dim", string(writeParam(i).nbchan),...
-        "field_dim", string(writeParam(i).pnts), "pcakeep", string(writeParam(i).nbchan),...
+        "field_dim", string(writeParam(i).pnts), "pcakeep", string(writeParam(i).nbchan-1),...
         "numprocs", 1, "max_threads", 30, "block_size", 1024, "do_opt_block", 0,...
-        "doPCA", 0, "writestep", 200, "do_history", 0, "histstep", 200];
+        "doPCA", 1, "writestep", 200, "do_history", 0, "histstep", 200];
 
     write_amica_param(f2l.param_lin,[linux_opts, general_opts]);
     write_amica_param(f2l.param_expanse,[expanse_opts, general_opts]);
