@@ -1,4 +1,4 @@
-function [ICA_STRUCT, chan_rej_log] = incremental_chan_rej(EEG, tcr_chans, incr, good_chans,path,saveF)
+function [ICA_STRUCT, chan_rej_log] = incremental_chan_rej(EEG, tcr_chans, ret_tcr_chan, incr, good_chans,path,saveF)
 % This function rejects channles in increments and saves the results in the
 % output arrays.
 %
@@ -28,6 +28,9 @@ function [ICA_STRUCT, chan_rej_log] = incremental_chan_rej(EEG, tcr_chans, incr,
 
 if ~exist('EEG','var'), error("No EEG structure is defined, chan_reject terminated."); end
 if ~exist('tcr_chans','var'), tcr_chans = []; end
+% retun the TCR rejected channel to the group in the final step. This is
+% useful for the reutrned of the refrecne channel (eg Cz for EGI).
+if ~exist('ret_tcr_chan','var'), ret_tcr_chan = 0; end 
 if ~exist('incr','var') || isempty(incr), incr = [5 4 3.5 3 2.75 2.5 2.25 2]; end
 if ~exist('good_chans','var'), good_chans = []; end
 if ~exist('path','var'), path = []; else, path = string(path); end
@@ -42,6 +45,7 @@ max_chan_to_remove = 50;
 EEG = pop_select(EEG,'nochannel',good_chans);
 
 %% remove TCR channles
+EEG_OG = EEG; % making sure that there is a copy of the OG data.
 if ~isempty(tcr_chans)
     disp("TCR: removing bad channels");
     chan_names = {EEG.chanlocs.labels};
@@ -156,6 +160,7 @@ for i = 1:length(incr)
    for n = 1:EEG_temp(i).nbchan
     ICA_STRUCT(i).good_chans(n) = EEG_temp(i).chanlocs(n).urchan;
    end
+   if ret_tcr_chan, ICA_STRUCT(i).good_chans(end+1) = EEG_OG.chanlocs(end).urchan; end
    ICA_STRUCT(i).associated_set = EEG_temp(i).setname;
    ICA_STRUCT(i).chan_rej_frames_used = frames;
    ICA_STRUCT(i).ref = 'averef';

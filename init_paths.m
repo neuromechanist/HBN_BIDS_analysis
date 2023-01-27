@@ -8,7 +8,7 @@ function p2l = init_paths(platform, subplat, project, init_eeglab, have_gui)
 %   (c) Seyed Yahya Shirazi, 01/2023, UCSD, INC, SCCN
 
 %% initialize
-if ~exist('platform','var') || isempty(platform), platform = "unix"; else, platform = string(platform); end
+if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 if ~exist('subplat','var') || isempty(subplat), subplat = "sccn"; else, subplat = string(subplat); end
 if ~exist('project','var') || isempty(project), project = "HBN"; else, project = string(project); end
 if ~exist('init_eeglab','var') || isempty(init_eeglab), init_eeglab = true; end
@@ -20,9 +20,10 @@ if project == "HBN"
        if subplat == "sccn", prefix = "/data/qumulo/";
        elseif subplat == "expanse", prefix = "/expanse/projects/nemar/";
        end
-       p2l.raw = prefix + "child-mind-uncompressed/";  % Original data from CMI
+       p2l.raw = prefix + "yahya/HBN/R3/";  % Original data from CMI
        p2l.eegRepo = prefix + "yahya/HBN/EEG/";  % EEG data repo
        p2l.eeglab = prefix + "yahya/_git/eeglab_dev/";
+       p2l.codebase = prefix + "yahya/_git/HBN_BIDS_analysis/";
    end
    if platform == "mac"
         p2l.raw = "/Volumes/Yahya/Datasets/HBN/EEG/";
