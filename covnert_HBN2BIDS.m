@@ -29,7 +29,7 @@ clear EEG
 % Let's also define the tasks and potentially the release that we want to include 
 % in the BIDS
 target_tasks = ["Video_DM", "Video_FF", "Video_TP", "Video_WK", "RestingState"];
-task_name_forBIDS = {'Resting State', 'Despicable Me', 'Fun with Fractals', 'The Present', 'Diary of a Wimpy Kid'};
+task_name_forBIDS = {'RestingState', 'DespicableMe', 'FunwithFractals', 'ThePresent', 'DiaryOfAWimpyKid'};
 target_release = ["R3"]; %#ok<NBRAK2> 
 incl_fullset_only = true; % only subjects with all datasets avalaibe will be on the BIDS
 
