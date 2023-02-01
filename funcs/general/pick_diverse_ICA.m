@@ -76,7 +76,7 @@ for i = foldName
                 disp("imported ICA parpmeter for incr. " + string(incrNum));
                 ICA_INCR(incrNum).weights = modout.W;
                 ICA_INCR(incrNum).sphere = modout.S;
-                EEG_INCR(incrNum) = update_EEG(EEG,ICA_INCR(incrNum));
+                EEG_INCR(incrNum) = update_EEG(EEG, ICA_INCR(incrNum), false, 1, true);
                 EEG_INCR(incrNum).filename = [EEG_INCR(incrNum).filename(1:end-3) '_' num2str(incrNum) '.set'];
                 EEG_INCR(incrNum).filepath = char(p2l.incr0);
             end
@@ -92,7 +92,7 @@ if isempty(m) || m.NumWorkers < 2
         parpool('local',20);
         m = gcp('nocreate');
     catch
-        warning('incremental dipfit is running non-parallel. THis may take up to a day')
+        warning('incremental dipfit is running non-parallel. This may take up to a day')
         m.NumWorkers = 0;
     end
 end
