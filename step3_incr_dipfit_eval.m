@@ -34,6 +34,7 @@ if ~isfolder(p2l.figs), mkdir(p2l.figs); end
 f2l.alltasks = subj + "_" + mergedSetName + ".set"; % as an Exception, path is NOT included
 f2l.icaStruct = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_" + "incremental";
 f2l.icaIncr = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_INCR_" + "incremental";
+f2l.elocs = p2l.codebase + "funcs" + fs + "GSN_HydroCel_129_AdjustedLabels.sfp";
 f2l.HDM = p2l.eeglab + "plugins" + fs + "dipfit4.3" + fs + "standard_BEM" + fs + "standard_vol.mat";
 f2l.MRI = p2l.eeglab + "plugins" + fs + "dipfit4.3" + fs + "standard_BEM" + fs + "standard_mri.mat";
 f2l.chan = p2l.eeglab + "plugins" + fs + "dipfit4.3" + fs + "standard_BEM" + fs + "elec" + fs + "standard_1005.elc";
@@ -44,6 +45,7 @@ addpath(genpath(p2l.codebase))
 
 %% load EEG
 EEG = pop_loadset( 'filename', char(f2l.alltasks), 'filepath', char(p2l.EEGsets));
+EEG = pop_chanedit(EEG, 'load', {char(f2l.elocs),'filetype','autodetect'});
 % eeglab redraw
 
 %% assesment of the increments, method1, ruuning ICALABEL
