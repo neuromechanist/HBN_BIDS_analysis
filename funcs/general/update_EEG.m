@@ -77,6 +77,7 @@ for i = 1:length(ica_fields)
                     del_chan = false;
                 end
             end
+            if reRef, EEG = pop_reref(EEG, [], 'keepref', 'on'); end
         case 'rej_frame_idx'
             %do nothing...for now could insert a uioption to remove frames
         case 'weights'
@@ -115,16 +116,16 @@ end
 % will also reduce any dominnt behavior (such as alpha waves, or eye
 % movmenets) that propagates throgh the brain. Seyed @ 11/18/19 UCF
 
-if reRef
-    if  isfield(ICA_STRUCT,'ref')
-        if (del_chan || ~strcmp(EEG.ref,ICA_STRUCT.ref)) ...
-                && (strcmp(ICA_STRUCT.ref,'averef') || strcmp(ICA_STRUCT.ref,'avgref')) ...
-                && ~ischar(EEG.data)
-            
-            disp('Computing average reference...');
-            EEG = pop_reref( EEG, [], 'refstate',0);
-        end
-    end
-end
+% if reRef  % I don't have a use-case for this, so commenting it out. reRef is being used for EGI Cz problem above Yahya @ 1/31/23 SCCN
+%     if  isfield(ICA_STRUCT,'ref')
+%         if (del_chan || ~strcmp(EEG.ref,ICA_STRUCT.ref)) ...
+%                 && (strcmp(ICA_STRUCT.ref,'averef') || strcmp(ICA_STRUCT.ref,'avgref')) ...
+%                 && ~ischar(EEG.data)
+%             
+%             disp('Computing average reference...');
+%             EEG = pop_reref( EEG, [], 'keepref','on');
+%         end
+%     end
+% end
 %recompute ICA acts if needed
 EEG = eeg_checkset(EEG); %compute ICA activations

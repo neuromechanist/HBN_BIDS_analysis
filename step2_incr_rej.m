@@ -10,8 +10,6 @@ function step2_incr_rej(subj, gTD, saveFloat, expanse, platform, machine, no_pro
 clearvars -except subj gTD saveFloat expanse platform machine no_process run_incr_ICA
 close all; clc;
 fs = string(filesep)+string(filesep);
-fPath = split(string(mfilename("fullpath")),string(mfilename));
-fPath = fPath(1);
 
 if ~exist('subj','var') || isempty(subj), subj = "NDARAA948VFH"; else, subj = string(subj); end
 % "gTD" : going to detail, usually only lets the function to create plots. Default is 1.
