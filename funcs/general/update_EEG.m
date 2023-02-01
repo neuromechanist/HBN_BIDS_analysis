@@ -55,7 +55,7 @@ for i = 1:length(ica_fields)
                 all_chans(n) = EEG.chanlocs(n).urchan;
             end
             if length(intersect(all_chans,ICA_STRUCT.good_chans)) < length(ICA_STRUCT.good_chans)
-                error('EEG does not contain all the ICA_STRUCT.good_chans');
+                warning('EEG does not contain all the ICA_STRUCT.good_chans');
                 return; %#ok<UNRCH>
             else
                 [tmp, rej_chan_idx] = setxor(all_chans,ICA_STRUCT.good_chans);
