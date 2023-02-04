@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH -c 32
 #SBATCH --mem=64G
-#SBATCH -t 01:30:00
+#SBATCH -t 03:30:00
 #SBATCH -A csd403
 #SBATCH -o /home/sshirazi/runlog/%J.out
 #SBATCH -e /home/sshirazi/runlog/%J.err

@@ -11,12 +11,12 @@ clearvars -except subj gTD saveFloat expanse platform machine no_process run_inc
 close all; clc;
 fs = string(filesep)+string(filesep);
 
-if ~exist('subj','var') || isempty(subj), subj = "NDARAA948VFH"; else, subj = string(subj); end
+if ~exist('subj','var') || isempty(subj), subj = "NDARBA839HLG"; else, subj = string(subj); end
 if ~exist('recompute','var') || isempty(recompute), recompute = 1; end % function does NOT recompute the best subset by default
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
-if ~exist('no_process','var') || isempty(no_process), no_process = 20; end
+if ~exist('no_process','var') || isempty(no_process), no_process = 12; end
 
 mergedSetName = "everyEEG";
 
@@ -27,9 +27,8 @@ p2l = init_paths(platform, machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
 p2l.EEGsets = p2l.eegRepo + subj + fs + "EEG_sets" + fs; % Where .set files are saved
 p2l.ICA = p2l.eegRepo + subj + fs + "ICA" + fs; % Where you want to save your ICA files
 p2l.incr0 = p2l.ICA + "incr0" + fs; % pre-process directory
-if ~isfolder(p2l.incr0), mkdir(p2l.incr0); end
-p2l.figs = p2l.incr0 + "figs" + fs; % pre-process directory
-if ~isfolder(p2l.figs), mkdir(p2l.figs); end
+p2l.compResults = p2l.incr0 + fs + "comp_results" + fs;
+if ~isfolder(p2l.compResults), mkdir(p2l.compResults); end
 
 f2l.alltasks = subj + "_" + mergedSetName + ".set"; % as an Exception, path is NOT included
 f2l.icaStruct = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_" + "incremental";
