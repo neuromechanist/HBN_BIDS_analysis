@@ -14,7 +14,7 @@ fPath = split(string(mfilename("fullpath")),string(mfilename));
 fPath = fPath(1);
 
 if ~exist('subj','var') || isempty(subj), subj = "NDARBA839HLG"; else, subj = string(subj); end
-if ~exist('model_count','var') || isempty(model_count), model_count = [1, 3, 5]; end
+if ~exist('model_count','var') || isempty(model_count), model_count = [2, 3, 6, 9]; end
 if ~exist('amica_frame_rej','var') || isempty(amica_frame_rej), amica_frame_rej = 0; end
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
@@ -56,25 +56,24 @@ load(f2l.ICA_STRUCT,"ICA_STRUCT");
 EEG = update_EEG(EEG, ICA_STRUCT);
 
 %% setup files and parameters for AMICA with multiple models
-if save_float
-    % write the float
+if saveFloat
     disp("Writing float data file");
     floatwrite(double(EEG.data), char(p2l.mAmica + f2l.float));
     for i = model_count
         p2l.incr = p2l.mAmica + "m" + string(i) + fs;
         if ~isfolder(p2l.incr), mkdir(p2l.incr); end
         f2l.float_lin = f2l.float;
-        p2l.incr = "m" + string(i) + fs; % path to save .param file
         f2l.param_lin = p2l.incr + subj + "_" + mergedSetName + "_m" + string(i) + "_linux.param";
         f2l.param_expanse = p2l.incr + subj + "_" + mergedSetName + "_m" + string(i) + "_expanse.param";
 
         linux_opts = ["files", f2l.float, "outdir", p2l.incr + "amicaout/"];
         expanse_opts = ["files",p2l.mAmica + f2l.float_lin,"outdir", p2l.incr + "amicaout/"];
-        general_opts = ["data_dim", string(writeParam(i).nbchan),...
+        general_opts = ["data_dim", string(EEG.nbchan),...
             "field_dim", string(EEG.pnts), "pcakeep", string(EEG.nbchan-1),...
             "numprocs", 1, "max_threads", 30, "block_size", 1024, "do_opt_block", 0,...
             "doPCA", 1, "writestep", 200, "do_history", 0, "histstep", 200,...
-            ];
+            "num_models", i, "num_mix_comps", 3,...
+            "do_reject", amica_frame_rej, "numrej", 5, "rejstart", 1, "rejint", 3, "rejsig", 3.000];
 
         write_amica_param(f2l.param_lin,[linux_opts, general_opts]);
         write_amica_param(f2l.param_expanse,[expanse_opts, general_opts]);        
@@ -86,55 +85,60 @@ end
 % However, amica is recompiled for expanse, and it is amica15ex. Still, I'd
 % rather running 32 tasks/core for now, and using shared partition to be
 % able to submit upto 4096 jobs.
-if expanse == 0, return; end
 % write batch files for each increment
-expanse_root = "/home/sshirazi/HBN_EEG/";
-for i = 1:length(ICA_INCR)
+for i = model_count
     opt = [];
-    p2l.incr = p2l.ICA + "incr" + string(i) + fs; % path to save .slurm file
-    f2l.SLURM = p2l.incr + subj + "_incr_" + string(i) + "_amica_expanse";
-    f2l.param_stokes = expanse_root + subj + "/ICA/incr" + string(i) + "/" + ...
-        subj + "_" + mergedSetName + "_incr_" + string(i) + "_expanse.param"; % this path is relative, that's why I'm not using p2l.ICA
-    opt.file = f2l.SLURM; opt.jobName = "amc_" + subj + "_" + string(i);
+    p2l.incr = p2l.mAmica + "m" + string(i) + fs; % path to save .slurm file
+    f2l.SLURM = p2l.incr + subj + "_m" + string(i) + "_amica_expanse";
+    f2l.param_stokes = p2l.incr + subj + "_" + mergedSetName + "_m" + string(i) + "_expanse.param";
+    opt.file = f2l.SLURM; opt.jobName = "mamc_" + subj + "_" + string(i);
     opt.partition = "shared"; opt.account = "csd403"; opt.maxThreads = 32; % param file max_threads + 2
     opt.email = "syshirazi@ucsd.edu"; opt.memory = opt.maxThreads*2;
-    opt.walltime = "01:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
-    opt.incr_path = expanse_root + subj + "/ICA/incr" + string(i) + "/";
+    opt.walltime = "03:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
+    opt.incr_path = p2l.incr;
     write_AMICA_SLURM_file(opt);
 end
 % write a bash file to run AMICA on Expanse for the subject
-fid = fopen(p2l.ICA + subj + "_expanse_batch","w");
+fid = fopen(p2l.mAmica + subj + "_expanse_batch","w");
 fprintf(fid,"#!/bin/bash\n");
-fprintf(fid,"for i in {%d..%d}\n",1, length(ICA_INCR));
+fprintf(fid,"for i in " + string(num2str(model_count))+" \n");
 fprintf(fid,"do\n");
-slurm_path = expanse_root + subj + "/ICA/incr$i/" + subj + "_incr_${i}_amica_expanse.slurm";
+slurm_path = p2l.mAmica + "/m$i/" + subj + "_incr_${i}_amica_expanse.slurm";
 fprintf(fid,"sbatch " + slurm_path + "\n");
 fprintf(fid,"done\n");
 fclose(fid);
 
-function write_linux_bash(file,subj,start,stop)
-fid = fopen(file,"w");
-fprintf(fid,"#!/bin/bash\n");
-fprintf(fid,"for i in {%d..%d}\n",start, stop);
-fprintf(fid,"do\n");
-fprintf(fid,'./amica15ub "%s/ICA/incr$i/%s_allsteps_incr_${i}_linux.param"\n',subj, subj);
-fprintf(fid,"done\n");
-fclose(fid);
-% end of the function
+%% run the jobs
+% If the code is being developed on expanse, we can problably run all
+% increments as soon as the float files, param files and shell files are
+% created.
+if run_ICA
+    system(sprintf("sh ~/HBN_EEG/%s/ICA/mAmica/%s_expanse_batch", subj, subj))
+end
 
 function write_AMICA_SLURM_file(opt)
 % SLURM steup
 fid = fopen(opt.file + ".slurm", "w");
 fprintf(fid,'#!/bin/sh\n');
+fprintf(fid,"#SBATCH -p " + opt.partition + " # Job name\n"); % resource partition on expanse
+fprintf(fid,"#SBATCH -A " + opt.account + " # Account chrged for the job\n");
 fprintf(fid,"#SBATCH --job-name=" + opt.jobName + " # Job name\n");
 % fprintf(fid,"#SBATCH --mail-type=ALL  # Mail events (NONE, BEGIN, END, FAIL, ALL)\n");
 % fprintf(fid,"#SBATCH --mail-user=" + opt.email + "  # Where to send mail\n"); % disabled as it will create so many emails for incremental ICA :D
 fprintf(fid,"#SBATCH --ntasks=" + string(opt.maxThreads) + " # Run a single task\n");
+fprintf(fid,"#SBATCH --mem=" + string(opt.memory) + "G # default is 1G per task/core\n");
 fprintf(fid,"#SBATCH --nodes=1  # Number of CPU cores per task\n"); % only run on one node due to mpi config of amica15ub
 fprintf(fid,"#SBATCH --time=" + opt.walltime + " # Time limit hrs:min:sec\n");
-fprintf(fid,"#SBATCH --output=" + opt.incr_path + opt.jobName + "_%%J.out # Standard output and error log\n");
+fprintf(fid,"#SBATCH --output=" + opt.incr_path + opt.jobName + ".out # Standard output and error log\n");
+fprintf(fid,"#SBATCH --error=" + opt.incr_path + opt.jobName + ".err # Standard output and error log\n");
 fprintf(fid,'# Run your program with correct path and command line options\n');
 % job commands
+fprintf(fid,"module purge\n");
+fprintf(fid,"module load cpu slurm gcc openmpi\n");
+
+fprintf(fid, "#SET the number of openmp threads\n");
+fprintf(fid,"export MV2_ENABLE_AFFINITY=0\n");
+
 fprintf(fid, opt.amica + " " + opt.param);
 fclose(fid);
 % end of the function
