@@ -15,7 +15,7 @@ fPath = fPath(1);
 
 if ~exist('subj','var') || isempty(subj), subj = "NDARBA839HLG"; else, subj = string(subj); end
 if ~exist('model_count','var') || isempty(model_count), model_count = [2, 3, 6, 9]; end
-if ~exist('amica_frame_rej','var') || isempty(amica_frame_rej), amica_frame_rej = 0; end
+if ~exist('amica_frame_rej','var') || isempty(amica_frame_rej), amica_frame_rej = 1; end
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
@@ -25,9 +25,9 @@ if ~exist('gTD','var') || isempty(gTD), gTD = 1; end
 if ~exist('saveFloat','var') || isempty(saveFloat), saveFloat = 1; end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "sccn"; else, machine = string(machine); end
-if ~exist('no_process','var') || isempty(no_process), no_process = 30; end
+if ~exist('no_process','var') || isempty(no_process), no_process = 18; end
 % if run AMICA on the shell which matlab is running on in the end
-if ~exist('run_ICA','var') || isempty(run_ICA), run_ICA = 0; end
+if ~exist('run_ICA','var') || isempty(run_ICA), run_ICA = 1; end
 
 mergedSetName = "everyEEG";
 if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
@@ -73,7 +73,7 @@ if saveFloat
             "numprocs", 1, "max_threads", 30, "block_size", 1024, "do_opt_block", 0,...
             "doPCA", 1, "writestep", 200, "do_history", 0, "histstep", 200,...
             "num_models", i, "num_mix_comps", 3,...
-            "do_reject", amica_frame_rej, "numrej", 5, "rejstart", 1, "rejint", 3, "rejsig", 3.000];
+            "do_reject", amica_frame_rej, "numrej", 5, "rejstart", 1, "rejint", 3, "rejsig", 3.01];
 
         write_amica_param(f2l.param_lin,[linux_opts, general_opts]);
         write_amica_param(f2l.param_expanse,[expanse_opts, general_opts]);        
@@ -103,7 +103,7 @@ fid = fopen(p2l.mAmica + subj + "_expanse_batch","w");
 fprintf(fid,"#!/bin/bash\n");
 fprintf(fid,"for i in " + string(num2str(model_count))+" \n");
 fprintf(fid,"do\n");
-slurm_path = p2l.mAmica + "/m$i/" + subj + "_incr_${i}_amica_expanse.slurm";
+slurm_path = p2l.mAmica + "/m$i/" + subj + "_m${i}_amica_expanse.slurm";
 fprintf(fid,"sbatch " + slurm_path + "\n");
 fprintf(fid,"done\n");
 fclose(fid);
