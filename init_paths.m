@@ -29,6 +29,7 @@ if project == "HBN"
         p2l.raw = "/Volumes/Yahya/Datasets/HBN/EEG/";
         p2l.eegRepo = p2l.raw; % Data is saved in the same directory
         p2l.eeglab = "/Users/yahya/Documents/git/eeglab_dev/";
+        p2l.codebase = "/Users/yahya/Documents/git/HBN_BIDS_analysis";
    end
 end
 
