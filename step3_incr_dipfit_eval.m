@@ -11,7 +11,7 @@ clearvars -except subj gTD saveFloat expanse platform machine no_process run_inc
 close all; clc;
 fs = string(filesep)+string(filesep);
 
-if ~exist('subj','var') || isempty(subj), subj = "NDARBA839HLG"; else, subj = string(subj); end
+if ~exist('subj','var') || isempty(subj), subj = "NDARAA948VFH"; else, subj = string(subj); end
 if ~exist('recompute','var') || isempty(recompute), recompute = 1; end % function does NOT recompute the best subset by default
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
@@ -57,7 +57,17 @@ if ~exist(f2l.ICA_STRUCT,"file") || recompute
 else
     load(f2l.ICA_STRUCT,"ICA_STRUCT");
 end
-EEG = update_EEG(EEG, ICA_STRUCT);
+% Update to concatenated data w/o frame rejection
+EEG = update_EEG(EEG, ICA_STRUCT, false, 1, true);
+
+%% update to the frame-rejected data
+% create an array of rejected frames compatible w/ eeg_eegrej
+rejFrame.raw = ICA_STRUCT.rej_frame_idx; % temporary rejected frames
+rejFrame.rowStart = [1 find(diff(rejFrame.raw) > 2)+1];
+for j = 1:length(rejFrame.rowStart)-1
+    rejFrame.final(j,:) = [rejFrame.raw(rejFrame.rowStart(j)) rejFrame.raw(rejFrame.rowStart(j+1)-1)];
+end
+EEG = eeg_eegrej(EEG,rejFrame.final);
 
 %% method 2, MIR
 % TLDR, the best ICA is perfromed when the mutual information reduction

@@ -31,9 +31,9 @@ load(p2l.incr0 + incr0Content(contains(incr0Content,"channels_frames.mat")),"ICA
 % let's find channles that are present in every ICA
 bad_chan = [];
 for i = 1:128
-    for j = 1:length(ICA_INCR) %#ok<NODEF>
+    for j = 1:length(ICA_INCR)
        if ~ismember(i,ICA_INCR(j).good_chans)
-           bad_chan(end+1) = i;
+           bad_chan(end+1) = i; %#ok<*AGROW>
            break
        end
     end    

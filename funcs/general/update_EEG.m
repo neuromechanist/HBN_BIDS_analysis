@@ -99,6 +99,12 @@ for i = 1:length(ica_fields)
             %do nothing
         case 'incr_comps'
             EEG.etc.incr_comps = ICA_STRUCT.incr_comps;
+        case 'most_brain_increments'
+            EEG.etc.most_brain_increments = ICA_STRUCT.most_brain_increments;
+        case 'percent_frames_bad'
+            EEG.etc.percent_frames_bad = ICA_STRUCT.percent_frames_bad;
+        case 'k'
+            EEG.etc.k = ICA_STRUCT.k;
         case 'good_comps'
             if isfield(ICA_STRUCT.good_comps,'all')
                 EEG.reject.gcompreject = ICA_STRUCT.good_comps.all;
