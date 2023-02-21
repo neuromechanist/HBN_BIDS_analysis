@@ -6,8 +6,8 @@
 #SBATCH --mem=128G
 #SBATCH -t 02:00:00
 #SBATCH -A csd403
-#SBATCH -o /home/sshirazi/runlog/%x.out
-#SBATCH -e /home/sshirazi/runlog/%x.err
+#SBATCH -o /home/sshirazi/runlog/iclabel_%x.out
+#SBATCH -e /home/sshirazi/runlog/iclabel_%x.err
 
 # echo $1
 cd /home/sshirazi/_git/HBN_BIDS_analysis

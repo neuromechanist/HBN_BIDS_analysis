@@ -23,7 +23,7 @@ mergedSetName = "everyEEG";
 if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
 
 %% construct necessary paths and files & adding paths
-p2l = init_paths(platform, machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
+p2l = init_paths(platform, machine, "HBN", 1, false);  % Initialize p2l and eeglab.
 p2l.EEGsets = p2l.eegRepo + subj + fs + "EEG_sets" + fs; % Where .set files are saved
 p2l.ICA = p2l.eegRepo + subj + fs + "ICA" + fs; % Where you want to save your ICA files
 p2l.incr0 = p2l.ICA + "incr0" + fs; % pre-process directory
