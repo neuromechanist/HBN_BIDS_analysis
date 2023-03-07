@@ -97,16 +97,16 @@ pop_viewprops(EEG, typecomp, chanorcomp, spec_opt, erp_opt, scroll_event, classi
 % save the figures containting the componenets
 iclabelFigs = findobj(allchild(0), 'flat', 'Type', 'figure');
 for i = 1:length(iclabelFigs) % it is not possible to save the figs in .fig format
-print(iclabelFigs(i),p2l.compResults + "all_components_summary_" + string(i), '-dpng', '-r600');
-print(iclabelFigs(i),p2l.compResults + "all_components_summary_" + string(i),'-dpdf', '-painters');
+print(iclabelFigs(i),p2l.compResults + "all_components_summary_" + string(i), '-dpng', '-r600', '-noui');
+print(iclabelFigs(i),p2l.compResults + "all_components_summary_" + string(i),'-dpdf', '-painters', '-noui');
 end
 close(iclabelFigs)
 % open each compoenet's extended viewprops and save the figure, also not in
 % fig format.
 for i = chanorcomp
     pop_prop_extended(EEG, typecomp, i, NaN, spec_opt, erp_opt, scroll_event, classifier)
-    print(p2l.compResults + "all_components_detail_comp_" + string(i), '-dpng', '-r300')
-    print(p2l.compResults + "all_components_detail_comp_" + string(i), '-dpdf', '-painters')
+    print(p2l.compResults + "all_components_detail_comp_" + string(i), '-dpng', '-r300', '-noui')
+    print(p2l.compResults + "all_components_detail_comp_" + string(i), '-dpdf', '-painters', '-noui')
     savefig(gcf,p2l.compResults + "all_components_detail_comp_" + string(i),'compact')
     close
 end
