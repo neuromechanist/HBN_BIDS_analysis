@@ -7,7 +7,7 @@ function step3p1_dataQual_groupAnalys(participant_list, platform, machine, load_
 % (c) Seyed Yahya Shirazi, 03/2023 UCSD, INC, SCCN
 
 %% initialize and adding paths
-clearvars -except participant_list platform machine
+clearvars -except participant_list platform machine load_setfiles save_setfiles
 close all; clc;
 fs = string(filesep)+string(filesep);
 mergedSetName = "everyEEG";
@@ -22,7 +22,7 @@ if ~exist('participant_list', 'var') || isempty(participant_list)
     participant_list = string({contents.name});
     participant_list = participant_list(contains(participant_list,"NDAR"));
 end
-if ~exist('load_setfiles','var') || isempty(save_setfiles), save_setfiles = false; end
+if ~exist('load_setfiles','var') || isempty(load_setfiles), load_setfiles = false; end
 if ~exist('save_setfiles','var') || isempty(save_setfiles), save_setfiles = true; end
 f2l.elocs = p2l.codebase + "funcs" + fs + "GSN_HydroCel_129_AdjustedLabels.sfp";
 
