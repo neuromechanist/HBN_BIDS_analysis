@@ -136,8 +136,24 @@ title('Rejected electrodes numbers')
 % ylabel("number of dipoles")
 
 %% rejected electrode plot
+% load a dummy EEG file
+EEG = pop_loadset('filename','NDARAA948VFH_everyEEG.set','filepath','~/HBN_EEG/NDARAA948VFH/EEG_sets/');
+EEG = pop_select(EEG, 'nochannel',129);
+rej_count = zeros(1, original_numchans);
+for p = string(fieldnames(rej_chans))'
+    rej_count(rej_chans.(p)) = rej_count(rej_chans.(p)) + 1;
+end
+rej_count = rej_count * 5; % make the dots a little larger.
 
+cl = floor((rej_count-min(rej_count)+1) /range(rej_count) * 255);
+cl(cl>255) = 255;
+cl(cl==0) = 1;
+cmap = cool(255);
 
+figure
+colormap cool
+mod_topoplot([],EEG.chanlocs,'electrodes','on','emarker',{1:EEG.nbchan,'.',cmap(cl,:),rej_count,1})
+colorbar
 %%
 figure
 boxplot(rej_frame_ratio,'Notch','on','Labels',{'Rejected frame percentage'},'Whisker',1)
