@@ -128,6 +128,9 @@ title('number of brain components per ICLABEL classification')
 xlabel("probability of the dipole being Brain")
 ylabel("number of dipoles")
 
+%% Brodmann area distibution of the brian components
+
+
 %% number of rejected elecrtods
 figure
 boxplot(rej_elec_count,'Notch','on','Labels',{'number of rejected electrode'},'Whisker',1)
@@ -135,7 +138,7 @@ title('Rejected electrodes numbers')
 % xlabel("probability of the dipole being Brain")
 % ylabel("number of dipoles")
 
-%% rejected electrode plot
+%% rejected electrode topoplot
 % load a dummy EEG file
 EEG = pop_loadset('filename','NDARAA948VFH_everyEEG.set','filepath','~/HBN_EEG/NDARAA948VFH/EEG_sets/');
 EEG = pop_select(EEG, 'nochannel',129);
@@ -150,13 +153,11 @@ cl(cl>255) = 255;
 cl(cl==0) = 1;
 cmap = cool(255);
 
-figure
+figure('Renderer','painters')
 colormap cool
 mod_topoplot([],EEG.chanlocs,'electrodes','on','emarker',{1:EEG.nbchan,'.',cmap(cl,:),rej_count,1})
 colorbar
-%%
+%% amount of frame rejection
 figure
 boxplot(rej_frame_ratio,'Notch','on','Labels',{'Rejected frame percentage'},'Whisker',1)
 title('Rejected frame percentage')
-
-%% 
