@@ -129,14 +129,36 @@ xlabel("probability of the dipole being Brain")
 ylabel("number of dipoles")
 
 %% Brodmann area distibution of the brian components
-
-
+brain_percentage = ["sixty", "seventy", "eighty", "ninety"];
+figure('Renderer', 'painters');
+tiledlayout(2,2, 'Padding', 'compact', 'TileSpacing', 'compact'); 
+for b = brain_percentage
+    local_brodmann = zeros(1,52); % first determine whcih BAs are represented for each person.
+    for p = string(fieldnames(rej_chans))'
+        bd_all_string = {ICA_STRUCT.(p).tal_dipfit.model(braincomps.(p).(b)).BA};
+        bd_all_string(cellfun(@(x) length(x), bd_all_string)==0) = [];
+        if ~isempty(bd_all_string)
+            bd_string = cellfun(@(x) x(1), bd_all_string);
+            bd = double(extract(bd_string, digitsPattern));
+            local_brodmann(bd) = local_brodmann(bd) + 1;
+        end
+    end
+    brodmann_dist.(b) = local_brodmann;
+    nexttile
+    bar(brodmann_dist.(b)(1:47))
+    title(b + " percent");
+    xlabel("BA");
+    xticks(1:47)
+    xticklabels(string(1:47))
+%     xtickangle(45)
+    ylabel("number of subjects")
+    ylim([0,length(string(fieldnames(rej_chans)))])
+end
+sgtitle("BA distribution across the group and brain-classification probablity")
 %% number of rejected elecrtods
 figure
 boxplot(rej_elec_count,'Notch','on','Labels',{'number of rejected electrode'},'Whisker',1)
 title('Rejected electrodes numbers')
-% xlabel("probability of the dipole being Brain")
-% ylabel("number of dipoles")
 
 %% rejected electrode topoplot
 % load a dummy EEG file
