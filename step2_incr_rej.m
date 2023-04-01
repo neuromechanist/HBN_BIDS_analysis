@@ -55,7 +55,7 @@ if ~exist(f2l.icaStruct + "_all_inrements_rejbadchannels.mat","file")
     ICA_STRUCT = incremental_chan_rej(EEG,all_bad_chans,1,[],[],p2l.figs,1);
     save(f2l.icaStruct + "_all_inrements_rejbadchannels","ICA_STRUCT");
 else
-    load(f2l.icaStruct + "_all_inrements_rejbadchannels.mat","ICA_STRUCT")
+    load(f2l.icaStruct + "_all_inrements_rejbadchannels.mat", "ICA_STRUCT");
 end
 close all
 
@@ -92,9 +92,9 @@ if ~exist(f2l.icaIncr + "_all_inrements_rej_channels_frames.mat","file")
     end
     ICA_INCR = ICA_temp1;
     clear ICA_temp ICA_temp1
-    save(f2l.icaIncr + "_all_inrements_rej_channels_frames","ICA_INCR")
+    save(f2l.icaIncr + "_all_inrements_rej_channels_frames", "ICA_INCR")
 else
-    load(f2l.icaIncr + "_all_inrements_rej_channels_frames.mat","ICA_INCR")
+    load(f2l.icaIncr + "_all_inrements_rej_channels_frames.mat", "ICA_INCR");
 end
 
 for i = 1:length(ICA_INCR)
@@ -111,14 +111,16 @@ if saveFloat
 for i = 1:length(ICA_INCR)
     if ~isfolder(p2l.ICA + "incr" + string(i)), mkdir(p2l.ICA + "incr" + string(i)); end
     p2l.incr = p2l.ICA + "incr" + string(i) + fs;
-    f2l.float = p2l.incr + subj + "_" + mergedSetName + "_incr_" + string(i) + "_clean_float.fdt";
+%     f2l.float = p2l.incr + subj + "_" + mergedSetName + "_incr_" + string(i) + "_clean_float.fdt";
     EEG2write = update_EEG(EEG, ICA_INCR(i));
     EEG2write = pop_reref(EEG2write, [], 'keepref', 'on');
     EEG2write = eeg_eegrej(EEG2write,rejFrame(i).final);
+    EEG2write.setname = subj + "_" + mergedSetName + "_incr_" + string(i);
     disp("Writing float data file for incr. No " + string(i));
-    floatwrite(double(EEG2write.data), f2l.float);
+%     floatwrite(double(EEG2write.data), f2l.float); % This only wirte the fdt file, but we might need to use the full set file later.
+    pop_saveset(EEG2write, 'filename', char(EEG2write.setname), 'filepath', char(p2l.incr), 'savemode', 'twofiles');
     writeParam(i).pnts = EEG2write.pnts;
-    writeParam(i).nbchan = EEG2write.nbchan;
+    writeParam(i).nbchan = EEG2write.nbchan;f
     if gTD
     figure("Name","Bad channels and frames rejected, increment No. " + string(i)); % spectopo plots.
     pop_spectopo(EEG2write, 1, [0 EEG2write.times(end)], 'EEG' ,'percent',100,'freq', [6 10 22], 'freqrange',[2 200],'electrodes','off');
@@ -137,7 +139,7 @@ if saveFloat == 0 && ~exist('writeParam','var') && exist(p2l.incr0 + "writeParam
 end
 for i = 1:length(ICA_INCR)
     p2l.incr_lin = subj+ "/ICA/incr" + string(i) + "/"; % this path is relative, that's why I'm not using p2l.ICA
-    f2l.float_lin = p2l.incr_lin + subj + "_" + mergedSetName + "_incr_" + string(i) + "_clean_float.fdt";
+    f2l.float_lin = p2l.incr_lin + subj + "_" + mergedSetName + "_incr_" + string(i) + ".fdt";
     p2l.incr = p2l.ICA + "incr" + string(i) + fs; % path to save .param file
     f2l.param_lin = p2l.incr + subj + "_" + mergedSetName + "_incr_" + string(i) + "_linux.param";
     f2l.param_expanse = p2l.incr + subj + "_" + mergedSetName + "_incr_" + string(i) + "_expanse.param";
@@ -197,7 +199,7 @@ fclose(fid);
 % increments as soon as the float files, param files and shell files are
 % created.
 if run_incr_ICA
-    system(sprintf("sh ~/HBN_EEG/%s/ICA/%s_expanse_batch", subj, subj))
+    system(sprintf("sh ~/HBN_EEG/%s/ICA/%s_expanse_batch", subj, subj));
 end
 
 function write_linux_bash(file,subj,start,stop)
