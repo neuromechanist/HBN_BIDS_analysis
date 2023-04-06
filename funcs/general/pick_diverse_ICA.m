@@ -1,4 +1,4 @@
-function ICA_STRUCT = pick_diverse_ICA(EEG, p2l, f2l)
+function [ICA_STRUCT, EEG_out] = pick_diverse_ICA(p2l, f2l, subj, mergedSetName, load_existing)
 % runs DIPFIT on incremental amica and standard MNI model and finds the
 % increment that has the most diverse dipoles with rv < 0.15 inside the
 % brain. Examining "run_dipfit_study_incremental_amica" on stepping
@@ -17,16 +17,17 @@ function ICA_STRUCT = pick_diverse_ICA(EEG, p2l, f2l)
 %% initialize
 fs = string(filesep);
 rv = 15; % it should be in percentage to be compatible w/ eeg_dipselect
-if ~exist("p2l","var") || isempty(p2l.ICA)
-    error("ICA path is mandatory");
-end
+if ~exist("p2l","var") || isempty(p2l.ICA), error("ICA path is mandatory"); end
+if ~exist('subj','var') || isempty(subj), subj = "test"; else, subj = string(subj); end
+if ~exist('mergedSetName','var') || isempty(mergedSetName), mergedSetName = "everyEEG"; else, mergedSetName = string(mergedSetName); end
+if ~exist('load_existing','var') || isempty(load_existing), load_existing = 1; end
 
 p2l.incr0 = p2l.ICA + "incr0" + fs;
-
+f2l.classify = p2l.incr0 + subj + "_ICA_INCR_dipfit_classification.mat";
 %% need ICA_INCR to update incremental ICA_STRUCTs
 incr0Dir = dir(p2l.incr0);
 incr0Content = string({incr0Dir(:).name});
-load(p2l.incr0 + incr0Content(contains(incr0Content,"channels_frames.mat")),"ICA_INCR");
+load(p2l.incr0 + incr0Content(contains(incr0Content,"channels_frames.mat")));
 
 % let's find channles that are present in every ICA
 bad_chan = [];
@@ -76,9 +77,13 @@ for i = foldName
                 disp("imported ICA parpmeter for incr. " + string(incrNum));
                 ICA_INCR(incrNum).weights = modout.W;
                 ICA_INCR(incrNum).sphere = modout.S;
-                EEG_INCR(incrNum) = update_EEG(EEG, ICA_INCR(incrNum), false, 1, true);
-                EEG_INCR(incrNum).filename = [EEG_INCR(incrNum).filename(1:end-3) '_' num2str(incrNum) '.set'];
-                EEG_INCR(incrNum).filepath = char(p2l.incr0);
+                EEG = pop_loadset( 'filename', char(subj + "_" + mergedSetName + "_incr_" + incrNum + ".set"),...
+                    'filepath', char(p2l.ICA + string(i) + fs));
+%                 EEG = pop_chanedit(EEG, 'load', {char(f2l.elocs),'filetype','autodetect'});
+                EEG.chaninfo.nodatchans(1).labels = 'NZ'; % This is specific to this dataset, as chanlocs are not imported correctly in the first place.
+                EEG.chaninfo.nodatchans(2).labels = 'LPA';
+                EEG.chaninfo.nodatchans(3).labels = 'RPA';
+                EEG_INCR(incrNum) = update_EEG(EEG, ICA_INCR(incrNum), true, 1);
             end
         end
     end
@@ -86,47 +91,64 @@ end
 
 %% incremental dipfit
 % saving takes way more than running the loop. NEVER save here.
-m = gcp('nocreate');
-if isempty(m) || m.NumWorkers < 2
-    try
-        parpool('local',20);
-        m = gcp('nocreate');
-    catch
-        warning('incremental dipfit is running non-parallel. This may take up to a day')
-        m.NumWorkers = 0;
+if ~exist(f2l.classify, 'file') || ~load_existing
+    m = gcp('nocreate');
+    if isempty(m) || m.NumWorkers < 2
+        try
+            parpool('local',20);
+            m = gcp('nocreate');
+        catch
+            warning('incremental dipfit is running non-parallel. This may take up to a day')
+            m.NumWorkers = 0;
+        end
     end
-end
-parfor (i = 1:length(EEG_INCR),m.NumWorkers)
-EEG_INCR(i) =  pop_dipfit_settings(EEG_INCR(i),'hdmfile',char(f2l.HDM),'mrifile',char(f2l.MRI),...
-    'chanfile',char(f2l.chan),'coordformat','MNI','chansel', 1:EEG_INCR(i).nbchan); %#ok<PFBNS>
+    parfor (i = 1:length(EEG_INCR), m.NumWorkers)
+    EEG_INCR(i) =  pop_dipfit_settings(EEG_INCR(i),'hdmfile',char(f2l.HDM),'mrifile',char(f2l.MRI),...
+        'chanfile',char(f2l.chan),'coordformat','MNI','chansel', 1:EEG_INCR(i).nbchan); %#ok<PFBNS>
 
-% for more datail on why we only use fiducials, see: J3P17
-[~,EEG_INCR(i).dipfit.coord_transform] = coregister(EEG_INCR(i).chanlocs,EEG_INCR(i).dipfit.chanfile,...
-    'chaninfo1', EEG_INCR(i).chaninfo,'mesh',EEG_INCR(i).dipfit.hdmfile,'warp',{'NZ' 'RPA' 'LPA'}, 'manual', 'off');
+    % for more datail on why we only use fiducials, see: J3P17
+    [~,EEG_INCR(i).dipfit.coord_transform] = coregister(EEG_INCR(i).chanlocs,EEG_INCR(i).dipfit.chanfile,...
+        'chaninfo1', EEG_INCR(i).chaninfo,'mesh',EEG_INCR(i).dipfit.hdmfile,'warp',{'NZ' 'RPA' 'LPA'}, 'manual', 'off');
 
-    EEG_INCR(i) = pop_multifit(EEG_INCR(i), [] , 'threshold',100, 'plotopt',{ 'normlen', 'on'});
+         EEG_INCR(i) = pop_multifit(EEG_INCR(i), [] , 'threshold',100, 'plotopt',{ 'normlen', 'on'});
+    end
+    for i = 1:length(EEG_INCR)
+       EEG_INCR(i).subject = [EEG_INCR(i).subject '_' num2str(i)];
+    end
+
+
+    %% select the most diverse increment
+    % find which increment has the most brain components with low r.v., so, we
+    % should first find the low RV componenets, determine if the dipoles are
+    % inside the brain. Finding the BA and the dataset that has the most diverse
+    % BA distribution is not wise right of the bat because many of those
+    % components turn out to be muscle. Therefore, let's first have ICLABEL
+    % find the datasets with the most brain componenets, then, if there is more
+    % than one left, let's find the one with the most diverse BA distribution.
+    f = waitbar(0,'finding incremental ICA labels','Name','please be patient');
+    for i = 1:length(EEG_INCR)
+        EEG_INCR(i) = iclabel(EEG_INCR(i), 'default');
+        waitbar(i/length(EEG_INCR),f)
+    end
+    close(f);
+    
+    for i = 1:length(EEG_INCR)
+        ICA_INCR(i).dipfit = EEG_INCR(i).dipfit;
+        EEG_INCR(i) = talLookup(EEG_INCR(i));
+        ICA_INCR(i).tal_dipfit = EEG_INCR(i).dipfit;
+        ICA_INCR(i).classification = EEG_INCR(i).etc.ic_classification;     
+    end
+    save(f2l.classify, "ICA_INCR")
+
+else
+    load(f2l.classify, "ICA_INCR")
 end
+
 for i = 1:length(EEG_INCR)
-   EEG_INCR(i).subject = [EEG_INCR(i).subject '_' num2str(i)];
-end
-
-
-%% select the most diverse increment
-% find which increment has the most brain components with low r.v., so, we
-% should first find the low RV componenets, determine if the dipoles are
-% inside the brain. Finding the BA and the dataset that has the most diverse
-% BA distribution is not wise right of the bat because many of those
-% components turn out to be muscle. Therefore, let's first have ICLABEL
-% find the datasets with the most brain componenets, then, if there is more
-% than one left, let's find the one with the most diverse BA distribution.
-f = waitbar(0,'finding incremental ICA labels','Name','please be patient');
-for i = 1:length(EEG_INCR)
-    EEG_INCR(i) = iclabel(EEG_INCR(i), 'default');
-    waitbar(i/length(EEG_INCR),f)
-end
-close(f);
-
-for i = 1:length(EEG_INCR)
+    if ~isfield(EEG_INCR(i), 'dipfit') || isempty(EEG_INCR(i).dipfit)
+        EEG_INCR(i).dipfit = ICA_INCR(i).tal_dipfit;
+        EEG_INCR(i).etc.ic_classification = ICA_INCR(i).classification;
+    end
     lowRV_inBrain = eeg_dipselect(EEG_INCR(i),rv,'inbrain');
     brainComps = []; % components identified as brain by ICLABEL
     for j = 1:length(EEG_INCR(i).dipfit.model)
@@ -137,10 +159,10 @@ for i = 1:length(EEG_INCR)
     end
     goodComps{i} = brainComps(ismember(brainComps, lowRV_inBrain));
     goodCompLength(i) = length(goodComps{i});
-    ICA_INCR(i).dipfit = EEG_INCR(i).dipfit;
     ICA_INCR(i).incr_comps = lowRV_inBrain;
 end
 
+%% find the increment with the most brain components
 uniqueCount = sort(unique(goodCompLength),"descend");
 good_incr_ind = find(ismember(goodCompLength,uniqueCount(1:3)));
 
@@ -151,8 +173,13 @@ else
 end
 
 ICA_STRUCT = ICA_INCR(diverseINCR);
+EEG_out = EEG_INCR(diverseINCR);
 %% creat a summary of the incremental dipoles & store in ICA_STRUCT
-for i = 1:length(EEG_INCR),ICA_STRUCT.incr_dipfit(i) = EEG_INCR(i).dipfit; end
+for i = 1:length(ICA_INCR)
+    ICA_STRUCT.incr_info.tal_dipfit(i) = ICA_INCR(i).tal_dipfit;
+    ICA_STRUCT.incr_info.classification(i) = ICA_INCR(i).classification;
+    ICA_STRUCT.incr_info.lowRV_inBrain_comps{i} = ICA_INCR(i).incr_comps;
+end
 ICA_STRUCT.most_brain_increments.candidate = good_incr_ind;
 ICA_STRUCT.most_brain_increments.selected_incr = diverseINCR;
 % for i = 1:length(STUDY.cluster), ICA_STRUCT.incr_cluster(i) = STUDY.cluster(i); end
