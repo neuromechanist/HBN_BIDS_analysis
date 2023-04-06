@@ -112,7 +112,11 @@ for i = 1:length(ica_fields)
         case 'classification'
             EEG.etc.ic_classification = ICA_STRUCT.classification;
         case 'dipfit'
-            EEG.dipfit = ICA_STRUCT.dipfit;
+            if isfield(ICA_STRUCT, 'tal_dipfit')
+                EEG.dipfit = ICA_STRUCT.tal_dipfit;
+            else
+                EEG.dipfit = ICA_STRUCT.dipfit;
+            end
     end
 end
 %check if need to re-ref
