@@ -12,7 +12,7 @@ close all; clc;
 fs = string(filesep)+string(filesep);
 
 if ~exist('subj','var') || isempty(subj), subj = "NDARAA948VFH"; else, subj = string(subj); end
-if ~exist('recompute','var') || isempty(recompute), recompute = 1; end % function does NOT recompute the best subset by default
+if ~exist('recompute','var') || isempty(recompute), recompute = 0; end % function does NOT recompute the best subset by default
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
@@ -43,31 +43,35 @@ f2l.sel_comps = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_rejbadchan
 addpath(genpath(p2l.codebase))
 
 %% load EEG
-EEG = pop_loadset( 'filename', char(f2l.alltasks), 'filepath', char(p2l.EEGsets));
-EEG = pop_chanedit(EEG, 'load', {char(f2l.elocs),'filetype','autodetect'});
+% NOT REQUIRED, EEG IS LOADED IN THE NEXT SECTION.
+% EEG = pop_loadset( 'filename', char(f2l.alltasks), 'filepath', char(p2l.EEGsets));
+% EEG = pop_chanedit(EEG, 'load', {char(f2l.elocs),'filetype','autodetect'});
 % eeglab redraw
 
 %% assesment of the increments, method1, ruuning ICALABEL
 % TLDR: The increment that reuslts in the most "brain" components likely
 % has the best the rejection threshold.
-
+    
 if ~exist(f2l.ICA_STRUCT,"file") || recompute
-    ICA_STRUCT = pick_diverse_ICA(EEG, p2l, f2l);
-    save(f2l.ICA_STRUCT,"ICA_STRUCT");
+    [ICA_STRUCT, EEG] = pick_diverse_ICA(p2l, f2l, subj, mergedSetName);
+    save(f2l.ICA_STRUCT, "-struct", "ICA_STRUCT");
 else
-    load(f2l.ICA_STRUCT,"ICA_STRUCT");
+    ICA_STRUCT = load(f2l.ICA_STRUCT);
+    selected_incr = ICA_STRUCT.most_brain_increments.selected_incr;
+    EEG = pop_loadset( 'filename', char(subj + "_" + mergedSetName + "_incr_" + string(selected_incr)+".set"),...
+        'filepath', char(p2l.ICA+"incr"+string(selected_incr)));
+    EEG = update_EEG(EEG, ICA_STRUCT, 1, 1, 0);
 end
-% Update to concatenated data w/o frame rejection
-EEG = update_EEG(EEG, ICA_STRUCT, false, 1, true);
 
 %% update to the frame-rejected data
+% NOT REQUIRED ANYMORE, AS EEG HAS REJECTED CHANS.
 % create an array of rejected frames compatible w/ eeg_eegrej
-rejFrame.raw = ICA_STRUCT.rej_frame_idx; % temporary rejected frames
-rejFrame.rowStart = [1 find(diff(rejFrame.raw) > 2)+1];
-for j = 1:length(rejFrame.rowStart)-1
-    rejFrame.final(j,:) = [rejFrame.raw(rejFrame.rowStart(j)) rejFrame.raw(rejFrame.rowStart(j+1)-1)];
-end
-EEG = eeg_eegrej(EEG,rejFrame.final);
+% rejFrame.raw = ICA_STRUCT.rej_frame_idx; % temporary rejected frames
+% rejFrame.rowStart = [1 find(diff(rejFrame.raw) > 2)+1];
+% for j = 1:length(rejFrame.rowStart)-1
+%     rejFrame.final(j,:) = [rejFrame.raw(rejFrame.rowStart(j)) rejFrame.raw(rejFrame.rowStart(j+1)-1)];
+% end
+% EEG = eeg_eegrej(EEG,rejFrame.final);
 
 %% method 2, MIR
 % TLDR, the best ICA is perfromed when the mutual information reduction
@@ -81,12 +85,7 @@ EEG = eeg_eegrej(EEG,rejFrame.final);
 % components.
 
 
-%% run ICLabel & Brodmann area assignment
-EEG = iclabel(EEG, 'default');
-% EEG.etc has ic_classification struct that is nicely used for ICLabel and
-% showing the labels on pop_viewprops, so to find and assign Brodmann areas
-% we can also use the same structure and maybe update the labels.
-EEG = talLookup(EEG);
+%% look into ICLabel & Brodmann area assignment
 % define pop_viewprops variables
 typecomp = 0; % 0 for component, 1 for channel
 chanorcomp = ICA_STRUCT.incr_comps; % all inBrain comps should be plotted
