@@ -1,4 +1,4 @@
-function EEG = talLookup(EEG,confusion_sphere)
+function EEG = talLookup(EEG,confusion_sphere, tal_jar_path)
 %
 % This funtion is originally EEGLAB.MPT.eeg_lookup_talairach, modified to
 % be used in compatibitiy w/ EEGLAB, specifically with ICLabel and
@@ -57,14 +57,14 @@ function EEG = talLookup(EEG,confusion_sphere)
 
 %% initialize
 BA_nums = 52;
-if ~exist('confusion_sphere','var') || isempty(confusion_sphere)
-    confusion_sphere = 10; end
+if ~exist('confusion_sphere','var') || isempty(confusion_sphere), confusion_sphere = 10; end
+if ~exist('tal_jar_path','var') || isempty(tal_jar_path), tal_jar_path = ''; end
 
 if ~exist('org.talairach.Database','class')
-    javaaddpath(['funcs' filesep 'general' filesep 'talairach.jar']); end
+    javaaddpath([tal_jar_path 'talairach.jar']); end
 
 db = org.talairach.Database;
-db.load(['funcs' filesep 'talairach.nii']);
+db.load(['general' filesep 'talairach.nii']);
 
 % create a second ic_classification system
 EEG.etc.ic_classification.tal_coord.version = 'default';
