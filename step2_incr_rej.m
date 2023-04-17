@@ -120,7 +120,7 @@ for i = 1:length(ICA_INCR)
 %     floatwrite(double(EEG2write.data), f2l.float); % This only wirte the fdt file, but we might need to use the full set file later.
     pop_saveset(EEG2write, 'filename', char(EEG2write.setname), 'filepath', char(p2l.incr), 'savemode', 'twofiles');
     writeParam(i).pnts = EEG2write.pnts;
-    writeParam(i).nbchan = EEG2write.nbchan;f
+    writeParam(i).nbchan = EEG2write.nbchan;
     if gTD
     figure("Name","Bad channels and frames rejected, increment No. " + string(i)); % spectopo plots.
     pop_spectopo(EEG2write, 1, [0 EEG2write.times(end)], 'EEG' ,'percent',100,'freq', [6 10 22], 'freqrange',[2 200],'electrodes','off');
