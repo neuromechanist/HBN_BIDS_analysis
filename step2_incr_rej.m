@@ -116,7 +116,7 @@ for i = 1:length(ICA_INCR)
     EEG2write = pop_reref(EEG2write, [], 'keepref', 'on');
     EEG2write = eeg_eegrej(EEG2write,rejFrame(i).final);
     EEG2write.setname = subj + "_" + mergedSetName + "_incr_" + string(i);
-    disp("Writing float data file for incr. No " + string(i));
+    disp("Saving the dataset for incr. No " + string(i));
 %     floatwrite(double(EEG2write.data), f2l.float); % This only wirte the fdt file, but we might need to use the full set file later.
     pop_saveset(EEG2write, 'filename', char(EEG2write.setname), 'filepath', char(p2l.incr), 'savemode', 'twofiles');
     writeParam(i).pnts = EEG2write.pnts;

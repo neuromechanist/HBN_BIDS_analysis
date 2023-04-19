@@ -90,7 +90,9 @@ for i = foldName
 end
 
 %% incremental dipfit
-% saving takes way more than running the loop. NEVER save here.
+% saving takes way more than running the loop. NEVER save here. But, if you
+% include the icalble processing in the saved dataset, then it worths
+% saving.
 if ~exist(f2l.classify, 'file') || ~load_existing
     m = gcp('nocreate');
     if isempty(m) || m.NumWorkers < 2
@@ -134,7 +136,7 @@ if ~exist(f2l.classify, 'file') || ~load_existing
     
     for i = 1:length(EEG_INCR)
         ICA_INCR(i).dipfit = EEG_INCR(i).dipfit;
-        EEG_INCR(i) = talLookup(EEG_INCR(i));
+        EEG_INCR(i) = talLookup(EEG_INCR(i),[],p2l.codebase+"funcs/general/");
         ICA_INCR(i).tal_dipfit = EEG_INCR(i).dipfit;
         ICA_INCR(i).classification = EEG_INCR(i).etc.ic_classification;     
     end
