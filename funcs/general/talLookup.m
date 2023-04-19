@@ -61,10 +61,10 @@ if ~exist('confusion_sphere','var') || isempty(confusion_sphere), confusion_sphe
 if ~exist('tal_jar_path','var') || isempty(tal_jar_path), tal_jar_path = ''; end
 
 if ~exist('org.talairach.Database','class')
-    javaaddpath([tal_jar_path 'talairach.jar']); end
+    javaaddpath([char(tal_jar_path) 'talairach.jar']); end
 
 db = org.talairach.Database;
-db.load(['general' filesep 'talairach.nii']);
+db.load([char(tal_jar_path) 'talairach.nii']);
 
 % create a second ic_classification system
 EEG.etc.ic_classification.tal_coord.version = 'default';
