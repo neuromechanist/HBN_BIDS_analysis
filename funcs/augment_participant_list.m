@@ -28,21 +28,22 @@ plist = readtable(participant_list, "FileType", "text");
 plist(isnan(plist{:,"Sex"}),:)=[]; % exlude the participatn if their gender is missing.
 eegfiles = readtable(eeg_content, "FileType", "text", "DatetimeType", "text", ...
     "ReadVariableNames", false, "NumHeaderLines", 0);
-eegfiles{end+1,"Var1"} = eegfiles{end,"Var1"}; eegfiles{end,"Var3"} = NaN;
+eegfiles.Properties.VariableNames = ["date", "time", "filesize", "filename"];
+eegfiles{end+1,"date"} = eegfiles{end,"date"}; eegfiles{end,"filesize"} = NaN;
 %% augment the table
 for p = transpose(string(plist.participant_id))
-    pindex = find(eegfiles.Var1==p);
+    pindex = find(eegfiles.date==p); % participant's name in the eeg_content file
     if ~isempty(pindex) % the participant might not be in the eeg-content file!
         endofp = 0; i = 1;
         while endofp == 0
             for t = all_eeg_tasks
-                if contains(eegfiles{pindex+i, "Var4"}, t)
-                    plist{plist.participant_id==p, t} = 1;
+                if contains(eegfiles{pindex+i, "filename"}, t)
+                    plist{plist.participant_id==p, t} = eegfiles{pindex+i, "filesize"};
                     break;
                 end
             end
             i = i +1;
-            if isnan(eegfiles.Var3(pindex+i))
+            if isnan(eegfiles.filesize(pindex+i))
                 endofp = 1;
             end
         end
@@ -57,4 +58,4 @@ column_order = [["subj_no", "participant_id", "release_number", "Sex", "Age",...
 augmented_list = plist(:,column_order);
 
 % now write the table
-writetable(augmented_list, "participants_augmented.tsv", "FileType","text");
+writetable(augmented_list, "tsv/participants_augmented_filesize.tsv", "FileType","text");
