@@ -19,18 +19,10 @@ for dir in "$1"/incr0*; do
     continue
   fi
 
-  # Get the directory name without the path
-  dirname=$(basename "$dir")
+  # Get the new directory name by replacing the "0" with an empty string
+  newdir=${dir/0/}
 
-  # Replace the "0" in "incr0" with an empty string
-  newname=${dirname/0/}
-
-  # Get the new full path by replacing only the directory name
-  newdir=$(dirname "$dir")/"$newname"
-
-  # Move the contents of the directory to the new directory
-  mv -v "$dir"/* "$newdir"
-
-  # Remove the old directory
-  rmdir "$dir"
+  # Rename the directory
+  mv "$dir" "$newdir"
 done
+

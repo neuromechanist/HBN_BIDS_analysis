@@ -32,8 +32,7 @@ for p = participant_list
     p2l.incr0 = p2l.eegRepo + p + fs + "ICA" + fs + "incr0" + fs;
     f2l.ICA_STRUCT.(p) = p2l.incr0 + p + "_" + mergedSetName + "_ICA_STRUCT_rejbadchannels_diverse_incr_comps.mat";
     try
-        temp_file = load(f2l.ICA_STRUCT.(p), "temp_ict");
-        ICA_STRUCT.(p) = temp_file.temp_ict;
+        ICA_STRUCT.(p) = load(f2l.ICA_STRUCT.(p));
     catch
         unavailable_participants = [unavailable_participants p];
         participant_list(participant_list==p) = [];
@@ -111,10 +110,10 @@ for p = participant_list
     k(end+1) = ICA_STRUCT.(p).k;
     incr_number(end+1) = ICA_STRUCT.(p).most_brain_increments.selected_incr;
 
-    braincomps.(p).ninety = find(ICA_STRUCT.(p).iclabel.ICLabel.classifications(:,1)>0.9);
-    braincomps.(p).eighty = find(ICA_STRUCT.(p).iclabel.ICLabel.classifications(:,1)>0.8);
-    braincomps.(p).seventy = find(ICA_STRUCT.(p).iclabel.ICLabel.classifications(:,1)>0.7);
-    braincomps.(p).sixty = find(ICA_STRUCT.(p).iclabel.ICLabel.classifications(:,1)>0.6);
+    braincomps.(p).ninety = find(ICA_STRUCT.(p).classification.ICLabel.classifications(:,1)>0.9);
+    braincomps.(p).eighty = find(ICA_STRUCT.(p).classification.ICLabel.classifications(:,1)>0.8);
+    braincomps.(p).seventy = find(ICA_STRUCT.(p).classification.ICLabel.classifications(:,1)>0.7);
+    braincomps.(p).sixty = find(ICA_STRUCT.(p).classification.ICLabel.classifications(:,1)>0.6);
     braincomp_count.ninety(participant_list==p) = length(braincomps.(p).ninety);
     braincomp_count.eighty(participant_list==p) = length(braincomps.(p).eighty);
     braincomp_count.seventy(participant_list==p) = length(braincomps.(p).seventy);

@@ -7,17 +7,17 @@ function step3_incr_dipfit_eval(subj, recompute, platform, machine, no_process)
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% initialize
-clearvars -except subj gTD saveFloat expanse platform machine no_process run_incr_ICA
+clearvars -except subj recompute platform machine no_process
 close all; clc;
 fs = string(filesep)+string(filesep);
 
 if ~exist('subj','var') || isempty(subj), subj = "NDARAA948VFH"; else, subj = string(subj); end
-if ~exist('recompute','var') || isempty(recompute), recompute = 0; end % function does NOT recompute the best subset by default
+if ~exist('recompute','var') || isempty(recompute), recompute = 1; end % function does NOT recompute the best subset by default
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
 if ~exist('no_process','var') || isempty(no_process), no_process = 12; end
-
+load_existing_iclabel = ~recompute;
 mergedSetName = "everyEEG";
 
 if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
@@ -34,9 +34,9 @@ f2l.alltasks = subj + "_" + mergedSetName + ".set"; % as an Exception, path is N
 f2l.icaStruct = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_" + "incremental";
 f2l.icaIncr = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_INCR_" + "incremental";
 f2l.elocs = p2l.codebase + "funcs" + fs + "GSN_HydroCel_129_AdjustedLabels.sfp";
-f2l.HDM = p2l.eeglab + "plugins" + fs + "dipfit4.3" + fs + "standard_BEM" + fs + "standard_vol.mat";
-f2l.MRI = p2l.eeglab + "plugins" + fs + "dipfit4.3" + fs + "standard_BEM" + fs + "standard_mri.mat";
-f2l.chan = p2l.eeglab + "plugins" + fs + "dipfit4.3" + fs + "standard_BEM" + fs + "elec" + fs + "standard_1005.elc";
+f2l.HDM = p2l.eeglab + "plugins" + fs + "dipfit5.2" + fs + "standard_BEM" + fs + "standard_vol.mat";
+f2l.MRI = p2l.eeglab + "plugins" + fs + "dipfit5.2" + fs + "standard_BEM" + fs + "standard_mri.mat";
+f2l.chan = p2l.eeglab + "plugins" + fs + "dipfit5.2" + fs + "standard_BEM" + fs + "elec" + fs + "standard_1005.elc";
 f2l.ICA_STRUCT = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_rejbadchannels_diverse_incr_comps.mat";
 f2l.sel_comps = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_rejbadchannels_diverse_select_comps.mat";
 
@@ -53,7 +53,7 @@ addpath(genpath(p2l.codebase))
 % has the best the rejection threshold.
     
 if ~exist(f2l.ICA_STRUCT,"file") || recompute
-    [ICA_STRUCT, EEG] = pick_diverse_ICA(p2l, f2l, subj, mergedSetName);
+    [ICA_STRUCT, EEG] = pick_diverse_ICA(p2l, f2l, subj, mergedSetName,load_existing_iclabel);
     save(f2l.ICA_STRUCT, "-struct", "ICA_STRUCT");
 else
     ICA_STRUCT = load(f2l.ICA_STRUCT);
