@@ -1,6 +1,10 @@
 #!/bin/bash
 for i in $(cat subjs_to_analyze.txt); do
 # echo $i  # sanity check
-sbatch -J $i --export=ALL,i=$i /home/sshirazi/_git/HBN_BIDS_analysis/funcs/slurm/run_step3.slurm
+
+# in case that this run step is for re-processing of step3, there is a need to rename some folders.
+sh rename_incr.sh "/home/sshirazi/HBN_EEG/$i/ICA/"
+
+sbatch -J $i --export=ALL,i=$i /home/sshirazi/_git/HBN_BIDS_analysis/funcs/slurm/run_step.slurm
 sleep 3m
 done
