@@ -1,5 +1,5 @@
 #!/bin/bash
-for i in $(cat subjs_to_analyze.txt); do
+for i in $(cat leftout_subjs_step3.txt); do
 # echo $i  # sanity check
 
 # in case that this run step is for re-processing of step3, there is a need to rename some folders.
