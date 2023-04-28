@@ -19,6 +19,9 @@ if ~exist('only_with_Raw_present','var') || isempty(only_with_Raw_present), only
 
 EEG_files_path = "~/HBN_EEG/";
 
+target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK"];
+task_name_forBIDS = {'RestingState', 'DespicableMe', 'FunwithFractals', 'ThePresent', 'DiaryOfAWimpyKid'};
+
 p2l = init_paths("linux", "expanse", "HBN", 1, 1);
 addpath(genpath(p2l.codebase))
 
@@ -58,6 +61,24 @@ for f = string(fieldnames(ICA_STRUCT)')
        EEG.setname = char(BIDS_filename);
        pop_saveset(EEG, 'filename', char(BIDS_filename), 'filepath', char(BIDS_filepath),...
            'savemode', 'twofiles');
+    end
+end
+
+%% save individual datasets as well
+for f = string(fieldnames(ICA_STRUCT)')
+    if isstruct(ICA_STRUCT.(f))
+       EEG_path = EEG_files_path + f + "/EEG_sets/";
+       for t = 1:length(target_tasks)
+           EEG = [];
+           EEG_file = f + "_" + target_tasks(t) + ".set";           
+           EEG = pop_loadset('filename', char(EEG_file), 'filepath', char(EEG_path));
+           EEG = update_EEG(EEG, ICA_STRUCT.(f), true);
+           BIDS_filename = "sub-"+ f + "_task-" + task_name_forBIDS(t) + "_eeg";
+           BIDS_filepath = BIDS_path + "derivatives/" + deriv_name + "/sub-" + f + "/eeg/";
+           EEG.setname = char(BIDS_filename);
+           pop_saveset(EEG, 'filename', char(BIDS_filename), 'filepath', char(BIDS_filepath),...
+               'savemode', 'twofiles');
+       end
     end
 end
 
