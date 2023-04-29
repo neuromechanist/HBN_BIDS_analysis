@@ -30,30 +30,35 @@ if ~exist('no_process','var') || isempty(no_process), no_process = 18; end
 if ~exist('run_ICA','var') || isempty(run_ICA), run_ICA = 1; end
 
 mergedSetName = "everyEEG";
-if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
+% if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
 
 %% construct necessary paths and files & adding paths
 addpath(genpath(fPath))
 p2l = init_paths(platform, machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
-p2l.EEGsets = p2l.eegRepo + subj + fs + "EEG_sets" + fs; % Where .set files are saved
 p2l.ICA = p2l.eegRepo + subj + fs + "ICA" + fs; % Where you want to save your ICA files
 p2l.incr0 = p2l.ICA + "incr0" + fs; % pre-process directory
 p2l.mAmica = p2l.ICA + "mAmica" + fs;
 if ~isfolder(p2l.mAmica), mkdir(p2l.mAmica); end
 
-f2l.alltasks = subj + "_" + mergedSetName + ".set"; % as an Exception, path is NOT included
 f2l.ICA_STRUCT = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_rejbadchannels_diverse_incr_comps.mat";
-f2l.elocs = p2l.codebase + "funcs" + fs + "GSN_HydroCel_129_AdjustedLabels.sfp";
 f2l.float = subj + "_" + mergedSetName + "_sel_incr.fdt"; % as an Exception, path is NOT included
 
 addpath(genpath(p2l.codebase))
 
 %% load EEG
-EEG = pop_loadset( 'filename', char(f2l.alltasks), 'filepath', char(p2l.EEGsets));
-EEG = pop_chanedit(EEG, 'load', {char(f2l.elocs),'filetype','autodetect'});
+% The best dataset should be used. Also, there is no need to resave the
+% float file
+ICA_STRUCT = load(f2l.ICA_STRUCT);
+set_to_load = string(ICA_STRUCT.most_brain_increments.selected_incr);
+if str2double(set_to_load) < 10, pathnum_to_load = "0" + set_to_load;
+else, pathnum_to_load = string(set_to_load);
+end
+EEG_path = p2l.ICA+ "/incr" + pathnum_to_load + "/";
+EEG_file = subj + "_everyEEG_incr_" + set_to_load + ".set";
+
+EEG = pop_loadset( 'filename', char(EEG_file), 'filepath', char(EEG_path));
 % eeglab redraw
-load(f2l.ICA_STRUCT,"ICA_STRUCT");
-EEG = update_EEG(EEG, ICA_STRUCT);
+EEG = update_EEG(EEG, ICA_STRUCT,1);
 
 %% setup files and parameters for AMICA with multiple models
 if saveFloat
@@ -70,7 +75,7 @@ if saveFloat
         expanse_opts = ["files",p2l.mAmica + f2l.float_lin,"outdir", p2l.incr + "amicaout/"];
         general_opts = ["data_dim", string(EEG.nbchan),...
             "field_dim", string(EEG.pnts), "pcakeep", string(EEG.nbchan-1),...
-            "numprocs", 1, "max_threads", 30, "block_size", 1024, "do_opt_block", 0,...
+            "numprocs", 1, "max_threads", 60, "block_size", 1024, "do_opt_block", 0,...
             "doPCA", 1, "writestep", 200, "do_history", 0, "histstep", 200,...
             "num_models", i, "num_mix_comps", 3,...
             "do_reject", amica_frame_rej, "numrej", 5, "rejstart", 1, "rejint", 3, "rejsig", 3.01];
@@ -89,10 +94,11 @@ end
 for i = model_count
     opt = [];
     p2l.incr = p2l.mAmica + "m" + string(i) + fs; % path to save .slurm file
+    if ~exist(p2l.incr,'dir'), mkdir(p2l.incr); end
     f2l.SLURM = p2l.incr + subj + "_m" + string(i) + "_amica_expanse";
     f2l.param_stokes = p2l.incr + subj + "_" + mergedSetName + "_m" + string(i) + "_expanse.param";
     opt.file = f2l.SLURM; opt.jobName = "mamc_" + subj + "_" + string(i);
-    opt.partition = "shared"; opt.account = "csd403"; opt.maxThreads = 32; % param file max_threads + 2
+    opt.partition = "shared"; opt.account = "csd403"; opt.maxThreads = 64; % param file max_threads + 2
     opt.email = "syshirazi@ucsd.edu"; opt.memory = opt.maxThreads*2;
     opt.walltime = "03:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
     opt.incr_path = p2l.incr;
