@@ -1,4 +1,4 @@
-function step4_perform_multiple_amica(subj, model_count, amica_frame_rej, platform, machine, gTD, saveFloat, no_process, run_ICA)
+function step4_perform_multiple_amica(subj, model_count, amica_frame_rej, platform, machine, saveFloat, run_ICA, num_prior)
 %step4_perform-multiple-amica perfoming multiple AMICA with different priors.
 %   Run and evaluate multi-model AMICA on datasets with multiple
 %   experiments concatenated together.
@@ -7,7 +7,7 @@ function step4_perform_multiple_amica(subj, model_count, amica_frame_rej, platfo
 % (c) Seyed Yahya Shirazi, 02/2023 UCSD, INC, SCCN
 
 %% initialize
-clearvars -except subj model_count amica_frame_rej platform machine gTD saveFloat no_process run_ICA
+clearvars -except subj model_count amica_frame_rej platform machine saveFloat run_ICA
 close all; clc;
 fs = string(filesep)+string(filesep);
 fPath = split(string(mfilename("fullpath")),string(mfilename));
@@ -19,25 +19,21 @@ if ~exist('amica_frame_rej','var') || isempty(amica_frame_rej), amica_frame_rej 
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
-% "gTD" : going to detail, usually only lets the function to create plots. Default is 1.
-if ~exist('gTD','var') || isempty(gTD), gTD = 1; end
 % method all together to re-write parameter or batch files, Default is 1.
 if ~exist('saveFloat','var') || isempty(saveFloat), saveFloat = 1; end
-% if the code is being accessed from Expanse
-if ~exist('machine','var') || isempty(machine), machine = "sccn"; else, machine = string(machine); end
-if ~exist('no_process','var') || isempty(no_process), no_process = 18; end
 % if run AMICA on the shell which matlab is running on in the end
 if ~exist('run_ICA','var') || isempty(run_ICA), run_ICA = 1; end
+% number of priors
+if ~exist('num_prior','var') || isempty(num_prior), num_prior = string(1); else num_prior = string(num_prior); end
 
 mergedSetName = "everyEEG";
-% if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
 
 %% construct necessary paths and files & adding paths
 addpath(genpath(fPath))
 p2l = init_paths(platform, machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
 p2l.ICA = p2l.eegRepo + subj + fs + "ICA" + fs; % Where you want to save your ICA files
 p2l.incr0 = p2l.ICA + "incr0" + fs; % pre-process directory
-p2l.mAmica = p2l.ICA + "mAmica" + fs;
+p2l.mAmica = p2l.ICA + "mAmica_" + num_prior + fs;
 if ~isfolder(p2l.mAmica), mkdir(p2l.mAmica); end
 
 f2l.ICA_STRUCT = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_rejbadchannels_diverse_incr_comps.mat";
@@ -75,9 +71,9 @@ if saveFloat
         expanse_opts = ["files",p2l.mAmica + f2l.float_lin,"outdir", p2l.incr + "amicaout/"];
         general_opts = ["data_dim", string(EEG.nbchan),...
             "field_dim", string(EEG.pnts), "pcakeep", string(EEG.nbchan-1),...
-            "numprocs", 1, "max_threads", 60, "block_size", 1024, "do_opt_block", 0,...
-            "doPCA", 1, "writestep", 200, "do_history", 0, "histstep", 200,...
-            "num_models", i, "num_mix_comps", 3,...
+            "numprocs", 1, "max_threads", 60, "block_mamc_NDARBA839HLG_6.outsize", 1024, "do_opt_block", 0,...
+            "doPCA", 1, "writestep", 100, "do_history", 1, "histstep", 200,...
+            "num_models", i, "num_mix_comps", str2num(num_prior),...
             "do_reject", amica_frame_rej, "numrej", 5, "rejstart", 1, "rejint", 3, "rejsig", 3.01];
 
         write_amica_param(f2l.param_lin,[linux_opts, general_opts]);
@@ -88,7 +84,7 @@ end
 
 %% write SDSC Expanse shell
 % However, amica is recompiled for expanse, and it is amica15ex. Still, I'd
-% rather running 32 tasks/core for now, and using shared partition to be
+% rather running 64 tasks/core for now, and using shared partition to be
 % able to submit upto 4096 jobs.
 % write batch files for each increment
 for i = model_count
@@ -100,7 +96,7 @@ for i = model_count
     opt.file = f2l.SLURM; opt.jobName = "mamc_" + subj + "_" + string(i);
     opt.partition = "shared"; opt.account = "csd403"; opt.maxThreads = 64; % param file max_threads + 2
     opt.email = "syshirazi@ucsd.edu"; opt.memory = opt.maxThreads*2;
-    opt.walltime = "03:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
+    opt.walltime = "05:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
     opt.incr_path = p2l.incr;
     write_AMICA_SLURM_file(opt);
 end
@@ -119,7 +115,7 @@ fclose(fid);
 % increments as soon as the float files, param files and shell files are
 % created.
 if run_ICA
-    system(sprintf("sh ~/HBN_EEG/%s/ICA/mAmica/%s_expanse_batch", subj, subj))
+    system(sprintf("sh ~/HBN_EEG/%s/ICA/mAmica_%s/%s_expanse_batch", subj, num_prior, subj));
 end
 
 function write_AMICA_SLURM_file(opt)

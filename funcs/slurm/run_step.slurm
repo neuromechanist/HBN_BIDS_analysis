@@ -2,19 +2,25 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH -c 64
-#SBATCH --mem=128G
-#SBATCH -t 03:00:00
+#SBATCH -c 8
+#SBATCH --mem=16G
+#SBATCH -t 00:30:00
 #SBATCH -A csd403
-#SBATCH -o /home/sshirazi/runlog/icl_%x.out
-#SBATCH -e /home/sshirazi/runlog/icl_%x.err
+#SBATCH -o /home/sshirazi/runlog/s4_%x.out
+#SBATCH -e /home/sshirazi/runlog/s4_%x.err
 
 # echo $1
 cd /home/sshirazi/_git/HBN_BIDS_analysis
 module load cpu  matlab
 # export MV2_ENABLE_AFFINITY=0
-matlab -nodisplay -r "step3_incr_dipfit_eval('$i', 1, 'linux', 'expanse', 12)"
 
+# step 4
+matlab -nodisplay -r "step4_perform_multiple_amica('$i', [], [], [], [], 1, 1, 3)"
+
+# step 3
+# matlab -nodisplay -r "step3_incr_dipfit_eval('$i', 1, 'linux', 'expanse', 12)"
+
+# step2
 # if you just run ICA on expanse
 #  matlab -nodisplay -r "step2_incr_rej('$i', 0, 1, 0, 'linux', 'expanse', 0, 0);"
 
