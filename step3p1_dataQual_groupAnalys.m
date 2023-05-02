@@ -130,7 +130,7 @@ ylabel("number of dipoles")
 %% Brodmann area distibution of the brian components
 brain_percentage = ["sixty", "seventy", "eighty", "ninety"];
 figure('Renderer', 'painters');
-tiledlayout(2,2, 'Padding', 'compact', 'TileSpacing', 'compact'); 
+% tiledlayout(2,2, 'Padding', 'compact', 'TileSpacing', 'compact'); 
 for b = brain_percentage
     local_brodmann = zeros(1,52); % first determine whcih BAs are represented for each person.
     for p = string(fieldnames(rej_chans))'
@@ -143,17 +143,35 @@ for b = brain_percentage
         end
     end
     brodmann_dist.(b) = local_brodmann;
-    nexttile
-    bar(brodmann_dist.(b)(1:47))
-    title(b + " percent");
-    xlabel("BA");
-    xticks(1:47)
-    xticklabels(string(1:47))
+%     nexttile
+%     bar(brodmann_dist.(b)(1:47))
+%     title(b + " percent");
+%     xlabel("BA");
+%     xticks(1:47)
+%     xticklabels(string(1:47))
 %     xtickangle(45)
-    ylabel("number of subjects")
-    ylim([0,length(string(fieldnames(rej_chans)))])
+%     ylabel("number of subjects")
+%     ylim([0,length(string(fieldnames(rej_chans)))])
 end
-sgtitle("BA distribution across the group and brain-classification probablity")
+% sgtitle("BA distribution across the group and brain-classification probablity")
+
+brodmann_dist.stacked = [brodmann_dist.ninety',(brodmann_dist.eighty - brodmann_dist.ninety)',...
+    (brodmann_dist.seventy - brodmann_dist.eighty)', (brodmann_dist.sixty - brodmann_dist.seventy)'];
+
+% figure('Renderer', 'painters');
+bar(brodmann_dist.stacked, 'stacked');
+xlabel("Brodmann Area");
+xticks(1:47)
+xlim([0.5 47.5])
+xticklabels(string(1:47))
+xtickangle(45)
+ylabel("number of subjects")
+ylim([0,length(string(fieldnames(rej_chans)))])
+legend(fliplr(brain_percentage))
+title("BA distribution across the group and brain-classification probablity")
+
+set(gca,'box','off')
+
 %% number of rejected elecrtods
 figure
 boxplot(rej_elec_count,'Notch','on','Labels',{'number of rejected electrode'},'Whisker',1)
