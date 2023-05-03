@@ -158,7 +158,6 @@ end
 brodmann_dist.stacked = [brodmann_dist.ninety',(brodmann_dist.eighty - brodmann_dist.ninety)',...
     (brodmann_dist.seventy - brodmann_dist.eighty)', (brodmann_dist.sixty - brodmann_dist.seventy)'];
 
-% figure('Renderer', 'painters');
 bar(brodmann_dist.stacked, 'stacked');
 xlabel("Brodmann Area");
 xticks(1:47)
