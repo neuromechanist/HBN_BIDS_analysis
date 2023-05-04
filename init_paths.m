@@ -8,7 +8,7 @@ function p2l = init_paths(platform, subplat, project, init_eeglab, have_gui)
 %   (c) Seyed Yahya Shirazi, 01/2023, UCSD, INC, SCCN
 
 %% initialize
-if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
+if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end % this is retired now 5/3/23
 if ~exist('subplat','var') || isempty(subplat), subplat = "sccn"; else, subplat = string(subplat); end
 if ~exist('project','var') || isempty(project), project = "HBN"; else, project = string(project); end
 if ~exist('init_eeglab','var') || isempty(init_eeglab), init_eeglab = true; end
@@ -16,23 +16,28 @@ if ~exist('have_gui','var') || isempty(have_gui), have_gui = true; end
 
 %% Set up the paths
 if project == "HBN"
-   if platform == "linux"
-       if subplat == "sccn", prefix = "/data/qumulo/";
-       elseif subplat == "expanse", prefix = "/expanse/projects/nemar/";
-       end
-       p2l.raw = prefix + "yahya/HBN/R3/";  % Original data from CMI
-       p2l.eegRepo = prefix + "yahya/HBN/EEG/";  % EEG data repo
-       p2l.eeglab = prefix + "yahya/_git/eeglab_dev/";
-       p2l.codebase = prefix + "yahya/_git/HBN_BIDS_analysis/";
-   end
-   if platform == "mac"
+   if ismac
         p2l.raw = "/Volumes/Yahya/Datasets/HBN/EEG/";
         p2l.eegRepo = p2l.raw; % Data is saved in the same directory
         p2l.eeglab = "/Users/yahya/Documents/git/eeglab_dev/";
         p2l.codebase = "/Users/yahya/Documents/git/HBN_BIDS_analysis";
+   elseif isunix
+       if subplat == "sccn", prefix = "/data/qumulo/";
+       elseif subplat == "expanse", prefix = "/expanse/projects/nemar/";
+       end
+       p2l.raw = prefix + "yahya/HBN_fulldataset/";  % Original data from CMI
+       p2l.eegRepo = prefix + "yahya/HBN/EEG/";  % EEG data repo
+       p2l.eeglab = prefix + "yahya/_git/eeglab_dev/";
+       p2l.codebase = prefix + "yahya/_git/HBN_BIDS_analysis/";
+   elseif ispc
+        p2l.raw = "Y://yahya//HBN_fulldataset/";
+        p2l.eegRepo = "Y://yahya//HBN//EEG/";
+        p2l.eeglab = "C://_git/eeglab_dev/";
+        p2l.codebase = "C://_git/HBN_BIDS_analysis/";
+   else
+       error("unknown platform, please take a look")
    end
 end
-
 
 %% Start eeglab
 if init_eeglab

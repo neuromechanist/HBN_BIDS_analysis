@@ -24,7 +24,7 @@ if ~exist('saveFloat','var') || isempty(saveFloat), saveFloat = 1; end
 % if run AMICA on the shell which matlab is running on in the end
 if ~exist('run_ICA','var') || isempty(run_ICA), run_ICA = 1; end
 % number of priors
-if ~exist('num_prior','var') || isempty(num_prior), num_prior = string(1); else num_prior = string(num_prior); end
+if ~exist('num_prior','var') || isempty(num_prior), num_prior = string(3); else, num_prior = string(num_prior); end
 
 mergedSetName = "everyEEG";
 
@@ -71,7 +71,7 @@ if saveFloat
         expanse_opts = ["files",p2l.mAmica + f2l.float_lin,"outdir", p2l.incr + "amicaout/"];
         general_opts = ["data_dim", string(EEG.nbchan),...
             "field_dim", string(EEG.pnts), "pcakeep", string(EEG.nbchan-1),...
-            "numprocs", 1, "max_threads", 60, "block_mamc_NDARBA839HLG_6.outsize", 1024, "do_opt_block", 0,...
+            "numprocs", 1, "max_threads", 120, "block_mamc_NDARBA839HLG_6.outsize", 1024, "do_opt_block", 0,...
             "doPCA", 1, "writestep", 100, "do_history", 1, "histstep", 200,...
             "num_models", i, "num_mix_comps", str2num(num_prior),...
             "do_reject", amica_frame_rej, "numrej", 5, "rejstart", 1, "rejint", 3, "rejsig", 3.01];
@@ -94,7 +94,7 @@ for i = model_count
     f2l.SLURM = p2l.incr + subj + "_m" + string(i) + "_amica_expanse";
     f2l.param_stokes = p2l.incr + subj + "_" + mergedSetName + "_m" + string(i) + "_expanse.param";
     opt.file = f2l.SLURM; opt.jobName = "mamc_" + subj + "_" + string(i);
-    opt.partition = "shared"; opt.account = "csd403"; opt.maxThreads = 64; % param file max_threads + 2
+    opt.partition = "shared"; opt.account = "csd403"; opt.maxThreads = 128; % param file max_threads + 2
     opt.email = "syshirazi@ucsd.edu"; opt.memory = opt.maxThreads*2;
     opt.walltime = "05:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
     opt.incr_path = p2l.incr;
