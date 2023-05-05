@@ -27,13 +27,13 @@ if ~exist('run_ICA','var') || isempty(run_ICA), run_ICA = 1; end
 if ~exist('num_prior','var') || isempty(num_prior), num_prior = string(3); else, num_prior = string(num_prior); end
 
 mergedSetName = "everyEEG";
-
+process_params = "256c_b1024";
 %% construct necessary paths and files & adding paths
 addpath(genpath(fPath))
 p2l = init_paths(platform, machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
 p2l.ICA = p2l.eegRepo + subj + fs + "ICA" + fs; % Where you want to save your ICA files
 p2l.incr0 = p2l.ICA + "incr0" + fs; % pre-process directory
-p2l.mAmica = p2l.ICA + "mAmica_" + num_prior + fs;
+p2l.mAmica = p2l.ICA + "mAmica_" + num_prior +"p_" + process_params + fs;
 if ~isfolder(p2l.mAmica), mkdir(p2l.mAmica); end
 
 f2l.ICA_STRUCT = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_rejbadchannels_diverse_incr_comps.mat";
@@ -71,8 +71,8 @@ if saveFloat
         expanse_opts = ["files",p2l.mAmica + f2l.float_lin,"outdir", p2l.incr + "amicaout/"];
         general_opts = ["data_dim", string(EEG.nbchan),...
             "field_dim", string(EEG.pnts), "pcakeep", string(EEG.nbchan-1),...
-            "numprocs", 1, "max_threads", 120, "block_mamc_NDARBA839HLG_6.outsize", 1024, "do_opt_block", 0,...
-            "doPCA", 1, "writestep", 100, "do_history", 1, "histstep", 200,...
+            "numprocs", 2, "max_threads", 120, "block_size", 2048, "do_opt_block", 0,...
+            "doPCA", 1, "writestep", 100, "do_history", 1, "histstep", 100,...
             "num_models", i, "num_mix_comps", str2num(num_prior),...
             "do_reject", amica_frame_rej, "numrej", 5, "rejstart", 1, "rejint", 3, "rejsig", 3.01];
 
@@ -94,8 +94,8 @@ for i = model_count
     f2l.SLURM = p2l.incr + subj + "_m" + string(i) + "_amica_expanse";
     f2l.param_stokes = p2l.incr + subj + "_" + mergedSetName + "_m" + string(i) + "_expanse.param";
     opt.file = f2l.SLURM; opt.jobName = "mamc_" + subj + "_" + string(i);
-    opt.partition = "shared"; opt.account = "csd403"; opt.maxThreads = 128; % param file max_threads + 2
-    opt.email = "syshirazi@ucsd.edu"; opt.memory = opt.maxThreads*2;
+    opt.partition = "compute"; opt.account = "csd403"; opt.maxThreads = 128; % param file max_threads + 2
+    opt.email = "syshirazi@ucsd.edu"; opt.memory = 249325; % opt.maxThreads*2-1;
     opt.walltime = "05:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
     opt.incr_path = p2l.incr;
     write_AMICA_SLURM_file(opt);
@@ -115,7 +115,8 @@ fclose(fid);
 % increments as soon as the float files, param files and shell files are
 % created.
 if run_ICA
-    system(sprintf("sh ~/HBN_EEG/%s/ICA/mAmica_%s/%s_expanse_batch", subj, num_prior, subj));
+    system(sprintf("chmod 775 ~/HBN_EEG/%s/ICA/mAmica_%sp_%s/%s_expanse_batch", subj, num_prior, process_params, subj));
+    system(sprintf("sh ~/HBN_EEG/%s/ICA/mAmica_%sp_%s/%s_expanse_batch", subj, num_prior, process_params, subj));
 end
 
 function write_AMICA_SLURM_file(opt)
@@ -128,8 +129,8 @@ fprintf(fid,"#SBATCH --job-name=" + opt.jobName + " # Job name\n");
 % fprintf(fid,"#SBATCH --mail-type=ALL  # Mail events (NONE, BEGIN, END, FAIL, ALL)\n");
 % fprintf(fid,"#SBATCH --mail-user=" + opt.email + "  # Where to send mail\n"); % disabled as it will create so many emails for incremental ICA :D
 fprintf(fid,"#SBATCH --ntasks=" + string(opt.maxThreads) + " # Run a single task\n");
-fprintf(fid,"#SBATCH --mem=" + string(opt.memory) + "G # default is 1G per task/core\n");
-fprintf(fid,"#SBATCH --nodes=1  # Number of CPU cores per task\n"); % only run on one node due to mpi config of amica15ub
+fprintf(fid,"#SBATCH --mem=" + string(opt.memory) + "M # default is 1G per task/core\n");
+fprintf(fid,"#SBATCH --nodes=2  # Number of CPU cores per task\n"); % only run on one node due to mpi config of amica15ub
 fprintf(fid,"#SBATCH --time=" + opt.walltime + " # Time limit hrs:min:sec\n");
 fprintf(fid,"#SBATCH --output=" + opt.incr_path + opt.jobName + ".out # Standard output and error log\n");
 fprintf(fid,"#SBATCH --error=" + opt.incr_path + opt.jobName + ".err # Standard output and error log\n");
