@@ -39,7 +39,12 @@ fi
 
 touch "$log_file"
 
-find "$target_directory" -type f -iname "*${keyword}*" -not -path "${temp_folder}/*" -exec sh -c 'echo "Moving {} to ${temp_folder}"; echo "{}" >> ${log_file}; mv "{}" "${temp_folder}"' \;
+# echo "Keyword: $keyword"
+# echo "Temp Folder: $temp_folder"
+# echo "Log File: $log_file"
+# echo "Target Directory: $target_directory"
+
+find "$target_directory" -type f -iname "*${keyword}*" -not -path "${temp_folder}/*" -exec sh -c "echo '{}' >> $log_file; mv '{}' $temp_folder" \;
 
 echo "Files with the keyword '${keyword}' have been moved to '${temp_folder}'."
 echo "File locations have been recorded in '${log_file}'."
