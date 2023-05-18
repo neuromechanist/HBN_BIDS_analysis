@@ -23,14 +23,16 @@ fs = string(filesep) + string(filesep);  % file seperator, doubled to avoid char
 filterParam.low = 1;
 filterParam.high = 0;
 
-if ~exist('subj','var') || isempty(subj), subj = "NDARAA948VFH"; else, subj = string(subj); end
+if ~exist('subj','var') || isempty(subj), subj = "NDARAC853DTE"; else, subj = string(subj); end
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
 if ~exist('have_gui','var') || isempty(have_gui), have_gui = true; end
 if ~exist('no_process','var') || isempty(no_process), no_process = 16; end  % no of processors for parpool
 
-mergedSetName = "everyEEG";
+mergedSetName = ["everyEEG", "videoEEG"];
+datasets_toInclude.everyEEG = [];
+datasets_toInclude.videoEEG = ["RestingState", "Video_FF", "Video_WK", "Video_DM", "Video_TP"];
 
 if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
 
@@ -129,14 +131,24 @@ end
 
 %% merge EEG sets
 
-for f = string(fieldnames(EEG))'
-    f2l.merge(f==string(fieldnames(EEG))') = cellstr([EEG.(f).setname '.set']);
+for m = mergedSetName
+    for f = string(fieldnames(EEG))'
+        if ~isempty(datasets_toInclude.(m))
+            if any(datasets_toInclude.(m) == f)
+                f2l.merge.(m)(f==datasets_toInclude.(m)) = cellstr([EEG.(f).setname '.set']);
+            end
+        else  % load every dataset
+            f2l.merge.(m)(f==string(fieldnames(EEG))') = cellstr([EEG.(f).setname '.set']);
+        end
+    end
 end
 
-mEEG = []; ALLEEG = [];
-mEEG = pop_loadset('filename',f2l.merge,'filepath',char(p2l.EEGsets));
-[ALLEEG, ~, ~] = pop_newset(ALLEEG, mEEG, 0,'study',0);
-mEEG = pop_mergeset(ALLEEG, 1:1:length(f2l.merge), 0);
-mEEG.setname = char(subj+"_"+mergedSetName);
-% [ALLEEG, ~, ~] = pop_newset(ALLEEG, mEEG, length(trialTypes2merge),'gui','off');
-pop_saveset(mEEG, 'filename', char(subj+"_"+mergedSetName), 'filepath', char(p2l.EEGsets), 'savemode', 'twofiles');
+for m = mergedSetName
+    mEEG = []; ALLEEG = [];
+    mEEG = pop_loadset('filename',f2l.merge.(m),'filepath',char(p2l.EEGsets));
+    [ALLEEG, ~, ~] = pop_newset(ALLEEG, mEEG, 0,'study',0);
+    mEEG = pop_mergeset(ALLEEG, 1:1:length(f2l.merge), 0);
+    mEEG.setname = char(subj+"_"+m );
+    % [ALLEEG, ~, ~] = pop_newset(ALLEEG, mEEG, length(trialTypes2merge),'gui','off');
+    pop_saveset(mEEG, 'filename', char(subj+"_"+m), 'filepath', char(p2l.EEGsets), 'savemode', 'twofiles');
+end
