@@ -28,7 +28,7 @@ if ~exist('platform','var') || isempty(platform), platform = "linux"; else, plat
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
 if ~exist('have_gui','var') || isempty(have_gui), have_gui = true; end
-if ~exist('no_process','var') || isempty(no_process), no_process = 30; end  % no of processors for parpool
+if ~exist('no_process','var') || isempty(no_process), no_process = 16; end  % no of processors for parpool
 
 mergedSetName = "everyEEG";
 
@@ -71,6 +71,7 @@ for f = string(fieldnames(EEG))'
     EEG.(f) = pop_chanedit(EEG.(f), 'load', {char(f2l.elocs),'filetype','autodetect'});
     EEG.(f) = pop_chanedit(EEG.(f), 'setref',{'1:129','Cz'});
     [EEG.(f).event.latency] = deal(EEG.(f).event.sample);
+    EEG.(f) = remove_brcnt(EEG); % remove data and event correpnding to break_cnt (see issue #6)
     EEG.(f) = eeg_checkset(EEG.(f), 'makeur');
     EEG.(f) = eeg_checkset(EEG.(f), 'chanlocs_homogeneous');
     % save the remedied EEG structure.
