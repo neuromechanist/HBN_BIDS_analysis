@@ -71,7 +71,7 @@ for f = string(fieldnames(EEG))'
     EEG.(f) = pop_chanedit(EEG.(f), 'load', {char(f2l.elocs),'filetype','autodetect'});
     EEG.(f) = pop_chanedit(EEG.(f), 'setref',{'1:129','Cz'});
     [EEG.(f).event.latency] = deal(EEG.(f).event.sample);
-    EEG.(f) = remove_brcnt(EEG); % remove data and event correpnding to break_cnt (see issue #6)
+    EEG.(f) = remove_brcnt(EEG.(f)); % remove data and event correpnding to break_cnt (see issue #6)
     EEG.(f) = eeg_checkset(EEG.(f), 'makeur');
     EEG.(f) = eeg_checkset(EEG.(f), 'chanlocs_homogeneous');
     % save the remedied EEG structure.
