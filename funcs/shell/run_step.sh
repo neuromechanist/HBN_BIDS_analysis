@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default values
-file="subjs_to_analyze.txt"
+file="S3.txt"
 count=-1
 delay=120
 
