@@ -9,7 +9,7 @@ function EEG = remove_brcnt(EEG)
 % (c) Seyed Yahya Shirazi, 05/2023 UCSD, INC, SCCN
 
 %% profile urevent
-event_types = string({EEG.urevent(:).type});
+event_types = string({EEG.event(:).type}); % OG HBN data does not have urevent
 
 if any(contains(event_types,["break cnt","break_cnt"]))
     brcnt_idx = find(contains(event_types,["break cnt","break_cnt"]));
