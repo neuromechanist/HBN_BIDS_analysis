@@ -9,9 +9,9 @@
 #SBATCH -o /home/sshirazi/runlog/s1_%x.out
 #SBATCH -e /home/sshirazi/runlog/s1_%x.err
 
-# echo $1
+# echo $i
 cd /home/sshirazi/_git/HBN_BIDS_analysis
-module load cpu/0.15.4 slurm matlab gcc openmpi
+module load cpu slurm matlab/2022b
 export MV2_ENABLE_AFFINITY=0
 
 # step 4
