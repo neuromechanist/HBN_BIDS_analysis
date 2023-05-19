@@ -1,4 +1,4 @@
-function step2_incr_rej(subj, gTD, saveFloat, expanse, platform, machine, no_process, run_incr_ICA)
+function step2_incr_rej(subj, mergedSetName, gTD, saveFloat, expanse, platform, machine, no_process, run_incr_ICA)
 %STEP2_INCR_REJ Script to reject channels and frames
 %   Runs the step-wisre rejection process descirbed in Shirazi and Huang,
 %   TNSRE 2021. The output is in the ICA folder for each subject as
@@ -7,11 +7,21 @@ function step2_incr_rej(subj, gTD, saveFloat, expanse, platform, machine, no_pro
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% initialize
-clearvars -except subj gTD saveFloat expanse platform machine no_process run_incr_ICA
+clearvars -except subj mergedSetName gTD saveFloat expanse platform machine no_process run_incr_ICA
 close all; clc;
 fs = string(filesep)+string(filesep);
 
-if ~exist('subj','var') || isempty(subj), subj = "NDARAA948VFH"; else, subj = string(subj); end
+% mergedSetName can be string or a vector of strings.
+if ~exist('mergedSetName','var') || isempty(mergedSetName), mergedSetName = "everyEEG"; end
+if length(mergedSetName)>1
+    disp("There are multiple concatenated datasets prvoded, looping through each")
+    for m = mergedSetName
+        step2_incr_rej(subj, m, gTD, saveFloat, expanse, platform, machine, no_process, run_incr_ICA)
+    end
+    return;
+end
+
+if ~exist('subj','var') || isempty(subj), subj = "NDARAC853DTE"; else, subj = string(subj); end
 % "gTD" : going to detail, usually only lets the function to create plots. Default is 1.
 if ~exist('gTD','var') || isempty(gTD), gTD = 1; end
 % save float, choose 0 for skipping saving float file, and actually all the cleaning
@@ -22,11 +32,10 @@ if ~exist('expanse','var') || isempty(expanse), expanse = 0; end
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
-if ~exist('no_process','var') || isempty(no_process), no_process = 30; end
+if ~exist('no_process','var') || isempty(no_process), no_process = 28; end
 % if run AMICA on the shell which matlab is running on in the end
 if ~exist('run_incr_ICA','var') || isempty(run_incr_ICA), run_incr_ICA = 0; end
 
-mergedSetName = "everyEEG";
 % Target k value, k= S/(N^2)
 desired_k = 60;
 
@@ -62,7 +71,7 @@ close all
 %% plot spectopo
 if gTD
     for i = 1:length(ICA_STRUCT)
-        EEG2plot = update_EEG(EEG, ICA_STRUCT(i));
+        EEG2plot = update_EEG(EEG, ICA_STRUCT(i),1);
         EEG2plot = pop_reref(EEG2plot, [], 'keepref', 'on');
         figure("Name","Bad channels rejected, increment No. " + string(i));
         pop_spectopo(EEG2plot, 1, [0 EEG2plot.times(end)], 'EEG' ,'percent',100,'freq', [6 10 22], 'freqrange',[2 200],'electrodes','off');
@@ -84,7 +93,7 @@ if ~exist(f2l.icaIncr + "_all_inrements_rej_channels_frames.mat","file")
         for j = n+1: n+length(iqr_thres)
             ICA_temp(j) = ICA_STRUCT(i);
         end
-        EEG_INCR = update_EEG(EEG, ICA_STRUCT(i));
+        EEG_INCR = update_EEG(EEG, ICA_STRUCT(i),1);
         EEG_INCR = pop_reref(EEG_INCR, [], 'keepref', 'on');
         ICA_temp1(n+1:n+length(iqr_thres)) = incremental_frame_rej(EEG_INCR, ...
             ICA_temp(n+1:n+length(iqr_thres)), iqr_thres, duration, spacing);
@@ -112,7 +121,7 @@ for i = 1:length(ICA_INCR)
     if ~isfolder(p2l.ICA + "incr" + string(i)), mkdir(p2l.ICA + "incr" + string(i)); end
     p2l.incr = p2l.ICA + "incr" + string(i) + fs;
 %     f2l.float = p2l.incr + subj + "_" + mergedSetName + "_incr_" + string(i) + "_clean_float.fdt";
-    EEG2write = update_EEG(EEG, ICA_INCR(i));
+    EEG2write = update_EEG(EEG, ICA_INCR(i),1);
     EEG2write = pop_reref(EEG2write, [], 'keepref', 'on');
     EEG2write = eeg_eegrej(EEG2write,rejFrame(i).final);
     EEG2write.setname = subj + "_" + mergedSetName + "_incr_" + string(i);
