@@ -89,7 +89,7 @@ duration = 10;
 spacing = 100;
 iqr_thres = [2 3 5 7 9];
 
-if ~exist(f2l.icaIncr + "_all_inrements_rej_channels_frames.mat","file")
+if ~exist(f2l.icaIncr + "_all_inrements_rej_channels_frames.mat","file") || recompute
     for i = 1:length(ICA_STRUCT)
         n = (i-1)*length(iqr_thres);
         for j = n+1: n+length(iqr_thres)
