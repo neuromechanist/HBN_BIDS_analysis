@@ -161,7 +161,7 @@ for i = 1:length(incr)
     ICA_STRUCT(i).good_chans(n) = EEG_temp(i).chanlocs(n).urchan;
    end
    if ret_tcr_chan, ICA_STRUCT(i).good_chans(end+1) = EEG_OG.chanlocs(end).urchan; end
-   ICA_STRUCT(i).associated_set = [EEG_temp(i).setname 'incr_' num2str(i)];
+   ICA_STRUCT(i).associated_set = [EEG_temp(i).setname '_incr_' num2str(i)];
    ICA_STRUCT(i).chan_rej_frames_used = frames;
    ICA_STRUCT(i).ref = 'averef';
 end
