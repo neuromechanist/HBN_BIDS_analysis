@@ -20,6 +20,7 @@ if ~exist('no_process','var') || isempty(no_process), no_process = 12; end
 load_existing_iclabel = ~recompute;
 mergedSetName = "everyEEG";
 
+ps = parallel.Settings; ps.Pool.AutoCreate = false; % prevent creating parpools automatcially
 if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
 
 %% construct necessary paths and files & adding paths

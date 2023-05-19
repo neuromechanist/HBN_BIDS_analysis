@@ -2,8 +2,8 @@
 #SBATCH -p shared
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH -c 32
-#SBATCH --mem=62G
+#SBATCH -c 8
+#SBATCH --mem=15G
 #SBATCH -t 04:00:00
 #SBATCH -A csd403
 #SBATCH -o /home/sshirazi/runlog/s1_%x.out
@@ -26,5 +26,5 @@ export MV2_ENABLE_AFFINITY=0
 
 
 # step1 complete preprocessing
-matlab -nodisplay -r "step1_intial_filtering_concat('$i', 'linux', 'expanse', 1, 30);"
-matlab -nodisplay -r "step2_incr_rej('$i', {'everyEEG', 'videoEEG'}, 1, 1, 1, 'linux', 'expanse', 30, 0)";
+matlab -nodisplay -r "step1_intial_filtering_concat('$i', 'linux', 'expanse', 1, 0);"
+matlab -nodisplay -r "step2_incr_rej('$i', {'everyEEG', 'videoEEG'}, 1, 1, 1, 'linux', 'expanse', 0, 0)";

@@ -39,13 +39,13 @@ while read -r subject; do
         break
     fi
 
-    echo "Processing subject: $subject"
+    echo "Processing subject: $subject with $script"
     
     if [[ $reprocess -gt 0 ]]; then
     	# in case that this run step is for re-processing of step3, there is a need to rename some folders.
     	./rename_incr.sh "/home/sshirazi/HBN_EEG/$subject/ICA/"
     fi
-    echo "/home/sshirazi/_git/HBN_BIDS_analysis/funcs/slurm/$script"
+#    echo "/home/sshirazi/_git/HBN_BIDS_analysis/funcs/slurm/$script"
     sbatch -J "$subject" --export=ALL,i="$subject" "/home/sshirazi/_git/HBN_BIDS_analysis/funcs/slurm/$script"
     # echo "$subject"
     # Add delay between iterations if specified

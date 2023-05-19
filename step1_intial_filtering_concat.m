@@ -34,6 +34,7 @@ mergedSetName = ["everyEEG", "videoEEG"];
 datasets_toInclude.everyEEG = [];
 datasets_toInclude.videoEEG = ["RestingState", "Video_FF", "Video_WK", "Video_DM", "Video_TP"];
 
+ps = parallel.Settings; ps.Pool.AutoCreate = false; % prevent creating parpools automatcially
 if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
 
 %% construct necessary paths and files & adding paths
@@ -115,7 +116,7 @@ for f = string(fieldnames(EEG))'
     % now cleanline
     EEG.(f) = pop_cleanline(EEG.(f), 'bandwidth',2,'chanlist',1:128,...
         'computepower',1,'linefreqs',[60 120 180] ,'normSpectrum',0,'p',0.05,'pad',2,'plotfigures',0,...
-        'scanforlines',1,'sigtype','Channels','tau',100,'verb',1,'winsize',2.1992,'winstep',2.1992, 'newversion', true);
+        'scanforlines',1,'sigtype','Channels','tau',100,'verb',1,'winsize',2.1992,'winstep',2.1992, 'newversion', false);
     EEG.(f) = eeg_checkset(EEG.(f)); % always checkset
 %     EEG.(f).(i) = EEG.(f);
     
