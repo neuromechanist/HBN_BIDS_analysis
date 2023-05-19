@@ -148,8 +148,8 @@ for m = mergedSetName
     mEEG = []; ALLEEG = [];
     mEEG = pop_loadset('filename',f2l.merge.(m),'filepath',char(p2l.EEGsets));
     [ALLEEG, ~, ~] = pop_newset(ALLEEG, mEEG, 0,'study',0);
-    mEEG = pop_mergeset(ALLEEG, 1:1:length(f2l.merge), 0);
-    mEEG.setname = char(subj+"_"+m );
+    mEEG = pop_mergeset(ALLEEG, 1:1:length(f2l.merge.(m)), 0);
+    mEEG.setname = char(subj+"_"+m);
     % [ALLEEG, ~, ~] = pop_newset(ALLEEG, mEEG, length(trialTypes2merge),'gui','off');
     pop_saveset(mEEG, 'filename', char(subj+"_"+m), 'filepath', char(p2l.EEGsets), 'savemode', 'twofiles');
 end
