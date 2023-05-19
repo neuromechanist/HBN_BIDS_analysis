@@ -39,6 +39,7 @@ if ~exist('run_incr_ICA','var') || isempty(run_incr_ICA), run_incr_ICA = 0; end
 % Target k value, k= S/(N^2)
 desired_k = 60;
 
+ps = parallel.Settings; ps.Pool.AutoCreate = false; % prevent creating parpools automatcially
 if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
 
 %% construct necessary paths and files & adding paths
@@ -58,8 +59,9 @@ addpath(genpath(p2l.codebase))
 
 %% reject bad channels
 all_bad_chans =[129];
+recompute = true;
 EEG = pop_loadset('filename',char(f2l.alltasks),'filepath',char(p2l.EEGsets));
-if ~exist(f2l.icaStruct + "_all_inrements_rejbadchannels.mat","file")
+if ~exist(f2l.icaStruct + "_all_inrements_rejbadchannels.mat","file") || recompute
     % now remove the channles based on different measures
     ICA_STRUCT = incremental_chan_rej(EEG,all_bad_chans,1,[],[],p2l.figs,1);
     save(f2l.icaStruct + "_all_inrements_rejbadchannels","ICA_STRUCT");
