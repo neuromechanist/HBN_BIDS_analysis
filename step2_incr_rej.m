@@ -59,7 +59,7 @@ addpath(genpath(p2l.codebase))
 
 %% reject bad channels
 all_bad_chans =[129];
-recompute = true;
+recompute = false;
 EEG = pop_loadset('filename',char(f2l.alltasks),'filepath',char(p2l.EEGsets));
 if ~exist(f2l.icaStruct + "_all_inrements_rejbadchannels.mat","file") || recompute
     % now remove the channles based on different measures
@@ -185,22 +185,22 @@ expanse_root = "/home/sshirazi/HBN_EEG/";
 for i = 1:length(ICA_INCR)
     opt = [];
     p2l.incr = p2l.ICA + "incr" + string(i) + fs; % path to save .slurm file
-    f2l.SLURM = p2l.incr + subj + "_incr_" + string(i) + "_amica_expanse";
+    f2l.SLURM = p2l.incr + subj + "_" + mergedSetName + "_incr_" + string(i) + "_amica_expanse";
     f2l.param_stokes = expanse_root + subj + "/ICA/incr" + string(i) + "/" + ...
         subj + "_" + mergedSetName + "_incr_" + string(i) + "_expanse.param"; % this path is relative, that's why I'm not using p2l.ICA
     opt.file = f2l.SLURM; opt.jobName = "amc_" + subj + "_" + string(i);
     opt.partition = "shared"; opt.account = "csd403"; opt.maxThreads = 32; % param file max_threads + 2
-    opt.email = "syshirazi@ucsd.edu"; opt.memory = opt.maxThreads*2;
+    opt.email = "syshirazi@ucsd.edu"; opt.memory = floor(opt.maxThreads*2*0.97);
     opt.walltime = "01:30:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
     opt.incr_path = expanse_root + subj + "/ICA/incr" + string(i) + "/";
     write_AMICA_SLURM_file(opt);
 end
 % write a bash file to run AMICA on Expanse for the subject
-fid = fopen(p2l.ICA + subj + "_expanse_batch","w");
+fid = fopen(p2l.ICA + subj + "_" + mergedSetName + "_expanse_batch","w");
 fprintf(fid,"#!/bin/bash\n");
 fprintf(fid,"for i in {%d..%d}\n",1, length(ICA_INCR));
 fprintf(fid,"do\n");
-slurm_path = expanse_root + subj + "/ICA/incr$i/" + subj + "_incr_${i}_amica_expanse.slurm";
+slurm_path = expanse_root + subj + "/ICA/incr$i/" + subj+ "_" + mergedSetName + "_incr_${i}_amica_expanse.slurm";
 fprintf(fid,"sbatch " + slurm_path + "\n");
 fprintf(fid,"done\n");
 fclose(fid);
