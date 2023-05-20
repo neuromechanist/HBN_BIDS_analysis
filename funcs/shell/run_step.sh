@@ -7,9 +7,23 @@ delay=120
 script="run_step1.slurm"  # default script
 reprocess=0
 
+# Help function
+function show_help {
+    echo "Usage: $0 [options]"
+    echo
+    echo "Options:"
+    echo "-h, --help              Show help"
+    echo "-f, --file FILE         Specify the file to read subjects from (default: S3.txt)"
+    echo "-c, --count COUNT       Limit the number of subjects to process (default: -1, process all)"
+    echo "-d, --delay DELAY       Add delay between iterations in seconds (default: 120)"
+    echo "-s, --script SCRIPT     Specify the slurm script to run (default: run_step1.slurm)"
+    echo "-r, --reprocess FLAG    Specify if the script needs to reprocess incrementes (default: 0)"
+}
+
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
+	-h|--help) show_help; exit 0 ;;
         -f|--file) file="$2"; shift ;;
         -c|--count) count="$2"; shift ;;
         -d|--delay) delay="$2"; shift ;;
