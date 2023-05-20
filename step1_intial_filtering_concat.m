@@ -116,9 +116,11 @@ for f = string(fieldnames(EEG))'
     % now cleanline
     EEG.(f) = pop_cleanline(EEG.(f), 'bandwidth',2,'chanlist',1:128,...
         'computepower',1,'linefreqs',[60 120 180] ,'normSpectrum',0,'p',0.05,'pad',2,'plotfigures',0,...
-        'scanforlines',1,'sigtype','Channels','tau',100,'verb',1,'winsize',2.1992,'winstep',2.1992, 'newversion', false);
+        'scanforlines',1,'sigtype','Channels','tau',100,'verb',1,'winsize',4,'winstep',1, 'newversion', false);
+    EEG.(f) = pop_cleanline(EEG.(f), 'bandwidth',2,'chanlist',1:128,...
+        'computepower',1,'linefreqs',[60 120 180] ,'normSpectrum',0,'p',0.05,'pad',2,'plotfigures',0,...
+        'scanforlines',1,'sigtype','Channels','tau',100,'verb',1,'winsize',4,'winstep',1, 'newversion', false);
     EEG.(f) = eeg_checkset(EEG.(f)); % always checkset
-%     EEG.(f).(i) = EEG.(f);
     
     figure("Name",string(EEG.(f).setname) + "_cleanline2_freqspectra");
     pop_spectopo(EEG.(f), 1, [0 EEG.(f).times(end)], 'EEG' ,'percent',100,'freq', [6 10 22], 'freqrange',[2 200],'electrodes','off');
@@ -149,7 +151,7 @@ for m = mergedSetName
     mEEG = pop_loadset('filename',f2l.merge.(m),'filepath',char(p2l.EEGsets));
     [ALLEEG, ~, ~] = pop_newset(ALLEEG, mEEG, 0,'study',0);
     mEEG = pop_mergeset(ALLEEG, 1:1:length(f2l.merge.(m)), 0);
-    mEEG.setname = char(subj+"_"+m);
+    mEEG.setname = char(subj+"_"+m );
     % [ALLEEG, ~, ~] = pop_newset(ALLEEG, mEEG, length(trialTypes2merge),'gui','off');
     pop_saveset(mEEG, 'filename', char(subj+"_"+m), 'filepath', char(p2l.EEGsets), 'savemode', 'twofiles');
 end
