@@ -54,6 +54,7 @@ if ~isfolder(p2l.figs), mkdir(p2l.figs); end
 f2l.alltasks = subj + "_" + mergedSetName + ".set"; % as an Exception, path is NOT included
 f2l.icaStruct = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_" + "incremental";
 f2l.icaIncr = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_INCR_" + "incremental";
+f2l.param = p2l.incr0 + subj +"_"+ mergedSetName + "_"+"writeParam";
 
 addpath(genpath(p2l.codebase))
 
@@ -141,12 +142,12 @@ for i = 1:length(ICA_INCR)
     clear EEG2write
     close
 end
-save(p2l.incr0 + "writeParam",'writeParam')
+save(f2l.param,'writeParam')
 end
 
 %% save param files
-if saveFloat == 0 && ~exist('writeParam','var') && exist(p2l.incr0 + "writeParam.mat",'file')
-    load(p2l.incr0 + "writeParam",'writeParam');
+if saveFloat == 0 && ~exist('writeParam','var') && exist(f2l.param,'file')
+    load(f2l.param,'writeParam');
 end
 for i = 1:length(ICA_INCR)
     p2l.incr_lin = subj+ "/ICA/incr" + string(i) + "/"; % this path is relative, that's why I'm not using p2l.ICA
@@ -241,7 +242,7 @@ fprintf(fid,"#SBATCH --error=" + opt.incr_path + opt.jobName + ".err # Standard 
 fprintf(fid,'# Run your program with correct path and command line options\n');
 % job commands
 fprintf(fid,"module purge\n");
-fprintf(fid,"module load cpu slurm gcc openmpi\n");
+fprintf(fid,"module load cpu/0.17.3b  gcc/10.2.0/npcyll4 slurm  openmpi/4.1.1\n");
 
 fprintf(fid, "#SET the number of openmp threads\n");
 fprintf(fid,"export MV2_ENABLE_AFFINITY=0\n");
