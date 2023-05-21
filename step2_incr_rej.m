@@ -23,12 +23,12 @@ end
 
 if ~exist('subj','var') || isempty(subj), subj = "NDARAC853DTE"; else, subj = string(subj); end
 % "gTD" : going to detail, usually only lets the function to create plots. Default is 1.
-if ~exist('gTD','var') || isempty(gTD), gTD = 1; end
+if ~exist('gTD','var') || isempty(gTD), gTD = 0; end
 % save float, choose 0 for skipping saving float file, and actually all the cleaning
 % method all together to re-write parameter or batch files, Default is 1.
-if ~exist('saveFloat','var') || isempty(saveFloat), saveFloat = 1; end
+if ~exist('saveFloat','var') || isempty(saveFloat), saveFloat = 0; end
 % whether to run amica on expanse
-if ~exist('expanse','var') || isempty(expanse), expanse = 0; end
+if ~exist('expanse','var') || isempty(expanse), expanse = 1; end
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
@@ -54,7 +54,7 @@ if ~isfolder(p2l.figs), mkdir(p2l.figs); end
 f2l.alltasks = subj + "_" + mergedSetName + ".set"; % as an Exception, path is NOT included
 f2l.icaStruct = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_" + "incremental";
 f2l.icaIncr = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_INCR_" + "incremental";
-f2l.param = p2l.incr0 + subj +"_"+ mergedSetName + "_"+"writeParam";
+f2l.param = p2l.incr0 + subj +"_"+ mergedSetName + "_"+"writeParam.mat"; % location of the rejection parameter file
 
 addpath(genpath(p2l.codebase))
 
@@ -156,9 +156,9 @@ for i = 1:length(ICA_INCR)
     f2l.param_lin = p2l.incr + subj + "_" + mergedSetName + "_incr_" + string(i) + "_linux.param";
     f2l.param_expanse = p2l.incr + subj + "_" + mergedSetName + "_incr_" + string(i) + "_expanse.param";
 
-    linux_opts = ["files", f2l.float_lin, "outdir", p2l.incr_lin + "amicaout/", "max_threads", 6];
-    expanse_opts = ["files","~/HBN_EEG/" + f2l.float_lin,"outdir", "~/HBN_EEG/" + p2l.incr_lin + "amicaout/",...
-        "max_threads", 30];
+    linux_opts = ["files", f2l.float_lin, "outdir", p2l.incr_lin + "amicaout_" + mergedSetName + "/", "max_threads", 6];
+    expanse_opts = ["files","~/HBN_EEG/" + f2l.float_lin,"outdir", ...
+        "~/HBN_EEG/" + p2l.incr_lin + "amicaout_" + mergedSetName  + "/", "max_threads", 30];
     general_opts = ["data_dim", string(writeParam(i).nbchan),...
         "field_dim", string(writeParam(i).pnts), "pcakeep", string(writeParam(i).nbchan-1),...
         "numprocs", 1, "block_size", 1024, "do_opt_block", 0,...
@@ -211,7 +211,7 @@ fclose(fid);
 % increments as soon as the float files, param files and shell files are
 % created.
 if run_incr_ICA
-    system(sprintf("sh ~/HBN_EEG/%s/ICA/%s_expanse_batch", subj, subj));
+    system(sprintf("sh ~/HBN_EEG/%s/ICA/%s_%s_expanse_batch", subj, subj, string(mergedSetName)));
 end
 
 function write_linux_bash(file,subj,start,stop)
@@ -219,7 +219,7 @@ fid = fopen(file,"w");
 fprintf(fid,"#!/bin/bash\n");
 fprintf(fid,"for i in {%d..%d}\n",start, stop);
 fprintf(fid,"do\n");
-fprintf(fid,'./amica15ub "%s/ICA/incr$i/%s_allsteps_incr_${i}_linux.param"\n',subj, subj);
+fprintf(fid,'./amica15ub "%s/ICA/incr$i/%s_%s_incr_${i}_linux.param"\n',subj, subj, string(mergedSetName));
 fprintf(fid,"done\n");
 fclose(fid);
 % end of the function
