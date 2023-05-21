@@ -16,5 +16,5 @@ export MV2_ENABLE_AFFINITY=0
 
 # step2
 # if you just run ICA on expanse
-matlab -nodisplay -r "step2_incr_rej('$i', {'everyEEG', 'videoEEG'}, 0, 0, 1, 'linux', 'expanse', 0, 0);"
+matlab -nodisplay -r "step2_incr_rej('$i', {'everyEEG', 'videoEEG'}, 0, 0, 1, 'linux', 'expanse', 0, 1);"
 
