@@ -189,7 +189,7 @@ for i = 1:length(ICA_INCR)
     f2l.SLURM = p2l.incr + subj + "_" + mergedSetName + "_incr_" + string(i) + "_amica_expanse";
     f2l.param_stokes = expanse_root + subj + "/ICA/incr" + string(i) + "/" + ...
         subj + "_" + mergedSetName + "_incr_" + string(i) + "_expanse.param"; % this path is relative, that's why I'm not using p2l.ICA
-    opt.file = f2l.SLURM; opt.jobName = "amc_" + subj + "_" + string(i);
+    opt.file = f2l.SLURM; opt.jobName = "amc_" + subj + "_" + mergedSetName + "_" + string(i);
     opt.partition = "shared"; opt.account = "csd403"; opt.maxThreads = 32; % param file max_threads + 2
     opt.email = "syshirazi@ucsd.edu"; opt.memory = floor(opt.maxThreads*2*0.97);
     opt.walltime = "01:30:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
