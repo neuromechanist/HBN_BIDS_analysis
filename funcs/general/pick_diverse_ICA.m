@@ -14,6 +14,7 @@ function [ICA_STRUCT, EEG_out] = pick_diverse_ICA(p2l, f2l, subj, mergedSetName,
 % email: shirazi@ieee.org
 %
 % Copyright 2019 Seyed Yahya Shirazi, UCF, Orlando, FL 32826
+
 %% initialize
 fs = string(filesep);
 rv = 15; % it should be in percentage to be compatible w/ eeg_dipselect
@@ -23,12 +24,11 @@ if ~exist('mergedSetName','var') || isempty(mergedSetName), mergedSetName = "eve
 if ~exist('load_existing','var') || isempty(load_existing), load_existing = 1; end
 
 p2l.incr0 = p2l.ICA + "incr0" + fs;
-f2l.classify = p2l.incr0 + subj + "_ICA_INCR_dipfit_classification.mat";
-%% need ICA_INCR to update incremental ICA_STRUCTs
-incr0Dir = dir(p2l.incr0);
-incr0Content = string({incr0Dir(:).name});
-load(p2l.incr0 + incr0Content(contains(incr0Content,"channels_frames.mat")));
+f2l.classify = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_INCR_dipfit_classification.mat";
 
+%% need ICA_INCR to update incremental ICA_STRUCTs
+
+load(f2l.INCR_chan_frames, "ICA_INCR");
 % let's find channles that are present in every ICA
 bad_chan = [];
 for i = 1:128
@@ -73,7 +73,7 @@ for i = foldName
         if contains(i, "incr")
             incrNum = split(i, "incr"); incrNum = str2double(incrNum(2));
             if incrNum > 0
-                modout = loadmodout10(char(p2l.ICA + i + fs + "amicaout"));
+                modout = loadmodout10(char(p2l.ICA + i + fs + "amicaout_" + mergedSetName));
                 disp("imported ICA parpmeter for incr. " + string(incrNum));
                 ICA_INCR(incrNum).weights = modout.W;
                 ICA_INCR(incrNum).sphere = modout.S;
