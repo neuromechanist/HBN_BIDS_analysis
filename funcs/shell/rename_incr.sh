@@ -28,6 +28,9 @@ for dir in "$1"/incr0*; do
   # Get the new full path by replacing only the directory name
   newdir=$(dirname "$dir")/"$newname"
 
+  # make the new directory
+  mkdir "$newdir"
+
   # Move the contents of the directory to the new directory
   mv -v "$dir"/* "$newdir"
 

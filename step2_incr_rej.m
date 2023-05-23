@@ -1,4 +1,4 @@
-function step2_incr_rej(subj, mergedSetName, gTD, saveFloat, expanse, platform, machine, no_process, run_incr_ICA)
+function step2_incr_rej(subj, mergedSetName, recompute, gTD, saveFloat, expanse, platform, machine, no_process, run_incr_ICA)
 %STEP2_INCR_REJ Script to reject channels and frames
 %   Runs the step-wisre rejection process descirbed in Shirazi and Huang,
 %   TNSRE 2021. The output is in the ICA folder for each subject as
@@ -7,14 +7,14 @@ function step2_incr_rej(subj, mergedSetName, gTD, saveFloat, expanse, platform, 
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% initialize
-clearvars -except subj mergedSetName gTD saveFloat expanse platform machine no_process run_incr_ICA
+clearvars -except subj mergedSetName recompute gTD saveFloat expanse platform machine no_process run_incr_ICA
 close all; clc;
 fs = string(filesep)+string(filesep);
 
 % mergedSetName can be string or a vector of strings.
 if ~exist('mergedSetName','var') || isempty(mergedSetName), mergedSetName = "everyEEG"; end
 if length(mergedSetName)>1
-    disp("There are multiple concatenated datasets prvoded, looping through each")
+    warning("Multiple concatenated datasets provided, looping through each")
     for m = mergedSetName
         step2_incr_rej(subj, m, gTD, saveFloat, expanse, platform, machine, no_process, run_incr_ICA)
     end
@@ -24,6 +24,8 @@ end
 if ~exist('subj','var') || isempty(subj), subj = "NDARAC853DTE"; else, subj = string(subj); end
 % "gTD" : going to detail, usually only lets the function to create plots. Default is 1.
 if ~exist('gTD','var') || isempty(gTD), gTD = 0; end
+% recomputes the rejection increments
+if ~exist('recompute','var') || isempty(recompute), recompute = 0; end
 % save float, choose 0 for skipping saving float file, and actually all the cleaning
 % method all together to re-write parameter or batch files, Default is 1.
 if ~exist('saveFloat','var') || isempty(saveFloat), saveFloat = 0; end
@@ -60,7 +62,6 @@ addpath(genpath(p2l.codebase))
 
 %% reject bad channels
 all_bad_chans =[129];
-recompute = false;
 EEG = pop_loadset('filename',char(f2l.alltasks),'filepath',char(p2l.EEGsets));
 if ~exist(f2l.icaStruct + "_all_inrements_rejbadchannels.mat","file") || recompute
     % now remove the channles based on different measures
