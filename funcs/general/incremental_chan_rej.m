@@ -1,4 +1,4 @@
-function [ICA_STRUCT, chan_rej_log] = incremental_chan_rej(EEG, tcr_chans, ret_tcr_chan, incr, good_chans,path,saveF)
+function [ICA_STRUCT, chan_rej_log] = incremental_chan_rej(EEG, merged_setName, tcr_chans, ret_tcr_chan, incr, good_chans,path,saveF)
 % This function rejects channles in increments and saves the results in the
 % output arrays.
 %
@@ -30,6 +30,7 @@ if ~exist('EEG','var'), error("No EEG structure is defined, chan_reject terminat
 if ~exist('tcr_chans','var'), tcr_chans = []; end
 % retun the TCR rejected channel to the group in the final step. This is
 % useful for the reutrned of the refrecne channel (eg Cz for EGI).
+if ~exist('mergedSetName','var') || isempty(mergedSetName), mergedSetName = "videoEEG"; end
 if ~exist('ret_tcr_chan','var'), ret_tcr_chan = 0; end 
 if ~exist('incr','var') || isempty(incr), incr = [5 4 3.5 3 2.75 2.5 2.25 2]; end
 if ~exist('good_chans','var'), good_chans = []; end
@@ -130,8 +131,8 @@ for i = 1:length(incr)
    end
    drawnow;
    if saveF
-   saveas(gcf,path + "rej_metrics_incr_" + string(i),"png");
-   saveas(gcf,path + "rej_metrics_incr_" + string(i),"fig");
+   saveas(gcf,path + mergedSetName + "_rej_metrics_incr_" + string(i),"png");
+   saveas(gcf,path + mergedSetName + "_rej_metrics_incr_" + string(i),"fig");
    end
 end
    
@@ -146,8 +147,8 @@ for i = 1:length(incr)
     sgtitle("rejected channels using incremental rejection")
 end
 if saveF
-saveas(gcf,path + "incremental_chan_rej_topo","png");
-saveas(gcf,path + "incremental_chan_rej_topo","fig");
+saveas(gcf,path + mergedSetName + "_incremental_chan_rej_topo","png");
+saveas(gcf,path + mergedSetName + "_incremental_chan_rej_topo","fig");
 end
 
 %% create output
@@ -161,7 +162,7 @@ for i = 1:length(incr)
     ICA_STRUCT(i).good_chans(n) = EEG_temp(i).chanlocs(n).urchan;
    end
    if ret_tcr_chan, ICA_STRUCT(i).good_chans(end+1) = EEG_OG.chanlocs(end).urchan; end
-   ICA_STRUCT(i).associated_set = [EEG_temp(i).setname 'incr_' num2str(i)];
+   ICA_STRUCT(i).associated_set = [EEG_temp(i).setname '_incr_' num2str(i)];
    ICA_STRUCT(i).chan_rej_frames_used = frames;
    ICA_STRUCT(i).ref = 'averef';
 end
