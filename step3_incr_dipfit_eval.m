@@ -1,4 +1,4 @@
-function step3_incr_dipfit_eval(subj, recompute, platform, machine, no_process)
+function step3_incr_dipfit_eval(subj, mergedSetName, recompute, platform, machine, no_process)
 %STEP3_INCR_DIPFIT_EVAL Applied dipfit and evaluates incr. rej. of step2
 %   Following the incremental rejection process step 2 and runnig AMICA, we
 %   need to run different metrics to choose the "best" rejection increment
@@ -7,19 +7,29 @@ function step3_incr_dipfit_eval(subj, recompute, platform, machine, no_process)
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% initialize
-clearvars -except subj recompute platform machine no_process
+clearvars -except subj mergedSetName recompute platform machine no_process
 close all; clc;
 fs = string(filesep)+string(filesep);
 
-if ~exist('subj','var') || isempty(subj), subj = "NDARAA948VFH"; else, subj = string(subj); end
+% mergedSetName can be string or a vector of strings.
+if ~exist('mergedSetName','var') || isempty(mergedSetName), mergedSetName = "videoEEG"; end
+if length(mergedSetName)>1
+    warning("Multiple concatenated datasets provided, looping through each")
+    for m = mergedSetName
+        step3_incr_dipfit_eval(subj, m, recompute, platform, machine, no_process)
+    end
+    return;
+end
+
+if ~exist('subj','var') || isempty(subj), subj = "NDARAC853DTE"; else, subj = string(subj); end
 if ~exist('recompute','var') || isempty(recompute), recompute = 1; end % function does NOT recompute the best subset by default
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
 if ~exist('no_process','var') || isempty(no_process), no_process = 12; end
 load_existing_iclabel = ~recompute;
-mergedSetName = "everyEEG";
 
+ps = parallel.Settings; ps.Pool.AutoCreate = false; % prevent creating parpools automatcially
 if no_process ~= 0, p = gcp("nocreate"); if isempty(p), parpool("processes", no_process); end; end
 
 %% construct necessary paths and files & adding paths
@@ -37,6 +47,7 @@ f2l.elocs = p2l.codebase + "funcs" + fs + "GSN_HydroCel_129_AdjustedLabels.sfp";
 f2l.HDM = p2l.eeglab + "plugins" + fs + "dipfit5.2" + fs + "standard_BEM" + fs + "standard_vol.mat";
 f2l.MRI = p2l.eeglab + "plugins" + fs + "dipfit5.2" + fs + "standard_BEM" + fs + "standard_mri.mat";
 f2l.chan = p2l.eeglab + "plugins" + fs + "dipfit5.2" + fs + "standard_BEM" + fs + "elec" + fs + "standard_1005.elc";
+f2l.INCR_chan_frames = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_INCR_incremental_all_inrements_rej_channels_frames.mat";
 f2l.ICA_STRUCT = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_rejbadchannels_diverse_incr_comps.mat";
 f2l.sel_comps = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_rejbadchannels_diverse_select_comps.mat";
 
@@ -96,16 +107,16 @@ pop_viewprops(EEG, typecomp, chanorcomp, spec_opt, erp_opt, scroll_event, classi
 % save the figures containting the componenets
 iclabelFigs = findobj(allchild(0), 'flat', 'Type', 'figure');
 for i = 1:length(iclabelFigs) % it is not possible to save the figs in .fig format
-print(iclabelFigs(i),p2l.compResults + "all_components_summary_" + string(i), '-dpng', '-r600', '-noui');
-print(iclabelFigs(i),p2l.compResults + "all_components_summary_" + string(i),'-dpdf', '-painters', '-noui');
+print(iclabelFigs(i),p2l.compResults + mergedSetName + "_all_components_summary_" + string(i), '-dpng', '-r600', '-noui');
+print(iclabelFigs(i),p2l.compResults + mergedSetName + "_all_components_summary_" + string(i),'-dpdf', '-vector', '-noui');
 end
 close(iclabelFigs)
 % open each compoenet's extended viewprops and save the figure, also not in
 % fig format.
 for i = chanorcomp
     pop_prop_extended(EEG, typecomp, i, NaN, spec_opt, erp_opt, scroll_event, classifier)
-    print(p2l.compResults + "all_components_detail_comp_" + string(i), '-dpng', '-r300', '-noui')
-    print(p2l.compResults + "all_components_detail_comp_" + string(i), '-dpdf', '-painters', '-noui')
-    savefig(gcf,p2l.compResults + "all_components_detail_comp_" + string(i),'compact')
+    print(p2l.compResults + mergedSetName + "_all_components_detail_comp_" + string(i), '-dpng', '-r300', '-noui')
+    print(p2l.compResults + mergedSetName + "_all_components_detail_comp_" + string(i), '-dpdf', '-vector', '-noui')
+    savefig(gcf,p2l.compResults + mergedSetName + "_all_components_detail_comp_" + string(i),'compact')
     close
 end

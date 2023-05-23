@@ -38,11 +38,12 @@ end
 
 %check that setname matches the orignial set used to create ICA_STRUCT
 if ~override_popup && isfield(ICA_STRUCT,'associated_set') && ~strcmp(EEG.setname,ICA_STRUCT.associated_set)
-    if ~strcmp(questdlg('EEG.setname does not match ICA_STRUCT.asociated_set',...
-            'Continue?','CONTINUE ANYWAY','CANCEL','CONTINUE ANYWAY') ,...
-            'CONTINUE ANYWAY')
-        return;
-    end
+%     if ~strcmp(questdlg('EEG.setname does not match ICA_STRUCT.asociated_set',...
+%             'Continue?','CONTINUE ANYWAY','CANCEL','CONTINUE ANYWAY') ,...
+%             'CONTINUE ANYWAY')
+%         return;
+        warning('EEG.setname does not match ICA_STRUCT.asociated_set')
+%     end
 end
 
 %update EEG structure
