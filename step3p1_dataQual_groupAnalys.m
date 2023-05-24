@@ -1,4 +1,4 @@
-function step3p1_dataQual_groupAnalys(participant_list, platform, machine, load_setfiles, save_setfiles)
+function step3p1_dataQual_groupAnalys(participant_list, mergedSetName, platform, machine, load_setfiles, save_setfiles)
 %STEP3P1_DATAQUAL_GROUPANALYS Summarizes results from step 3.
 %   Following selecting the best increment for cleaning each dataset, we
 %   need to run some group metrics to assess the cleaning and ICA
@@ -10,9 +10,9 @@ function step3p1_dataQual_groupAnalys(participant_list, platform, machine, load_
 clearvars -except participant_list platform machine load_setfiles save_setfiles
 close all; clc;
 fs = string(filesep)+string(filesep);
-mergedSetName = "everyEEG";
 
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
+if ~exist('mergedSetName','var') || isempty(mergedSetName), mergedSetName = "everyEEG"; end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
 p2l = init_paths(platform, machine, "HBN", 1, false);  % Initialize p2l and eeglab.
@@ -128,7 +128,7 @@ end
 %% number of brain components
 figure
 boxplot([braincomp_count.ninety', braincomp_count.eighty', braincomp_count.seventy', braincomp_count.sixty'],'Notch','on','Labels',{'90%', '80%', '70%', '60%'},'Whisker',1)
-title('number of brain components per ICLABEL classification (n=164)')
+title('number of brain components per ICLABEL classification (n=154)')
 xlabel("probability of the dipole being Brain")
 ylabel("number of dipoles")
 
@@ -172,7 +172,7 @@ xtickangle(45)
 ylabel("number of subjects")
 ylim([0,length(string(fieldnames(rej_chans)))])
 legend(fliplr(brain_percentage))
-title("BA distribution across the group and brain-classification probablity (n=164)")
+title("BA distribution across the group and brain-classification probability (n=154)")
 
 set(gca,'box','off')
 
@@ -181,7 +181,7 @@ figure
 % boxplot(rej_elec_count,'Notch','on','Labels',{'number of rejected electrode'},'Whisker',1)
 histogram(rej_elec_count,20)
 
-title('number of rejected electrodes across subjes (n=164)')
+title('number of rejected electrodes across subjes (n=154)')
 ylabel('number of subjects')
 xlabel('number of electrodes')
 
@@ -209,6 +209,6 @@ figure
 % boxplot(rej_frame_ratio,'Notch','on','Labels',{'Rejected frame percentage'},'Whisker',1)
 histogram(rej_elec_count,20)
 
-title('rejected frame percentage across subjes (n=164)')
+title('rejected frame percentage across subjes (n=154)')
 ylabel('number of subjects')
 xlabel('rejected data (%)')
