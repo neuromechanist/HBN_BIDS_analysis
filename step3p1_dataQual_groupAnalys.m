@@ -40,6 +40,8 @@ for p = participant_list
 end
 
 %% load EEG files as well
+% Only run this section if the finls set files with channel and frame
+% rejection are NOT available.
 if load_setfiles
     f = waitbar(0,'updating the set files with frame rejections','Name','please be patient');
     for p = participant_list
@@ -73,9 +75,12 @@ if load_setfiles
 end
 
 %% now let's run ICLABEL on the datasets, and augment ICA_STRUCT
+% Only run if the ICASTRUCT does not have the classification field already. Newer
+% implementations have it from step 3. The script below already checks that
+% and skips running ICLABEL if it is already available. 
 f = waitbar(0,'adding iclabel','Name','please be patient');
 for p = participant_list
-    if ~isfield(ICA_STRUCT.(p), 'iclabel')
+    if ~isfield(ICA_STRUCT.(p), 'calssification')
         EEG = [];
         EEG = pop_loadset( 'filename', char(f2l.alltasks_cleaned.(p)), 'filepath', char(p2l.EEGsets.(p)));
         EEG = pop_chanedit(EEG, 'load', {char(f2l.elocs),'filetype','autodetect'});
@@ -123,7 +128,7 @@ end
 %% number of brain components
 figure
 boxplot([braincomp_count.ninety', braincomp_count.eighty', braincomp_count.seventy', braincomp_count.sixty'],'Notch','on','Labels',{'90%', '80%', '70%', '60%'},'Whisker',1)
-title('number of brain components per ICLABEL classification')
+title('number of brain components per ICLABEL classification (n=164)')
 xlabel("probability of the dipole being Brain")
 ylabel("number of dipoles")
 
@@ -167,18 +172,22 @@ xtickangle(45)
 ylabel("number of subjects")
 ylim([0,length(string(fieldnames(rej_chans)))])
 legend(fliplr(brain_percentage))
-title("BA distribution across the group and brain-classification probablity")
+title("BA distribution across the group and brain-classification probablity (n=164)")
 
 set(gca,'box','off')
 
 %% number of rejected elecrtods
 figure
-boxplot(rej_elec_count,'Notch','on','Labels',{'number of rejected electrode'},'Whisker',1)
-title('Rejected electrodes numbers')
+% boxplot(rej_elec_count,'Notch','on','Labels',{'number of rejected electrode'},'Whisker',1)
+histogram(rej_elec_count,20)
+
+title('number of rejected electrodes across subjes (n=164)')
+ylabel('number of subjects')
+xlabel('number of electrodes')
 
 %% rejected electrode topoplot
 % load a dummy EEG file
-EEG = pop_loadset('filename','NDARAA948VFH_everyEEG.set','filepath','~/HBN_EEG/NDARAA948VFH/EEG_sets/');
+EEG = pop_loadset('filename','NDARAC853DTE_everyEEG.set','filepath','~/HBN_EEG/NDARAC853DTE/EEG_sets/');
 EEG = pop_select(EEG, 'nochannel',129);
 rej_count = zeros(1, original_numchans);
 for p = string(fieldnames(rej_chans))'
@@ -197,5 +206,9 @@ mod_topoplot([],EEG.chanlocs,'electrodes','on','emarker',{1:EEG.nbchan,'.',cmap(
 colorbar
 %% amount of frame rejection
 figure
-boxplot(rej_frame_ratio,'Notch','on','Labels',{'Rejected frame percentage'},'Whisker',1)
-title('Rejected frame percentage')
+% boxplot(rej_frame_ratio,'Notch','on','Labels',{'Rejected frame percentage'},'Whisker',1)
+histogram(rej_elec_count,20)
+
+title('rejected frame percentage across subjes (n=164)')
+ylabel('number of subjects')
+xlabel('rejected data (%)')
