@@ -1,4 +1,4 @@
-function step3p2_export_incr_toBIDS(BIDS_path, deriv_name, only_with_Raw_present)
+function step3p2_export_incr_toBIDS(BIDS_path, deriv_name, only_with_Raw_present, mergedSetName)
 %step3p2_export_incr_toBIDS OCnvert the end result to BIDS derivative
 %   The end reuslt is inehrently a noise rejection method and dipfit
 %   analysis. So, the end result should be handiliy transferrable to the
@@ -16,6 +16,7 @@ clearvars -except BIDS_path deriv_name only_with_Raw_present
 if ~exist('BIDS_path','var') || isempty(BIDS_path), warning("BIDS_path is required"); BIDS_path = "~/yahya/cmi_vid_bids_R3/";end
 if ~exist('deriv_name','var') || isempty(deriv_name), deriv_name = "yahya"; end
 if ~exist('only_with_Raw_present','var') || isempty(only_with_Raw_present), only_with_Raw_present = 1; end
+if ~exist('mergedSetName','var') || isempty(mergedSetName), mergedSetName = "videoEEG"; end
 
 EEG_files_path = "~/HBN_EEG/";
 
@@ -30,7 +31,7 @@ EEG_dir_content = dir(EEG_files_path);
 target_path_prefix= "NDA";
 
 target_ds = []; % The datasets that include incr rejection and also dipfit
-target_struct_suffix = "_everyEEG_ICA_STRUCT_rejbadchannels_diverse_incr_comps.mat";
+target_struct_suffix = "_" + mergedSetName + "_ICA_STRUCT_rejbadchannels_diverse_incr_comps.mat";
 
 i = 0;
 for d = string({EEG_dir_content.name})
@@ -51,11 +52,11 @@ for f = string(fieldnames(ICA_STRUCT)')
        else, pathnum_to_load = string(set_to_load);
        end
        EEG_path = EEG_files_path + f + "/ICA/incr" + pathnum_to_load + "/";
-       EEG_file = f + "_everyEEG_incr_" + set_to_load + ".set";
+       EEG_file = f + "_" + mergedSetName + "_incr_" + set_to_load + ".set";
        EEG = [];
        EEG = pop_loadset('filename', char(EEG_file), 'filepath', char(EEG_path));
        EEG = update_EEG(EEG, ICA_STRUCT.(f), true);
-       BIDS_filename = "sub-"+ f + "_task-everyEEG_eeg";
+       BIDS_filename = "sub-"+ f + "_task-" + mergedSetName +"_eeg";
        BIDS_filepath = BIDS_path + "derivatives/" + deriv_name + "/sub-" + f + "/eeg/";
        if ~exist(BIDS_filepath,'dir'), mkdir(BIDS_filepath); end
        EEG.setname = char(BIDS_filename);
@@ -69,15 +70,18 @@ for f = string(fieldnames(ICA_STRUCT)')
     if isstruct(ICA_STRUCT.(f))
        EEG_path = EEG_files_path + f + "/EEG_sets/";
        for t = 1:length(target_tasks)
-           EEG = [];
-           EEG_file = f + "_" + target_tasks(t) + ".set";           
-           EEG = pop_loadset('filename', char(EEG_file), 'filepath', char(EEG_path));
-           EEG = update_EEG(EEG, ICA_STRUCT.(f), true);
-           BIDS_filename = "sub-"+ f + "_task-" + task_name_forBIDS(t) + "_eeg";
-           BIDS_filepath = BIDS_path + "derivatives/" + deriv_name + "/sub-" + f + "/eeg/";
-           EEG.setname = char(BIDS_filename);
-           pop_saveset(EEG, 'filename', char(BIDS_filename), 'filepath', char(BIDS_filepath),...
-               'savemode', 'twofiles');
+           try
+               EEG = [];
+               EEG_file = f + "_" + target_tasks(t) + ".set";           
+               EEG = pop_loadset('filename', char(EEG_file), 'filepath', char(EEG_path));
+               EEG = update_EEG(EEG, ICA_STRUCT.(f), true);
+               BIDS_filename = "sub-"+ f + "_task-" + task_name_forBIDS(t) + "_eeg";
+               BIDS_filepath = BIDS_path + "derivatives/" + deriv_name + "/sub-" + f + "/eeg/";
+               EEG.setname = char(BIDS_filename);
+               pop_saveset(EEG, 'filename', char(BIDS_filename), 'filepath', char(BIDS_filepath),...
+                   'savemode', 'twofiles');
+           catch
+           end
        end
     end
 end
