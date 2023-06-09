@@ -15,7 +15,7 @@ fPath = fPath(1);
 
 if ~exist('subj','var') || isempty(subj), subj = "NDARBA839HLG"; else, subj = string(subj); end
 if ~exist('model_count','var') || isempty(model_count), model_count = [2, 3, 6, 9]; end
-if ~exist('amica_frame_rej','var') || isempty(amica_frame_rej), amica_frame_rej = 1; end
+if ~exist('amica_frame_rej','var') || isempty(amica_frame_rej), amica_frame_rej = 0; end
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
@@ -27,7 +27,8 @@ if ~exist('run_ICA','var') || isempty(run_ICA), run_ICA = 1; end
 if ~exist('num_prior','var') || isempty(num_prior), num_prior = string(3); else, num_prior = string(num_prior); end
 
 mergedSetName = "everyEEG";
-process_params = "256c_b512";
+cores = "64"; block_size = "1024";
+process_params = cores + "c_b"+ block_size;
 %% construct necessary paths and files & adding paths
 addpath(genpath(fPath))
 p2l = init_paths(platform, machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
@@ -71,10 +72,11 @@ if saveFloat
         expanse_opts = ["files",p2l.mAmica + f2l.float_lin,"outdir", p2l.incr + "amicaout/"];
         general_opts = ["data_dim", string(EEG.nbchan),...
             "field_dim", string(EEG.pnts), "pcakeep", string(EEG.nbchan-1),...
-            "numprocs", 2, "max_threads", 120, "block_size", 512, "do_opt_block", 0,...
-            "doPCA", 1, "writestep", 100, "do_history", 1, "histstep", 100,...
+            "numprocs", 1, "max_threads", 60, "block_size", 1024, "do_opt_block", 0,...
+            "doPCA", 1, "writestep", 50, "do_history", 1 "histstep", 50,...
             "num_models", i, "num_mix_comps", str2num(num_prior),...
-            "do_reject", amica_frame_rej, "numrej", 5, "rejstart", 1, "rejint", 3, "rejsig", 3.01];
+            "do_reject", amica_frame_rej, "numrej", 5, "rejstart", 1, "rejint", 3, "rejsig", 3.01,...
+            "min_grad_norm", "1.00000e-08", "min_dll", "1.00000e-08"];
 
         write_amica_param(f2l.param_lin,[linux_opts, general_opts]);
         write_amica_param(f2l.param_expanse,[expanse_opts, general_opts]);        
@@ -94,9 +96,9 @@ for i = model_count
     f2l.SLURM = p2l.incr + subj + "_m" + string(i) + "_amica_expanse";
     f2l.param_stokes = p2l.incr + subj + "_" + mergedSetName + "_m" + string(i) + "_expanse.param";
     opt.file = f2l.SLURM; opt.jobName = "mamc_" + subj + "_" + string(i);
-    opt.partition = "compute"; opt.account = "csd403"; opt.maxThreads = 128; % param file max_threads + 2
-    opt.email = "syshirazi@ucsd.edu"; opt.memory = 249325; % opt.maxThreads*2-1;
-    opt.walltime = "05:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
+    opt.partition = "shared"; opt.account = "csd403"; opt.maxThreads = 64; % param file max_threads + 2
+    opt.email = "syshirazi@ucsd.edu"; opt.memory = floor(opt.maxThreads*2*0.94); % opt.maxThreads*2-1;
+    opt.walltime = "10:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
     opt.incr_path = p2l.incr;
     write_AMICA_SLURM_file(opt);
 end
@@ -129,15 +131,15 @@ fprintf(fid,"#SBATCH --job-name=" + opt.jobName + " # Job name\n");
 % fprintf(fid,"#SBATCH --mail-type=ALL  # Mail events (NONE, BEGIN, END, FAIL, ALL)\n");
 % fprintf(fid,"#SBATCH --mail-user=" + opt.email + "  # Where to send mail\n"); % disabled as it will create so many emails for incremental ICA :D
 fprintf(fid,"#SBATCH --ntasks=" + string(opt.maxThreads) + " # Run a single task\n");
-fprintf(fid,"#SBATCH --mem=" + string(opt.memory) + "M # default is 1G per task/core\n");
-fprintf(fid,"#SBATCH --nodes=2  # Number of CPU cores per task\n"); % only run on one node due to mpi config of amica15ub
+fprintf(fid,"#SBATCH --mem=" + string(opt.memory) + "G # default is 1G per task/core\n");
+fprintf(fid,"#SBATCH --nodes=1  # Number of CPU cores per task\n"); % only run on one node due to mpi config of amica15ub
 fprintf(fid,"#SBATCH --time=" + opt.walltime + " # Time limit hrs:min:sec\n");
 fprintf(fid,"#SBATCH --output=" + opt.incr_path + opt.jobName + ".out # Standard output and error log\n");
 fprintf(fid,"#SBATCH --error=" + opt.incr_path + opt.jobName + ".err # Standard output and error log\n");
 fprintf(fid,'# Run your program with correct path and command line options\n');
 % job commands
 fprintf(fid,"module purge\n");
-fprintf(fid,"module load cpu slurm gcc openmpi\n");
+fprintf(fid,"module load cpu/0.17.3b  gcc/10.2.0/npcyll4 slurm openmpi/4.1.1\n");
 
 fprintf(fid, "#SET the number of openmp threads\n");
 fprintf(fid,"export MV2_ENABLE_AFFINITY=0\n");
