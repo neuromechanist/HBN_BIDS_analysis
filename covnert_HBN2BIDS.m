@@ -20,7 +20,7 @@ datarepo = "~/yahya/HBN_fulldataset/";
 remediedrepo = "~/yahya/HBN/vidBIDS/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
-bids_export_path = "~/yahya/cmi_vid_bids_R3/";
+bids_export_path = "~/yahya/cmi_vid_bids_R3_10/";
 addpath(genpath(p2l.codebase))
 no_subj_inf_cols = 8;
 tnames = string(plist.Properties.VariableNames); % task names
@@ -33,6 +33,7 @@ clear EEG
 target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK"];
 task_name_forBIDS = {'RestingState', 'DespicableMe', 'FunwithFractals', 'ThePresent', 'DiaryOfAWimpyKid'};
 target_release = ["R3"]; %#ok<NBRAK2> 
+num_subjects = 10; % if -1, all subjects in the release will be added.
 max_allowed_missing_dataset = 0;
 
 % Fields are all in lower case, follwing the BIDS convention
@@ -54,11 +55,11 @@ pInfo_desc.full_pheno.Description = 'Does the participant have a full phenotypic
 pInfo_desc.full_pheno.levels.Yes = 'Subject has full phenotypic file';
 pInfo_desc.full_pheno.levels.No = 'Subject does not have full phenotypic file';
 
-pInfo_desc.RestingState.Description = 'File size of the resting-state trial';
-pInfo_desc.DespicableMe.Description = 'File size of wathing the Despicable Me trial';
-pInfo_desc.FunwithFractals.Description = 'File size of wathing the Fun with Fractals trial';
-pInfo_desc.ThePresent.Description = 'File size of wathing the The Present trial';
-pInfo_desc.DiaryOfAWimpyKid.Description = 'File size of wathing the Diary Of A Wimpy Kid trial';
+pInfo_desc.RestingState.Description = 'File size of the resting-state trial in (kB)';
+pInfo_desc.DespicableMe.Description = 'File size of wathing the Despicable Me trial (kB)';
+pInfo_desc.FunwithFractals.Description = 'File size of wathing the Fun with Fractals trial (kB)';
+pInfo_desc.ThePresent.Description = 'File size of wathing the The Present trial (kB)';
+pInfo_desc.DiaryOfAWimpyKid.Description = 'File size of wathing the Diary Of A Wimpy Kid trial (kB)';
 
 
 
@@ -83,6 +84,7 @@ for r = 1: height(target_table)
         data(end).task = task_name_forBIDS;
         pInfo = [pInfo;cellstr(t{1,req_info})];
     end
+    if num_subjects ~= -1, if r > num_subjects; break; end, end
 end
 data(1) = [];
 
@@ -113,7 +115,7 @@ for i = 1:length(data)
         EEG.(f) = pop_chanedit(EEG.(f), 'load', {char(f2l.elocs),'filetype','autodetect'});
         EEG.(f) = pop_chanedit(EEG.(f), 'setref',{'1:129','Cz'});
         [EEG.(f).event.latency] = deal(EEG.(f).event.sample);
-        EEG.(f) = replace_event_type(EEG.(f), 'lookup_events.tsv');
+        EEG.(f) = replace_event_type(EEG.(f), 'lookup_events.tsv', 1);
         EEG.(f) = eeg_checkset(EEG.(f), 'makeur');
         EEG.(f) = eeg_checkset(EEG.(f), 'chanlocs_homogeneous');
         % save the remedied EEG structure.
@@ -126,6 +128,9 @@ for i = 1:length(data)
     end       
 end
 pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
+
+
+tInfo.PowerLineFrequency = 60;
 %% Now we probably can call bids_export
 
-bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo, 'pInfoDesc', pInfo_desc);
+bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo);
