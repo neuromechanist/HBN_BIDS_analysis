@@ -125,10 +125,25 @@ for p = participant_list
     braincomp_count.sixty(participant_list==p) = length(braincomps.(p).sixty);
 end
 
+%% create the component-count table
+braincomp_count.summary = table('Size',[length(participant_list), 5],'VariableTypes',["string", repmat("int16",[1,4])],'VariableNames',["subject", "sixty", "seventy", "eighty", "ninety"]);
+braincomp_count.summary.subject = participant_list';
+for p = ["sixty", "seventy", "eighty", "ninety"]
+    braincomp_count.summary.(p) = braincomp_count.(p)';
+end
+
+[~,sort_index] = sort(braincomp_count.seventy,'descend');
+braincomp_count.sorted_summary = braincomp_count.summary(sort_index, :);
+
+writetable(braincomp_count.sorted_summary, "~/_git/HBN_BIDS_analysis/funcs/tsv/sorted_participants_70p_164.tsv",...
+    "FileType","text","Delimiter","\t","WriteVariableNames",true,"LineEnding",'\n')
+
+writetable(braincomp_count.sorted_summary(:,"subject"), "~/_git/HBN_BIDS_analysis/funcs/tsv/sorted_plistONLY_70p_164.txt",...
+    "FileType","text","Delimiter","\t","WriteVariableNames",false,"LineEnding",'\n')
 %% number of brain components
 figure
 boxplot([braincomp_count.ninety', braincomp_count.eighty', braincomp_count.seventy', braincomp_count.sixty'],'Notch','on','Labels',{'90%', '80%', '70%', '60%'},'Whisker',1)
-title('number of brain components per ICLABEL classification (n=154)')
+title('number of brain components per ICLABEL classification (n=164)')
 xlabel("probability of the dipole being Brain")
 ylabel("number of dipoles")
 
@@ -181,7 +196,7 @@ figure
 % boxplot(rej_elec_count,'Notch','on','Labels',{'number of rejected electrode'},'Whisker',1)
 histogram(rej_elec_count,20)
 
-title('number of rejected electrodes across subjes (n=154)')
+title('number of rejected electrodes across subjes (n=164)')
 ylabel('number of subjects')
 xlabel('number of electrodes')
 
@@ -209,6 +224,6 @@ figure
 % boxplot(rej_frame_ratio,'Notch','on','Labels',{'Rejected frame percentage'},'Whisker',1)
 histogram(rej_elec_count,20)
 
-title('rejected frame percentage across subjes (n=154)')
+title('rejected frame percentage across subjes (n=164)')
 ylabel('number of subjects')
 xlabel('rejected data (%)')
