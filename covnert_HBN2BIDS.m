@@ -22,16 +22,20 @@ dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
 bids_export_path = "~/yahya/cmi_vid_bids_R3_10/";
 addpath(genpath(p2l.codebase))
-no_subj_inf_cols = 8;
+no_subj_info_cols = 8; % 
 tnames = string(plist.Properties.VariableNames); % task names
-tnames = tnames(no_subj_inf_cols+1:end);
+tnames = tnames(no_subj_info_cols+1:end);
 clear EEG
 
 %% Define tasks
 % Let's also define the tasks and potentially the release that we want to include 
 % in the BIDS
-target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK"];
-task_name_forBIDS = {'RestingState', 'DespicableMe', 'FunwithFractals', 'ThePresent', 'DiaryOfAWimpyKid'};
+target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", ...
+    "SAIIT_2AFC_Block1", "SAIIT_2AFC_Block2", "SAIIT_2AFC_Block3",...
+    "SurroundSupp_Block1", "SurroundSupp_Block2", "vis_learn", "WISC_ProcSpeed"];
+task_name_forBIDS = {'RestingState', 'DespicableMe', 'FunwithFractals', 'ThePresent', 'DiaryOfAWimpyKid',...
+    'contrastChangeDetectionBlock1', 'contrastChangeDetectionBlock2', 'contrastChangeDetectionBlock3', ...
+    'surroundSuppBlock1', 'surroundSuppBlock2', 'seqLearning', 'symbolSearch'};
 target_release = ["R3"]; %#ok<NBRAK2> 
 num_subjects = 10; % if -1, all subjects in the release will be added.
 max_allowed_missing_dataset = 0;
@@ -47,7 +51,7 @@ pInfo_desc.sex.LongName = 'Gender'; pInfo_desc.sex.Description = 'Gender';
 pInfo_desc.sex.Levels.F = 'Female'; pInfo_desc.sex.Levels.M = 'Male' ;
 pInfo_desc.age.LongName = 'Age'; pInfo_desc.age.Description = 'Age in years';
 pInfo_desc.ehq_total.LongName = 'Handedness';
-pInfo_desc.ehq_total.Description = 'Edinburgh Handedness Questionnair, +100=Fully Right-handed, -100=Fully Left-handed';
+pInfo_desc.ehq_total.Description = 'Edinburgh Handedness Questionnaire, +100=Fully Right-handed, -100=Fully Left-handed';
 pInfo_desc.commercial_use.Description = 'Did the participant consent to commercial use of data?';
 pInfo_desc.commercial_use.Levels.Yes = 'Subject gave consent to commercial use of data';
 pInfo_desc.commercial_use.Levels.No = 'Subject did not give consent to commercial use of data';
