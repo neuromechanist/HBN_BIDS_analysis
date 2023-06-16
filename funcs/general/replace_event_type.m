@@ -20,7 +20,7 @@ if ~exist('remove_value_column','var') || isempty(remove_value_column), remove_v
 % Load the lookup_events table
 lookup_events = readtable('lookup_events.tsv', 'FileType', 'text', 'Delimiter', '\t');
 lookup_events.code = string(lookup_events{:,"code"}); % Make the first column a string
-duplicate_event_codes = ["8","12", "13", "14"]; % these event codes are used for more than one event type in HBN data
+duplicate_event_codes = ["8","12", "13", "14", "20"]; % these event codes are used for more than one event type in HBN data
 
 % remove the value column, as it is inconsistent with the BIDS converter
 if remove_value_column, EEG.event = rmfield(EEG.event, 'value'); end
@@ -30,13 +30,16 @@ for i = 1:length(EEG.event)
     if any(string(code) == duplicate_event_codes)
         switch string(code)
             case "8"
-                if contains(EEG.setname,'contrastChange'), code = '8_1'; end
+                if contains(EEG.setname,'contrastChange'), code = '8.1'; end
             case "12"
-                if contains(EEG.setname,'contrastChange'), code = '12_1'; end
+                if contains(EEG.setname,'contrastChange'), code = '12.1'; end
             case "13"
-                if contains(EEG.setname,'contrastChange'), code = '13_1'; end
+                if contains(EEG.setname,'contrastChange'), code = '13.1'; end
             case "14"
-                if contains(EEG.setname,'symbolSearch'), code = '14_1'; end
+                if contains(EEG.setname,'symbolSearch'), code = '14.1'; end
+            case "20"
+                if contains(EEG.setname,'symbolSearch'), code = '20.1'; end
+                
         end
     end
     index = find(strcmp(lookup_events{:, 1}, code)); % Find the corresponding index in the lookup_events table
