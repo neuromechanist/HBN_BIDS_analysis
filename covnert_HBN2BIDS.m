@@ -45,7 +45,7 @@ end
 
 target_release = ["R3"]; %#ok<NBRAK2> 
 num_subjects = 21; % if -1, all subjects in the release will be added.
-max_allowed_missing_dataset = 0;
+max_allowed_missing_dataset = length(BIDS_set_name)-1; % effectively letting any subkect with as few as one run to be included
 
 % Fields are all in lower case, follwing the BIDS convention
 req_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno", ...
@@ -66,15 +66,18 @@ pInfo_desc.full_pheno.Description = 'Does the participant have a full phenotypic
 pInfo_desc.full_pheno.levels.Yes = 'Subject has full phenotypic file';
 pInfo_desc.full_pheno.levels.No = 'Subject does not have full phenotypic file';
 
-pInfo_desc.RestingState.Description = 'File size of the resting-state trial in (kB)';
-pInfo_desc.DespicableMe.Description = 'File size of watching the Despicable Me trial (kB)';
-pInfo_desc.FunwithFractals.Description = 'File size of watching the Fun with Fractals trial (kB)';
-pInfo_desc.ThePresent.Description = 'File size of watching the The Present trial (kB)';
-pInfo_desc.DiaryOfAWimpyKid.Description = 'File size of watching the Diary Of A Wimpy Kid trial (kB)';
-pInfo_desc.contrastChangeDetection.Description = 'File size of the contrast change task  (KB)';
-pInfo_desc.surroundSupp.Description = 'File size of the surrond suppression task  (KB)';
-pInfo_desc.seqLearning.Description = 'File size of the sequence learning task  (KB)';
-pInfo_desc.symbolSearch.Description = 'File size of the symbol search task  (KB)';
+pInfo_desc.RestingState_1.Description = 'File size of the resting-state trial in (kB)';
+pInfo_desc.DespicableMe_1.Description = 'File size of watching the Despicable Me trial (kB)';
+pInfo_desc.FunwithFractals_1.Description = 'File size of watching the Fun with Fractals trial (kB)';
+pInfo_desc.ThePresent_1.Description = 'File size of watching the The Present trial (kB)';
+pInfo_desc.DiaryOfAWimpyKid_1.Description = 'File size of watching the Diary Of A Wimpy Kid trial (kB)';
+pInfo_desc.contrastChangeDetection_1.Description = 'File size of the 1st run of the contrast change task (KB)';
+pInfo_desc.contrastChangeDetection_2.Description = 'File size of the 2nd run of the contrast change task (KB)';
+pInfo_desc.contrastChangeDetection_3.Description = 'File size of the 3rd run of the contrast change task (KB)';
+pInfo_desc.surroundSupp_1.Description = 'File size of the 1st run of the surround suppression task (KB)';
+pInfo_desc.surroundSupp_2.Description = 'File size of the 2nd run of the surround suppression task (KB)';
+pInfo_desc.seqLearning_1.Description = 'File size of the sequence learning task (KB)';
+pInfo_desc.symbolSearch_1.Description = 'File size of the symbol search task (KB)';
 
 %% Create the structure as required by EEGLAB's bids export.
 % While the files are not remedied and are not on EEGLAB's format, it is good 
@@ -82,23 +85,25 @@ pInfo_desc.symbolSearch.Description = 'File size of the symbol search task  (KB)
 % making the structure.
 data = struct;
 pInfo = cellstr([lower(["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno"]), ...
-    BIDS_task_name]);
+    BIDS_set_name]);
 target_table = plist(string(table2array(plist(:,"release_number")))==target_release,:);
 for r = 1: height(target_table)
     t = target_table(r,:);
     skip_this_row = false;
 
-    if length(find(t{1, target_tasks}==0)) > max_allowed_missing_dataset, skip_this_row = true; end
+    if length(find(t{1, target_tasks}==0)) > max_allowed_missing_dataset, skip_this_row = true;
+    else, temp_target_tasks = target_tasks(t{1, target_tasks}~=0);
+    end
     if ~skip_this_row
         data(end+1).subject = char(t.participant_id);
         remedied_path = remediedrepo + string(t.participant_id) + dpath;
-        for g = target_tasks
-            data(end).raw_file(g==target_tasks) = string(fnames{string(fnames.FIELD_NAME)==g,"RAW_FILE_NAME"})';
-            data(end).file{g==target_tasks} = cellstr(remedied_path + string(fnames{string(fnames.FIELD_NAME)==g,"TARGET_FILE_NAME"})');
+        for g = temp_target_tasks
+            data(end).raw_file(g==temp_target_tasks) = string(fnames{string(fnames.FIELD_NAME)==g,"RAW_FILE_NAME"})';
+            data(end).file{g==temp_target_tasks} = cellstr(remedied_path + string(fnames{string(fnames.FIELD_NAME)==g,"TARGET_FILE_NAME"})');
         end
-        data(end).task = BIDS_task_name; % This will create an error if theere are missing datasets.
-        data(end).run = BIDS_run_seq;
-        data(end).set_name = BIDS_set_name;
+        data(end).task = BIDS_task_name(t{1, target_tasks}~=0);
+        data(end).run = BIDS_run_seq(t{1, target_tasks}~=0);
+        data(end).set_name = BIDS_set_name(t{1, target_tasks}~=0);
         pInfo = [pInfo;cellstr(t{1,req_info})];
     end
     if num_subjects ~= -1, if r > num_subjects; break; end, end
