@@ -34,6 +34,7 @@ code	description
 33	learningBlock_3
 34	learningBlock_4
 35	learningBlock_5
+50	seqLearning_stop
 14.1	trialResponse
 20.1	newPage
 4	stim_ON
@@ -47,4 +48,3 @@ code	description
 102	video_stop
 103	video_stop
 104	video_stop
-			
