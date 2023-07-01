@@ -17,8 +17,10 @@ function EEG = replace_event_type(EEG, lookup_table, remove_value_column)
 % (c) Seyed Yahya Shirazi, 04/2023 UCSD, INC, SCCN
 
 if ~exist('remove_value_column','var') || isempty(remove_value_column), remove_value_column = 0; end
+if ~exist('lookup_table','var') || isempty(lookup_table), lookup_table = 'lookup_events.tsv'; end
+
 % Load the lookup_events table
-lookup_events = readtable('lookup_events.tsv', 'FileType', 'text', 'Delimiter', '\t');
+lookup_events = readtable(lookup_table, 'FileType', 'text', 'Delimiter', '\t');
 lookup_events.code = string(lookup_events{:,"code"}); % Make the first column a string
 duplicate_event_codes = ["8","12", "13", "14", "20"]; % these event codes are used for more than one event type in HBN data
 
