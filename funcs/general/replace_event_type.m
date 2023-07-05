@@ -1,5 +1,5 @@
 function EEG = replace_event_type(EEG, lookup_table, remove_vlaue_column)
-%REPLACE_EVNET_TYPE substitute the event names (ie, types) using a lookup table
+%REPLACE_EVENT_TYPE substitute the event names (ie, types) using a lookup table
 %   It so happends that simple codes are being used as event types in
 %   EEG files. Such codes would be problamtic if proper descitiption is
 %   not attached. A simple fix can be replacing the event codes with their
