@@ -86,7 +86,7 @@ pInfo_desc.symbolSearch_1.Description = 'File size of the symbol search task (KB
 data = struct;
 pInfo = cellstr([lower(["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno"]), ...
     BIDS_set_name]);
-target_table = plist(string(table2array(plist(:,"release_number")))==target_release,:);
+target_table = plist(any(table2array(plist(:,"release_number"))==target_release,2),:);
 for r = 1: height(target_table)
     t = target_table(r,:);
     skip_this_row = false;
