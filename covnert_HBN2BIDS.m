@@ -17,7 +17,7 @@ plist.Commercial_Use = string(plist{:,"Commercial_Use"});
 plist.Sex = string(plist{:,"Sex"});
 plist.Sex(plist.Sex=="1") = "F"; plist.Sex(plist.Sex=="0") = "M";
 datarepo = "~/yahya/HBN_fulldataset/";
-remediedrepo = "~/yahya/HBN/vidBIDS/";
+remediedrepo = "~/yahya/HBN/vidBIDS_test/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
 bids_export_path = "~/yahya/cmi_bids_R3_20/";
@@ -36,11 +36,15 @@ target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", 
 BIDS_task_name = {'RestingState', 'DespicableMe', 'FunwithFractals', 'ThePresent', 'DiaryOfAWimpyKid',...
     'contrastChangeDetection', 'contrastChangeDetection', 'contrastChangeDetection', ...
     'surroundSupp', 'surroundSupp', 'seqLearning', 'symbolSearch'};
-BIDS_run_seq = [1,1,1,1,1,...
+BIDS_run_seq = [nan,nan,nan,nan,nan,...
     1,2,3,...
-    1,2,1,1];
+    1,2,nan,nan];
 for i = 1:length(BIDS_task_name)
-    BIDS_set_name(i) = string(BIDS_task_name(i)) + "_" + string(BIDS_run_seq(i));
+    if isnan(BIDS_run_seq(i))
+        BIDS_set_name(i) = string(BIDS_task_name(i));
+    else
+        BIDS_set_name(i) = string(BIDS_task_name(i)) + "_" + string(BIDS_run_seq(i));
+    end
 end
 
 target_release = ["R3"]; %#ok<NBRAK2> 
@@ -66,18 +70,18 @@ pInfo_desc.full_pheno.Description = 'Does the participant have a full phenotypic
 pInfo_desc.full_pheno.levels.Yes = 'Subject has full phenotypic file';
 pInfo_desc.full_pheno.levels.No = 'Subject does not have full phenotypic file';
 
-pInfo_desc.RestingState_1.Description = 'File size of the resting-state trial in (kB)';
-pInfo_desc.DespicableMe_1.Description = 'File size of watching the Despicable Me trial (kB)';
-pInfo_desc.FunwithFractals_1.Description = 'File size of watching the Fun with Fractals trial (kB)';
-pInfo_desc.ThePresent_1.Description = 'File size of watching the The Present trial (kB)';
-pInfo_desc.DiaryOfAWimpyKid_1.Description = 'File size of watching the Diary Of A Wimpy Kid trial (kB)';
+pInfo_desc.RestingState.Description = 'File size of the resting-state trial in (kB)';
+pInfo_desc.DespicableMe.Description = 'File size of watching the Despicable Me trial (kB)';
+pInfo_desc.FunwithFractals.Description = 'File size of watching the Fun with Fractals trial (kB)';
+pInfo_desc.ThePresent.Description = 'File size of watching the The Present trial (kB)';
+pInfo_desc.DiaryOfAWimpyKid.Description = 'File size of watching the Diary Of A Wimpy Kid trial (kB)';
 pInfo_desc.contrastChangeDetection_1.Description = 'File size of the 1st run of the contrast change task (KB)';
 pInfo_desc.contrastChangeDetection_2.Description = 'File size of the 2nd run of the contrast change task (KB)';
 pInfo_desc.contrastChangeDetection_3.Description = 'File size of the 3rd run of the contrast change task (KB)';
 pInfo_desc.surroundSupp_1.Description = 'File size of the 1st run of the surround suppression task (KB)';
 pInfo_desc.surroundSupp_2.Description = 'File size of the 2nd run of the surround suppression task (KB)';
-pInfo_desc.seqLearning_1.Description = 'File size of the sequence learning task (KB)';
-pInfo_desc.symbolSearch_1.Description = 'File size of the symbol search task (KB)';
+pInfo_desc.seqLearning.Description = 'File size of the sequence learning task (KB)';
+pInfo_desc.symbolSearch.Description = 'File size of the symbol search task (KB)';
 
 %% Create the structure as required by EEGLAB's bids export.
 % While the files are not remedied and are not on EEGLAB's format, it is good 
@@ -124,6 +128,7 @@ for i = 1:length(data)
         p2l.rawEEG = datarepo + string(data(i).subject) + dpath;
         tempload = load(p2l.rawEEG + data(i).raw_file(n==eeg_set_names));
         EEG.(n) = tempload.EEG;
+        disp("loaded "+p2l.rawEEG + data(i).raw_file(n==eeg_set_names))
     end
     
     p2l.rawEEG_updated = remediedrepo + string(data(i).subject) + dpath;
@@ -135,11 +140,12 @@ for i = 1:length(data)
         EEG.(n) = pop_chanedit(EEG.(n), 'load', {char(f2l.elocs),'filetype','autodetect'});
         EEG.(n) = pop_chanedit(EEG.(n), 'setref',{'1:129','Cz'});
         [EEG.(n).event.latency] = deal(EEG.(n).event.sample);
-        EEG.(n) = replace_event_type(EEG.(n), 'lookup_events.tsv', 1);
+        EEG.(n) = replace_event_type(EEG.(n), 'funcs/tsv/lookup_events.tsv', 1);
         EEG.(n) = eeg_checkset(EEG.(n), 'makeur');
         EEG.(n) = eeg_checkset(EEG.(n), 'chanlocs_homogeneous');
         % save the remedied EEG structure.
         pop_saveset(EEG.(n), 'filename', char(n), 'filepath', char(p2l.rawEEG_updated));
+        disp("saved the remedied file for" + n)
     end
     catch
         unav_dataset = [unav_dataset, string(data(i).subject)];
