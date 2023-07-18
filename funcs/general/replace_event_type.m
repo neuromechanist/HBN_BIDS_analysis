@@ -17,7 +17,7 @@ function EEG = replace_event_type(EEG, lookup_table, remove_value_column)
 % (c) Seyed Yahya Shirazi, 04/2023 UCSD, INC, SCCN
 
 if ~exist('remove_value_column','var') || isempty(remove_value_column), remove_value_column = 0; end
-if ~exist('lookup_table','var') || isempty(lookup_table), lookup_table = 'lookup_events.tsv'; end
+if ~exist('lookup_table','var') || isempty(lookup_table), lookup_table = '../tsv/lookup_events.tsv'; end
 
 % Load the lookup_events table
 lookup_events = readtable(lookup_table, 'FileType', 'text', 'Delimiter', '\t');
