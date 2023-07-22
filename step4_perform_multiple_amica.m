@@ -27,7 +27,7 @@ if ~exist('run_ICA','var') || isempty(run_ICA), run_ICA = 1; end
 if ~exist('num_prior','var') || isempty(num_prior), num_prior = string(3); else, num_prior = string(num_prior); end
 
 mergedSetName = "everyEEG";
-cores = "64"; block_size = "1024";
+cores = "64"; block_size = "512";
 process_params = cores + "c_b"+ block_size;
 %% construct necessary paths and files & adding paths
 addpath(genpath(fPath))
