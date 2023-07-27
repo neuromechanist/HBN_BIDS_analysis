@@ -16,7 +16,7 @@ if ~exist('mergedSetName','var') || isempty(mergedSetName), mergedSetName = "eve
 if length(mergedSetName)>1
     warning("Multiple concatenated datasets provided, looping through each")
     for m = mergedSetName
-        step2_incr_rej(subj, m, gTD, saveFloat, expanse, platform, machine, no_process, run_incr_ICA)
+        step2_incr_rej(subj, m, recompute, gTD, saveFloat, expanse, platform, machine, no_process, run_incr_ICA)
     end
     return;
 end
@@ -65,7 +65,7 @@ all_bad_chans =[129];
 EEG = pop_loadset('filename',char(f2l.alltasks),'filepath',char(p2l.EEGsets));
 if ~exist(f2l.icaStruct + "_all_inrements_rejbadchannels.mat","file") || recompute
     % now remove the channles based on different measures
-    ICA_STRUCT = incremental_chan_rej(EEG,all_bad_chans,1,[],[],p2l.figs,1);
+    ICA_STRUCT = incremental_chan_rej(EEG,mergedSetName,1,[],[],all_bad_chans,p2l.figs,1);
     save(f2l.icaStruct + "_all_inrements_rejbadchannels","ICA_STRUCT");
 else
     load(f2l.icaStruct + "_all_inrements_rejbadchannels.mat", "ICA_STRUCT");

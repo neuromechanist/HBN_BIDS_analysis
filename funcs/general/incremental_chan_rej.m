@@ -1,4 +1,4 @@
-function [ICA_STRUCT, chan_rej_log] = incremental_chan_rej(EEG, merged_setName, tcr_chans, ret_tcr_chan, incr, good_chans,path,saveF)
+function [ICA_STRUCT, chan_rej_log] = incremental_chan_rej(EEG, mergedSetName, tcr_chans, ret_tcr_chan, incr, good_chans,path,saveF)
 % This function rejects channles in increments and saves the results in the
 % output arrays.
 %
