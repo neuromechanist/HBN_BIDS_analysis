@@ -36,6 +36,7 @@ for p = transpose(string(plist.participant_id))
     if ~isempty(pindex) % the participant might not be in the eeg-content file!
         endofp = 0; i = 1;
         while endofp == 0
+            if isnan(eegfiles.filesize(pindex+i)), break; end % next subj is the next line, meaning the first subj has no data.
             for t = all_eeg_tasks
                 if contains(eegfiles{pindex+i, "filename"}, t)
                     plist{plist.participant_id==p, t} = eegfiles{pindex+i, "filesize"};
@@ -58,4 +59,4 @@ column_order = [["subj_no", "participant_id", "release_number", "Sex", "Age",...
 augmented_list = plist(:,column_order);
 
 % now write the table
-writetable(augmented_list, "tsv/participants_augmented_filesize.tsv", "FileType","text");
+writetable(augmented_list, "funcs/tsv/participants_augmented_filesize.tsv", "FileType","text");
