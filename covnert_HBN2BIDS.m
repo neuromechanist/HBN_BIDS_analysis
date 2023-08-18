@@ -8,6 +8,11 @@
 
 %% Initialize
 clearvars
+
+target_release = "all";%["R3"]; %#ok<NBRAK2> 
+num_subjects = -1; % if -1, all subjects in the release will be added.
+max_allowed_missing_dataset = length(BIDS_set_name)-1; % effectively letting any subkect with as few as one run to be included
+
 p2l = init_paths("linux", "expanse", "HBN", 1, 1);
 f2l.elocs = p2l.eegRepo + "GSN_HydroCel_129.sfp";  % f2l = file to load
 
@@ -20,7 +25,7 @@ datarepo = "~/yahya/HBN_fulldataset/";
 remediedrepo = "~/yahya/HBN/vidBIDS_test/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
-bids_export_path = "~/yahya/cmi_bids_R3_20/";
+bids_export_path = "~/yahya/cmi_bids_R1-R11/";
 addpath(genpath(p2l.codebase))
 no_subj_info_cols = 8; % 
 tnames = string(plist.Properties.VariableNames); % task names
@@ -30,6 +35,7 @@ clear EEG
 %% Define tasks
 % Let's also define the tasks and potentially the release that we want to include 
 % in the BIDS
+% target_tasks = ["Video_TP"]; BIDS_task_name = ["ThePresent"]; % in case of a single task 
 target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", ...
     "SAIIT_2AFC_Block1", "SAIIT_2AFC_Block2", "SAIIT_2AFC_Block3",...
     "SurroundSupp_Block1", "SurroundSupp_Block2", "vis_learn", "WISC_ProcSpeed"];
@@ -47,13 +53,9 @@ for i = 1:length(BIDS_task_name)
     end
 end
 
-target_release = ["R3"]; %#ok<NBRAK2> 
-num_subjects = 21; % if -1, all subjects in the release will be added.
-max_allowed_missing_dataset = length(BIDS_set_name)-1; % effectively letting any subkect with as few as one run to be included
-
 % Fields are all in lower case, follwing the BIDS convention
-req_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno", ...
-    target_tasks];
+base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno"];
+req_info = [base_info, target_tasks]; target_info = [base_info, BIDS_task_name];
 
 %% define the pInfo descriptions
 pInfo_desc.participant_id.Description = 'The prticipant ID set in the HBN dataset';
@@ -90,7 +92,11 @@ pInfo_desc.symbolSearch.Description = 'File size of the symbol search task (KB)'
 data = struct;
 pInfo = cellstr([lower(["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno"]), ...
     BIDS_set_name]);
-target_table = plist(any(table2array(plist(:,"release_number"))==target_release,2),:);
+if target_release == "all"
+    target_table = plist;
+else
+    target_table = plist(any(table2array(plist(:,"release_number"))==target_release,2),:);
+end
 for r = 1: height(target_table)
     t = target_table(r,:);
     skip_this_row = false;
@@ -121,15 +127,15 @@ unav_dataset = [];
 unav_dataset_idx = [];
 for i = 1:length(data)
     try
-    EEG = [];
-    subj = string(data(i).subject);
-    eeg_set_names = data(i).set_name;
-    for n = eeg_set_names
-        p2l.rawEEG = datarepo + string(data(i).subject) + dpath;
-        tempload = load(p2l.rawEEG + data(i).raw_file(n==eeg_set_names));
-        EEG.(n) = tempload.EEG;
-        disp("loaded "+p2l.rawEEG + data(i).raw_file(n==eeg_set_names))
-    end
+        EEG = [];
+        subj = string(data(i).subject);
+        eeg_set_names = data(i).set_name;
+        for n = eeg_set_names
+            p2l.rawEEG = datarepo + string(data(i).subject) + dpath;
+            tempload = load(p2l.rawEEG + data(i).raw_file(n==eeg_set_names));
+            EEG.(n) = tempload.EEG;
+            disp("loaded "+p2l.rawEEG + data(i).raw_file(n==eeg_set_names))
+        end
     
     p2l.rawEEG_updated = remediedrepo + string(data(i).subject) + dpath;
     if ~exist(p2l.rawEEG_updated, "dir"), mkdir(p2l.rawEEG_updated); end
@@ -155,5 +161,7 @@ for i = 1:length(data)
 end
 pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 %% Now we probably can call bids_export
-
+% keep only relevant information in pInfo_desc
+pInfo_fields = string(fieldnames(pInfo_desc))'; undesired_pInfo_field = pInfo_fields(~contains(pInfo_fields,target_info,'IgnoreCase',true));
+pInfo_desc = rmfield(pInfo_desc,undesired_pInfo_field);
 bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo);
