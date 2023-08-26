@@ -14,14 +14,21 @@ function step3p2_export_incr_toBIDS(BIDS_path, deriv_name, only_with_Raw_present
 %% initialize
 clearvars -except BIDS_path deriv_name only_with_Raw_present
 if ~exist('BIDS_path','var') || isempty(BIDS_path), warning("BIDS_path is required"); BIDS_path = "~/yahya/cmi_vid_bids_R3/";end
-if ~exist('deriv_name','var') || isempty(deriv_name), deriv_name = "yahya"; end
+if ~exist('deriv_name','var') || isempty(deriv_name), deriv_name = "yahya_everyEEG"; end
 if ~exist('only_with_Raw_present','var') || isempty(only_with_Raw_present), only_with_Raw_present = 1; end
-if ~exist('mergedSetName','var') || isempty(mergedSetName), mergedSetName = "videoEEG"; end
+if ~exist('mergedSetName','var') || isempty(mergedSetName), mergedSetName = "everyEEG"; end
 
 EEG_files_path = "~/HBN_EEG/";
 
-target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK"];
-task_name_forBIDS = {'RestingState', 'DespicableMe', 'FunwithFractals', 'ThePresent', 'DiaryOfAWimpyKid'};
+target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", ... % videos ICs are done with videoEEG
+    "SAIIT_2AFC_Block1", "SAIIT_2AFC_Block2", "SAIIT_2AFC_Block3",...
+    "SurroundSupp_Block1", "SurroundSupp_Block2", "vis_learn", "WISC_ProcSpeed"];
+BIDS_task_name = {'RestingState', 'DespicableMe', 'FunwithFractals', 'ThePresent', 'DiaryOfAWimpyKid',...
+    'contrastChangeDetection', 'contrastChangeDetection', 'contrastChangeDetection', ...
+    'surroundSupp', 'surroundSupp', 'seqLearning', 'symbolSearch'};
+BIDS_run_seq = [nan,nan,nan,nan,nan,...
+    1,2,3,...
+    1,2,nan,nan];
 
 p2l = init_paths("linux", "expanse", "HBN", 1, 1);
 addpath(genpath(p2l.codebase))
@@ -75,7 +82,11 @@ for f = string(fieldnames(ICA_STRUCT)')
                EEG_file = f + "_" + target_tasks(t) + ".set";           
                EEG = pop_loadset('filename', char(EEG_file), 'filepath', char(EEG_path));
                EEG = update_EEG(EEG, ICA_STRUCT.(f), true);
-               BIDS_filename = "sub-"+ f + "_task-" + task_name_forBIDS(t) + "_eeg";
+               if isnan(BIDS_run_seq(t))
+                    BIDS_filename = "sub-"+ f + "_task-" + BIDS_task_name(t) + "_eeg";
+               else
+                    BIDS_filename = "sub-"+ f + "_task-" + BIDS_task_name(t) + "_run-" + string(BIDS_run_seq(t)) + "_eeg";
+               end
                BIDS_filepath = BIDS_path + "derivatives/" + deriv_name + "/sub-" + f + "/eeg/";
                EEG.setname = char(BIDS_filename);
                pop_saveset(EEG, 'filename', char(BIDS_filename), 'filepath', char(BIDS_filepath),...
