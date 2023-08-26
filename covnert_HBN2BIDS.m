@@ -11,7 +11,6 @@ clearvars
 
 target_release = "all";%["R3"]; %#ok<NBRAK2> 
 num_subjects = -1; % if -1, all subjects in the release will be added.
-max_allowed_missing_dataset = length(BIDS_set_name)-1; % effectively letting any subkect with as few as one run to be included
 
 p2l = init_paths("linux", "expanse", "HBN", 1, 1);
 f2l.elocs = p2l.eegRepo + "GSN_HydroCel_129.sfp";  % f2l = file to load
@@ -52,6 +51,7 @@ for i = 1:length(BIDS_task_name)
         BIDS_set_name(i) = string(BIDS_task_name(i)) + "_" + string(BIDS_run_seq(i));
     end
 end
+max_allowed_missing_dataset = length(BIDS_set_name)-1; % effectively letting any subkect with as few as one run to be included
 
 % Fields are all in lower case, follwing the BIDS convention
 base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno"];
