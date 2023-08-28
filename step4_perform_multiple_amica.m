@@ -104,7 +104,11 @@ for i = model_count
     opt.partition = partition; opt.account = "csd403"; opt.maxThreads = cores; % param file max_threads + 2
     opt.email = "syshirazi@ucsd.edu";
     opt.memory = floor(opt.maxThreads*mem_alloc);
-    if opt.memory *1024 > 249325, opt.memory = floor(249325/1024); warning('max memory for Expanse reached'); end
+    if opt.memory *1024 > 249325
+        opt.memory = floor(249325/1024);
+        warning('max memory for Expanse reached, will change the partition to compute and ask max memory');
+        opt.partition = "compute";
+    end
     opt.walltime = "40:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
     opt.incr_path = p2l.incr;
     write_AMICA_SLURM_file(opt);
