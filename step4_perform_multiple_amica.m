@@ -1,4 +1,4 @@
-function step4_perform_multiple_amica(subj, model_count, amica_frame_rej, platform, machine, saveFloat, run_ICA, num_prior)
+function step4_perform_multiple_amica(subj, model_count, amica_frame_rej, platform, machine, saveFloat, run_ICA, num_prior, cores, block_size, mem_alloc)
 %step4_perform-multiple-amica perfoming multiple AMICA with different priors.
 %   Run and evaluate multi-model AMICA on datasets with multiple
 %   experiments concatenated together.
@@ -7,13 +7,13 @@ function step4_perform_multiple_amica(subj, model_count, amica_frame_rej, platfo
 % (c) Seyed Yahya Shirazi, 02/2023 UCSD, INC, SCCN
 
 %% initialize
-clearvars -except subj model_count amica_frame_rej platform machine saveFloat run_ICA
+clearvars -except subj model_count amica_frame_rej platform machine saveFloat run_ICA num_prior cores block_size mem_alloc
 close all; clc;
 fs = string(filesep)+string(filesep);
 fPath = split(string(mfilename("fullpath")),string(mfilename));
 fPath = fPath(1);
 
-if ~exist('subj','var') || isempty(subj), subj = "NDARBA839HLG"; else, subj = string(subj); end
+if ~exist('subj','var') || isempty(subj), subj = "NDARCW611MK5"; else, subj = string(subj); end
 if ~exist('model_count','var') || isempty(model_count), model_count = [2, 3, 6, 9]; end
 if ~exist('amica_frame_rej','var') || isempty(amica_frame_rej), amica_frame_rej = 0; end
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
@@ -24,19 +24,22 @@ if ~exist('saveFloat','var') || isempty(saveFloat), saveFloat = 1; end
 % if run AMICA on the shell which matlab is running on in the end
 if ~exist('run_ICA','var') || isempty(run_ICA), run_ICA = 1; end
 % number of priors
-if ~exist('num_prior','var') || isempty(num_prior), num_prior = string(3); else, num_prior = string(num_prior); end
+if ~exist('num_prior','var') || isempty(num_prior), num_prior = 3; end
+if ~exist('cores','var') || isempty(cores), cores = 64; end
+if ~exist('block_size','var') || isempty(block_size), block_size = 512; end
+if ~exist('mem_alloc','var') || isempty(mem_alloc), mem_alloc = 3; end
 
 mergedSetName = "everyEEG";
-cores = "64"; block_size = "512";
-process_params = cores + "c_b"+ block_size;
 
-if str2num(cores)> 100, partition = "compute"; else, partition = "shared"; end
+process_params = string(cores) + "c_b"+ string(block_size) + "_mem" + string(mem_alloc)+"G";
+
+if cores> 100, partition = "compute"; else, partition = "shared"; end
 %% construct necessary paths and files & adding paths
 addpath(genpath(fPath))
 p2l = init_paths(platform, machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
 p2l.ICA = p2l.eegRepo + subj + fs + "ICA" + fs; % Where you want to save your ICA files
 p2l.incr0 = p2l.ICA + "incr0" + fs; % pre-process directory
-p2l.mAmica = p2l.ICA + "mAmica_" + num_prior +"p_" + process_params + fs;
+p2l.mAmica = p2l.ICA + "mAmica_" + string(num_prior) +"p_" + process_params + fs;
 if ~isfolder(p2l.mAmica), mkdir(p2l.mAmica); end
 
 f2l.ICA_STRUCT = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_rejbadchannels_diverse_incr_comps.mat";
@@ -74,9 +77,9 @@ if saveFloat
         expanse_opts = ["files",p2l.mAmica + f2l.float_lin,"outdir", p2l.incr + "amicaout/"];
         general_opts = ["data_dim", string(EEG.nbchan),...
             "field_dim", string(EEG.pnts), "pcakeep", string(EEG.nbchan-1),...
-            "numprocs", 1, "max_threads", str2num(cores)-3, "block_size", str2num(block_size), "do_opt_block", 0,...
+            "numprocs", 1, "max_threads", cores-3, "block_size", block_size, "do_opt_block", 0,...
             "doPCA", 1, "writestep", 50, "do_history", 1, "histstep", 50,...
-            "num_models", i, "num_mix_comps", str2num(num_prior),...
+            "num_models", i, "num_mix_comps", num_prior,...
             "do_reject", amica_frame_rej, "numrej", 5, "rejstart", 1, "rejint", 3, "rejsig", 3.01,...
             "min_grad_norm", "1.00000e-08", "min_dll", "1.00000e-08"];
 
@@ -98,9 +101,11 @@ for i = model_count
     f2l.SLURM = p2l.incr + subj + "_m" + string(i) + "_amica_expanse";
     f2l.param_stokes = p2l.incr + subj + "_" + mergedSetName + "_m" + string(i) + "_expanse.param";
     opt.file = f2l.SLURM; opt.jobName = "mamc_" + subj + "_" + string(i);
-    opt.partition = partition; opt.account = "csd403"; opt.maxThreads = str2num(cores); % param file max_threads + 2
-    opt.email = "syshirazi@ucsd.edu"; opt.memory = floor(opt.maxThreads*2*1.5); % opt.maxThreads*2-1;
-    opt.walltime = "20:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
+    opt.partition = partition; opt.account = "csd403"; opt.maxThreads = cores; % param file max_threads + 2
+    opt.email = "syshirazi@ucsd.edu";
+    opt.memory = floor(opt.maxThreads*mem_alloc);
+    if opt.memory *1024 > 249325, opt.memory = floor(249325/1024); warning('max memory for Expanse reached'); end
+    opt.walltime = "40:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
     opt.incr_path = p2l.incr;
     write_AMICA_SLURM_file(opt);
 end
@@ -119,15 +124,15 @@ fclose(fid);
 % increments as soon as the float files, param files and shell files are
 % created.
 if run_ICA
-    system(sprintf("chmod 775 ~/HBN_EEG/%s/ICA/mAmica_%sp_%s/%s_expanse_batch", subj, num_prior, process_params, subj));
-    system(sprintf("sh ~/HBN_EEG/%s/ICA/mAmica_%sp_%s/%s_expanse_batch", subj, num_prior, process_params, subj));
+    system(sprintf("chmod 775 ~/HBN_EEG/%s/ICA/mAmica_%sp_%s/%s_expanse_batch", subj, string(num_prior), process_params, subj));
+    system(sprintf("sh ~/HBN_EEG/%s/ICA/mAmica_%sp_%s/%s_expanse_batch", subj, string(num_prior), process_params, subj));
 end
 
 function write_AMICA_SLURM_file(opt)
 % SLURM steup
 fid = fopen(opt.file + ".slurm", "w");
 fprintf(fid,'#!/bin/sh\n');
-fprintf(fid,"#SBATCH -p " + opt.partition + " # Job name\n"); % resource partition on expanse
+fprintf(fid,"#SBATCH -p " + opt.partition + " # Job partition\n"); % resource partition on expanse
 fprintf(fid,"#SBATCH -A " + opt.account + " # Account chrged for the job\n");
 fprintf(fid,"#SBATCH --job-name=" + opt.jobName + " # Job name\n");
 % fprintf(fid,"#SBATCH --mail-type=ALL  # Mail events (NONE, BEGIN, END, FAIL, ALL)\n");

@@ -3,3 +3,6 @@
 
 # DS store for UNIX users
 .DS_Store
+
+# any temp vim file
+._*

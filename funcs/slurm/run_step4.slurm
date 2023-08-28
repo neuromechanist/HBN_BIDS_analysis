@@ -15,4 +15,4 @@ module load cpu slurm matlab/2022b
 export MV2_ENABLE_AFFINITY=0
 
 # step 4
-matlab -nodisplay -r "step4_perform_multiple_amica('$i', [], [], [], [], 1, 1, 3)"
+matlab -nodisplay -r "step4_perform_multiple_amica('$i', [], [], [], [], 1, 1, 3, 64, 512, 3)"
