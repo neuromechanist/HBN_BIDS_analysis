@@ -1,4 +1,4 @@
-function [mutual_info,mutual_info_var, detailed_mir] = mir(data,linT)
+function [mutual_info,mutual_info_var, detailed_mir] = mir(data, icaweights, icasphere, beyond_pca)
 %MIR computes the mutual information reduction by a linear transformation
 %   It so happends that simple codes are being used as event types in
 %   EEG files. Such codes would be problamtic if proper descitiption is
@@ -22,15 +22,53 @@ function [mutual_info,mutual_info_var, detailed_mir] = mir(data,linT)
 %           NOT_YET_IMPLEMENTED The vector containing the MIR per channel, i.e., how much
 %           infomration of each channel is reduced.
 %   
-% (c) Seyed Yahya Shirazi, 06/2023 UCSD, INC, SCCN, from github.com/bigdelys/pre_ICA_Cleaing/getMIR.m
+% (c) Seyed Yahya Shirazi, 06/2023 UCSD, INC, SCCN, from https://github.com/bigdelys/pre_ICA_cleaning/blob/master/getMIR.m
 
-[hx,vx] = getent4(robust_sphering_matrix(data) * data); % sphereing is needed to make sure that the MIR is only related to ICA
+% Reducae data rank using pca, if LinT and data have different channel count.
 
-y = linT*data;
+if ~exist("icasphere","var") || isempty(icasphere)
+    has_sphere = 0;
+    linT = icaweights;
+else
+    has_shpere = 1;
+    linT = icaweights * icasphere;
+end
 
-[hy,vy] = getent4(y);
+if ~exist("method","var") || isempty(beyond_pca),  beyond_pca = "off"; end
 
-mutual_info = sum(log(abs(eig(W)))) + sum(hx) - sum(hy);
+
+if size(linT,1) == size(linT,2)
+    sq_linT = 1; % square linear transformation matrix 
+else
+    sq_linT = 0;
+    % check if the data is compatible with linT. This happens if LinT can't be left multiplied to data
+    if size(linT, 2) ~= size(data,1), error("data does not mathc the linear Tranformation, exiting"); end
+    warning("data and IC ranks are not the same, will reduce data rank using icaspehre (if present) or PCA")
+end
+
+if sq_linT == 0
+    % if has_shpere
+    %     pc_sphered_data = icasphere * data;
+    % else
+        num_pcs_to_keep = size(icaweights,1);
+        pcs = transpose(pca(data')); % note the transpose 
+        pc_data = pcs(1:num_pcs_to_keep,:) * data; % pc_act = pcs * data, pc_data = pinv(pcs)*pcs*data
+        pc_sphered_data = robust_sphering_matrix(pc_data) * pc_data; % sphering is needed to ensure that MIR is related to ICA
+    % end
+else
+    if has_sphere
+        pc_sphered_data = icasphere * data;
+    else
+        warning("Sphere matrix is not present, the ICA results is not optimal, MIR is compared to the sphered data")
+        pc_sphered_data = robust_sphering_matrix(data) * data;
+    end
+end
+
+[hx,vx] = getent4(pc_sphered_data);
+[hy,vy] = getent4(linT*data);
+
+mutual_info = sum(log(abs(eig(icaweights)))) + sum(hx(~isinf(hx))) - sum(hy());
+
 
 if nargout > 1
     mutual_info_var = (sum(vx)+sum(vy))/N;
