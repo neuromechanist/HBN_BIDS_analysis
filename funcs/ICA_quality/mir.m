@@ -1,4 +1,4 @@
-function [mutual_info,mutual_info_var, detailed_mir] = mir(data, icaweights, icasphere, beyond_pca)
+function [mutual_info,mutual_info_var, detailed_mir] = mir(data, icaweights, icasphere, sub_data, normalize, beyond_pca)
 %MIR computes the mutual information reduction by a linear transformation
 %   It so happends that simple codes are being used as event types in
 %   EEG files. Such codes would be problamtic if proper descitiption is
@@ -9,6 +9,26 @@ function [mutual_info,mutual_info_var, detailed_mir] = mir(data, icaweights, ica
 %       data
 %           An [x t] array, usually EEG.data,  where the rows are the
 %           channels and the columns are the time frames.
+%       icaweights
+%           The weight matrix for the ICA (or any other transforamtion).
+%           While not required, it is usually a square matrix.
+%       icasphere
+%           The sphering/whitening matrix. Whitened data is known to
+%           perfrom better in an ICA. This should be also a sqaure matrix,
+%           unless the data rank is reduced.
+%       sub_data
+%           ratio or number of frames for subsampling the data. If the
+%           number is less than one, only that ratio of the data is chosen
+%           on random and used for MIR. If the number is an int and bigger
+%           than one, only a subsample equal to that number will be used.
+%       normalize
+%           If true, a set of normlizing measures are applied in hopes to
+%           make MIR a consistent metric for BSS quality.
+%       boyond_pca
+%           If true, the MIR would be quantified beyond the PCA
+%           performance. The base data will go through PCA and whitening and
+%           the MIR would be quantifed between this baseline the ICA
+%           output.
 %       linT
 %           The linear transformation matrix, usually W * S, which should
 %           is expected (but not necessarily) to be of size [x x].
@@ -24,19 +44,36 @@ function [mutual_info,mutual_info_var, detailed_mir] = mir(data, icaweights, ica
 %   
 % (c) Seyed Yahya Shirazi, 06/2023 UCSD, INC, SCCN, from https://github.com/bigdelys/pre_ICA_cleaning/blob/master/getMIR.m
 
-% Reducae data rank using pca, if LinT and data have different channel count.
-
+%% initialize
 if ~exist("icasphere","var") || isempty(icasphere)
     has_sphere = 0;
-    linT = icaweights;
+    linT = icaweights; % The linear transformation matrix of ICA cobined with icasphere if present.
 else
-    has_shpere = 1;
+    has_sphere = 1;
     linT = icaweights * icasphere;
 end
 
-if ~exist("method","var") || isempty(beyond_pca),  beyond_pca = "off"; end
+if ~exist("beyond_pca","var") || isempty(beyond_pca),  beyond_pca = false; end
+if ~exist("sub_data","var") || isempty(sub_data),  sub_data = 0; end  % choose a subsample of the data
 
+if sub_data == 0
+    disp("using all data points for determine MIR")
+elseif sub_data < 1
+    disp("using "+string(sub_data)+" of the data to determine MIR")
+elseif sub_data > 0 && sub_data < size(data,2)
+    disp("using "+string(sub_data)+"data points to dtermine MIR")
+else
+    error("sub_data is used incorrectly.")
+end
+if ~exist("normalize","var") || isempty(normalize),  normalize = false; end
+dev_by_suourceCount = false; % Normalize MIR by dividing it to the number of ICs. Requires addtional assumptions
+if normalize == true % overwriting the options to make MIR a consistent metric
+    beyond_pca = true;
+    sub_data = 5e4;
+    dev_by_suourceCount = true;
+end
 
+%% determine the baseline data, rank, etc.
 if size(linT,1) == size(linT,2)
     sq_linT = 1; % square linear transformation matrix 
 else
@@ -47,24 +84,25 @@ else
 end
 
 if sq_linT == 0
-    % if has_shpere
-    %     pc_sphered_data = icasphere * data;
-    % else
+    if has_shpere
+        baseline_data = icasphere * data;
+    else
         num_pcs_to_keep = size(icaweights,1);
         pcs = transpose(pca(data')); % note the transpose 
         pc_data = pcs(1:num_pcs_to_keep,:) * data; % pc_act = pcs * data, pc_data = pinv(pcs)*pcs*data
-        pc_sphered_data = robust_sphering_matrix(pc_data) * pc_data; % sphering is needed to ensure that MIR is related to ICA
-    % end
+        baseline_data = robust_sphering_matrix(pc_data) * pc_data; % sphering is needed to ensure that MIR is related to ICA
+    end
 else
     if has_sphere
-        pc_sphered_data = icasphere * data;
+        baseline_data = icasphere * data;
     else
-        warning("Sphere matrix is not present, the ICA results is not optimal, MIR is compared to the sphered data")
-        pc_sphered_data = robust_sphering_matrix(data) * data;
+        warning("Sphere matrix is not present, ICA should not be optimal, MIR baseline is the RAW data")
+        baseline_data = data;
     end
 end
 
-[hx,vx] = getent4(pc_sphered_data);
+%% MIR
+[hx,vx] = getent4(baseline_data);
 [hy,vy] = getent4(linT*data);
 
 mutual_info = sum(log(abs(eig(icaweights)))) + sum(hx(~isinf(hx))) - sum(hy());
@@ -76,6 +114,7 @@ elseif nargout > 2
     detailed_mir = []; % not yet implemented
 end
 
+%% Auxiliary functions
 function [Hu,v] = getent4(u,nbins)
 % function [Hu,deltau] = getent2(u,nbins)
 %
