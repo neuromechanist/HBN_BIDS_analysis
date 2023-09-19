@@ -66,11 +66,11 @@ else
     error("sub_data is used incorrectly.")
 end
 if ~exist("normalize","var") || isempty(normalize),  normalize = false; end
-dev_by_suourceCount = false; % Normalize MIR by dividing it to the number of ICs. Requires addtional assumptions
-if normalize == true % overwriting the options to make MIR a consistent metric
+div_by_suourceCount = false; % Normalize MIR by dividing it to the number of ICs. Requires addtional assumptions
+if normalize == true % overwriting options to make MIR a consistent metric
     beyond_pca = true;
     sub_data = 5e4;
-    dev_by_suourceCount = true;
+    div_by_suourceCount = true;
 end
 
 %% determine the baseline data, rank, etc.
@@ -79,19 +79,19 @@ if size(linT,1) == size(linT,2)
 else
     sq_linT = 0;
     % check if the data is compatible with linT. This happens if LinT can't be left multiplied to data
-    if size(linT, 2) ~= size(data,1), error("data does not mathc the linear Tranformation, exiting"); end
-    warning("data and IC ranks are not the same, will reduce data rank using icaspehre (if present) or PCA")
+    if size(linT, 2) ~= size(data,1), error("Data does not match the linear tranformation dimension, exiting"); end
+    warning("data and IC ranks are not the same, will reduce data rank using icaspehre (if present) or MATLAB PCA")
 end
 
 if sq_linT == 0
-    if has_shpere
-        baseline_data = icasphere * data;
-    else
+    % if has_sphere
+    %     baseline_data = icasphere * data;
+    % else
         num_pcs_to_keep = size(icaweights,1);
-        pcs = transpose(pca(data')); % note the transpose 
-        pc_data = pcs(1:num_pcs_to_keep,:) * data; % pc_act = pcs * data, pc_data = pinv(pcs)*pcs*data
-        baseline_data = robust_sphering_matrix(pc_data) * pc_data; % sphering is needed to ensure that MIR is related to ICA
-    end
+        [~, score, s2] = pca(data'); % note the transpose
+        whitened_data = transpose(score * sqrt(s2.^-1.*eye(length(s2)))); % whitened_data = data * v * 1/sqrt(s2)
+        baseline_data = whitened_data(1:num_pcs_to_keep,:); % sphering is needed to ensure that MIR is related to ICA
+    % end
 else
     if has_sphere
         baseline_data = icasphere * data;
