@@ -147,6 +147,7 @@ for i = 1:length(data)
         EEG.(n) = pop_chanedit(EEG.(n), 'setref',{'1:129','Cz'});
         [EEG.(n).event.latency] = deal(EEG.(n).event.sample);
         EEG.(n) = replace_event_type(EEG.(n), 'funcs/tsv/lookup_events.tsv', 1);
+        EEG.(n) = augment_behavior_events(EEG.(n), behavior_dir);
         EEG.(n) = eeg_checkset(EEG.(n), 'makeur');
         EEG.(n) = eeg_checkset(EEG.(n), 'chanlocs_homogeneous');
         % save the remedied EEG structure.
