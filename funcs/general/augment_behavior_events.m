@@ -22,8 +22,9 @@ beh_event = load(file);
 %% main loop
 if task == "WISC_ProcSpeed" % This is the symbol search task
     % First check if we have the same number of events
-    correct_resp = readtable();
+    correct_resp = readtable("symbolSearch_correct_response.tsv","filetype","text"); correct_resp_vector = reshape(correct_resp.Variables,[],1);
     subj_resp = beh_event.par.activated_resp(:,:,1);
+    subj_resp_vector = reshape(subj_resp',[],1); % making the response a single vecotr, simialr to EEG.event.
     num_beh_resp = length(union(find(subj_resp==0), find(subj_resp==1)));
     eeg_event_idx = find(string({EEG.event(:).type})=="trialResponse");
     if num_beh_resp == length(eeg_event_idx)
@@ -32,7 +33,8 @@ if task == "WISC_ProcSpeed" % This is the symbol search task
         error("Behavior event count is different from the EEG.event counts. Please check!")
     end
     for i = 1:num_beh_resp
-        
+        EEG.event(eeg_event_idx(i)).answer = subj_resp_vector(i);
+        EEG.event(eeg_event_idx(i)).correct_answer = correct_resp_vector(i);
     end
 
 end
