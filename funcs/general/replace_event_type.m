@@ -25,7 +25,7 @@ lookup_events.code = string(lookup_events{:,"code"}); % Make the first column a 
 duplicate_event_codes = ["8","12", "13", "14", "20"]; % these event codes are used for more than one event type in HBN data
 
 % remove the value column, as it is inconsistent with the BIDS converter
-if remove_value_column, EEG.event = rmfield(EEG.event, 'value'); end
+if remove_value_column, try EEG.event = rmfield(EEG.event, 'value'); catch, disp("no value column found"); end, end
 % Iterate through the events in EEG.event and replace the codes
 for i = 1:length(EEG.event)
     code = strtrim(EEG.event(i).type); % Remove any extra spaces

@@ -9,10 +9,10 @@
 %% Initialize
 clearvars
 
-target_release = "all";%["R3"]; %#ok<NBRAK2> 
-num_subjects = -1; % if -1, all subjects in the release will be added.
+target_release = ["R3"]; %#ok<NBRAK2> 
+num_subjects = 10; % if -1, all subjects in the release will be added.
 
-p2l = init_paths("linux", "expanse", "HBN", 1, 1);
+p2l = init_paths("linux", "sccn", "HBN", 1, 1);
 f2l.elocs = p2l.eegRepo + "GSN_HydroCel_129.sfp";  % f2l = file to load
 
 plist = readtable("./funcs/tsv/participants_augmented_filesize.tsv", "FileType","text");
@@ -20,11 +20,10 @@ plist.Full_Pheno = string(plist{:,"Full_Pheno"}); % to change the variable type 
 plist.Commercial_Use = string(plist{:,"Commercial_Use"});
 plist.Sex = string(plist{:,"Sex"});
 plist.Sex(plist.Sex=="1") = "F"; plist.Sex(plist.Sex=="0") = "M";
-datarepo = "~/yahya/HBN_fulldataset/";
-remediedrepo = "~/yahya/HBN/vidBIDS_test/";
+remediedrepo = p2l.temp + "/vidBIDS_test/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
-bids_export_path = "~/yahya/cmi_bids_R1-R11/";
+bids_export_path = p2l.yahya + "/cmi_bids_R1-R11/";
 addpath(genpath(p2l.codebase))
 no_subj_info_cols = 8; % 
 tnames = string(plist.Properties.VariableNames); % task names
@@ -131,9 +130,10 @@ for i = 1:length(data)
         subj = string(data(i).subject);
         eeg_set_names = data(i).set_name;
         for n = eeg_set_names
-            p2l.rawEEG = datarepo + string(data(i).subject) + dpath;
+            p2l.rawEEG = p2l.raw + string(data(i).subject) + dpath;
             tempload = load(p2l.rawEEG + data(i).raw_file(n==eeg_set_names));
             EEG.(n) = tempload.EEG;
+            behavior_dir = p2l.raw + string(data(i).subject) + "/Behavioral/mat_format/";
             disp("loaded "+p2l.rawEEG + data(i).raw_file(n==eeg_set_names))
         end
     
@@ -147,12 +147,12 @@ for i = 1:length(data)
         EEG.(n) = pop_chanedit(EEG.(n), 'setref',{'1:129','Cz'});
         [EEG.(n).event.latency] = deal(EEG.(n).event.sample);
         EEG.(n) = replace_event_type(EEG.(n), 'funcs/tsv/lookup_events.tsv', 1);
-        EEG.(n) = augment_behavior_events(EEG.(n), behavior_dir);
+        EEG.(n) = augment_behavior_events(EEG.(n), data(i).raw_file(n==string(fieldnames(EEG))'), behavior_dir);
         EEG.(n) = eeg_checkset(EEG.(n), 'makeur');
         EEG.(n) = eeg_checkset(EEG.(n), 'chanlocs_homogeneous');
         % save the remedied EEG structure.
         pop_saveset(EEG.(n), 'filename', char(n), 'filepath', char(p2l.rawEEG_updated));
-        disp("saved the remedied file for" + n)
+        disp("saved the remedied file for " + n)
     end
     catch
         unav_dataset = [unav_dataset, string(data(i).subject)];
