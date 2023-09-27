@@ -17,23 +17,34 @@ if ~exist('have_gui','var') || isempty(have_gui), have_gui = true; end
 %% Set up the paths
 if project == "HBN"
    if ismac
+       if subplat ~= "sccn"
         p2l.raw = "/Volumes/Yahya/Datasets/HBN/EEG/";
         p2l.eegRepo = p2l.raw; % Data is saved in the same directory
+       else
+           p2l.raw = "/Volumes/qumulo/child-mind-uncompressed/";
+           p2l.yahya = "/Volumes/qumulo/yahya/";
+           p2l.eegRepo = p2l.yahya + "HBN/EEG/";
+           p2l.temp = p2l.yahya + "HBN/";
+       end
         p2l.eeglab = "/Users/yahya/Documents/git/eeglab_dev/";
-        p2l.codebase = "/Users/yahya/Documents/git/HBN_BIDS_analysis";
+        p2l.codebase = "/Users/yahya/Documents/git/HBN_BIDS_analysis/";
    elseif isunix
        if subplat == "sccn", prefix = "/data/qumulo/";
        elseif subplat == "expanse", prefix = "/expanse/projects/nemar/";
        end
-       p2l.raw = prefix + "yahya/HBN_fulldataset/";  % Original data from CMI
-       p2l.eegRepo = prefix + "yahya/HBN/EEG/";  % EEG data repo
-       p2l.eeglab = prefix + "yahya/_git/eeglab_dev/";
-       p2l.codebase = prefix + "yahya/_git/HBN_BIDS_analysis/";
+       p2l.raw = prefix + "child-mind-uncompressed/";  % Original data from CMI
+       p2l.yahya = prefix + "yahya/";
+       p2l.eegRepo = p2l.yahya + "HBN/EEG/";  % EEG data repo
+       p2l.eeglab = p2l.yahya + "_git/eeglab_dev/";
+       p2l.codebase = p2l.yahya + "_git/HBN_BIDS_analysis/";
+       p2l.temp = p2l.yahya + "HBN/";
    elseif ispc
-        p2l.raw = "Y://yahya//HBN_fulldataset/";
-        p2l.eegRepo = "Y://yahya//HBN//EEG/";
+        p2l.raw = "Y://child-mind-uncompressed/";
+        p2l.yahya  = "Y://yahya/";
+        p2l.eegRepo = p2l.yahya + "HBN/EEG/";
         p2l.eeglab = "C://_git/eeglab_dev/";
         p2l.codebase = "C://_git/HBN_BIDS_analysis/";
+        p2l.temp = p2l.yahya + "HBN/";
    else
        error("unknown platform, please take a look")
    end

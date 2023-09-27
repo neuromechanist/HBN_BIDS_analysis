@@ -1,4 +1,4 @@
-function EEG = augment_behavior_events(EEG,task, beh_path)
+function EEG = augment_behavior_events(EEG,filename, beh_path)
 %AUGMENT_BEHAVIOR_EVENTS adds behavioral events to EEG set files.
 %   This function adds behavioral events to the EEG set files. These events
 %   are reocrded in the behavior folder of the HBN dataset, but they are
@@ -15,12 +15,14 @@ function EEG = augment_behavior_events(EEG,task, beh_path)
 % (c) Seyed Yahya Shirazi, 09/2023 SCCN, INC, UCSD
 
 %% initialize
+target_files = ["WISC_ProcSpeed.mat","vis_learn.mat","SurroundSupp_Block1.mat", "SurroundSupp_Block2.mat"];
+if ~contains(filename, target_files), return, end
 subject = string(EEG.subject);
-file = beh_path + filesep + subject + "_" + task + ".mat";
+file = beh_path + filesep + subject + "_" + filename;
 beh_event = load(file);
 
 %% main loop
-if task == "WISC_ProcSpeed" % This is the symbol search task
+if filename == "WISC_ProcSpeed.mat" % This is the symbol search task
     % First check if we have the same number of events
     correct_resp = readtable("symbolSearch_correct_response.tsv","filetype","text"); correct_resp_vector = reshape(correct_resp.Variables,[],1);
     subj_resp = beh_event.par.activated_resp(:,:,1);
