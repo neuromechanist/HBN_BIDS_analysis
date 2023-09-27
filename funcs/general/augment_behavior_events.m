@@ -39,4 +39,20 @@ if filename == "WISC_ProcSpeed.mat" % This is the symbol search task
         EEG.event(eeg_event_idx(i)).correct_answer = correct_resp_vector(i);
     end
 
+elseif filename == "vis_learn.mat" % sequence learning task
+    correct_resp = beh_event.par.sequence;
+    subj_resp = beh_event.par.resp_click;
+    % find the code for the last dot turning off
+    type_toAdd_event = [32,33,34,35,50]; % the response should be added just before these events
+    if beh_event.par.numrepet ~= size(beh_event.par.resp_click,1) % failsafe.
+        warning("subject's response mismatches number of reps in the squence learning task, skipping adding the events")
+        return
+    end
+    for i = 1:length(EEG.event)
+        if any(str2double(EEG.event(i).type_code) == type_toAdd_event)
+            EEG.event(i-1).answer = subj_resp(str2double(EEG.event(i).type_code) == type_toAdd_event,:);
+            EEG.event(i-1).correct_answer = correct_resp;
+        end
+    end
+
 end
