@@ -1,4 +1,5 @@
-%% Convert HBN data to BIDS
+function convert_HBN2BIDS(target_tasks)
+%CONVERT_HBN2BIDS Convert HBN data to BIDS
 % This script convert the list of specified tasks |task_list| to a BIDS dataset 
 % uising EEGLAB's |bids_export|. Only the subjects whithin the defined |release| 
 % and having all the datasets included in the |task_list| will be included in 
@@ -7,7 +8,7 @@
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% Initialize
-clearvars
+clearvars -except target_tasks
 
 target_release = ["R3"]; %#ok<NBRAK2> 
 num_subjects = 10; % if -1, all subjects in the release will be added.
