@@ -64,10 +64,12 @@ for i = BIDS_set_name
 end
 
 eInfo = {};
-if length(unique(string(BIDS_task_name)))
+if length(unique(string(BIDS_task_name))) == 1  % eInfo can't be for more than ONE task
     temp = load("event_information.mat",unique(string(BIDS_task_name)));
-    eInfo = temp.(unique(string(BIDS_task_name))); % eInfo can't be for more than ONE task
+    eInfo = temp.(unique(string(BIDS_task_name)));
 end
+
+eInfo_desc = load("event_info_descriptions.mat");
 
 %% Create the structure as required by EEGLAB's bids export.
 % While the files are not remedied and are not on EEGLAB's format, it is good 
@@ -154,4 +156,4 @@ pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 task = 'unnamed';
 if length(unique(BIDS_task_name)) == 1, task = BIDS_task_name{1}; end
 bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
-    'eInfo', eInfo, 'taskName', task, 'deleteExportDir', 'off');
+    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off');
