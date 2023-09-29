@@ -29,7 +29,7 @@ if remove_value_column, try EEG.event = rmfield(EEG.event, 'value'); catch, disp
 % Iterate through the events in EEG.event and replace the codes
 for i = 1:length(EEG.event)
     code = strtrim(EEG.event(i).type); % Remove any extra spaces
-    EEG.event(i).type_code = code;
+    EEG.event(i).event_code = code;
     if any(string(code) == duplicate_event_codes)
         switch string(code)
             case "8"

@@ -1,4 +1,5 @@
-%% Convert HBN data to BIDS
+function convert_HBN2BIDS(target_tasks)
+%CONVERT_HBN2BIDS Convert HBN data to BIDS
 % This script convert the list of specified tasks |task_list| to a BIDS dataset 
 % uising EEGLAB's |bids_export|. Only the subjects whithin the defined |release| 
 % and having all the datasets included in the |task_list| will be included in 
@@ -7,42 +8,41 @@
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% Initialize
-clearvars
+clearvars -except target_tasks
+
+if ~exist("target_tasks","var") || isempty(target_tasks)
+    target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", ...
+    "SAIIT_2AFC_Block1", "SAIIT_2AFC_Block2", "SAIIT_2AFC_Block3",...
+    "SurroundSupp_Block1", "SurroundSupp_Block2", "vis_learn", "WISC_ProcSpeed"];
+end
 
 target_release = ["R3"]; %#ok<NBRAK2> 
 num_subjects = 10; % if -1, all subjects in the release will be added.
 
 p2l = init_paths("linux", "sccn", "HBN", 1, 1);
+addpath(genpath(p2l.codebase))
 f2l.elocs = p2l.eegRepo + "GSN_HydroCel_129.sfp";  % f2l = file to load
 
-plist = readtable("./funcs/tsv/participants_augmented_filesize.tsv", "FileType","text");
+plist = readtable("participants_augmented_filesize.tsv", "FileType","text");
 plist.Full_Pheno = string(plist{:,"Full_Pheno"}); % to change the variable type to string
 plist.Commercial_Use = string(plist{:,"Commercial_Use"});
 plist.Sex = string(plist{:,"Sex"});
 plist.Sex(plist.Sex=="1") = "F"; plist.Sex(plist.Sex=="0") = "M";
-remediedrepo = p2l.temp + "/vidBIDS_test/";
+remediedrepo = p2l.temp + "/taskBIDS_test/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
-bids_export_path = p2l.yahya + "/cmi_bids_R1-R11/";
-addpath(genpath(p2l.codebase))
+bids_export_path = p2l.yahya + "/test_bids_R3_10/";
 no_subj_info_cols = 8; % 
 tnames = string(plist.Properties.VariableNames); % task names
 tnames = tnames(no_subj_info_cols+1:end);
 clear EEG
 
 %% Define tasks
-% Let's also define the tasks and potentially the release that we want to include 
-% in the BIDS
-% target_tasks = ["Video_TP"]; BIDS_task_name = ["ThePresent"]; % in case of a single task 
-target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", ...
-    "SAIIT_2AFC_Block1", "SAIIT_2AFC_Block2", "SAIIT_2AFC_Block3",...
-    "SurroundSupp_Block1", "SurroundSupp_Block2", "vis_learn", "WISC_ProcSpeed"];
-BIDS_task_name = {'RestingState', 'DespicableMe', 'FunwithFractals', 'ThePresent', 'DiaryOfAWimpyKid',...
-    'contrastChangeDetection', 'contrastChangeDetection', 'contrastChangeDetection', ...
-    'surroundSupp', 'surroundSupp', 'seqLearning', 'symbolSearch'};
-BIDS_run_seq = [nan,nan,nan,nan,nan,...
-    1,2,3,...
-    1,2,nan,nan];
+% Define the BIDS-name couterpart and run numbers
+bids_table = readtable("task_bids_conversion.tsv","FileType","text");
+BIDS_task_name = bids_table{boolean(sum(target_tasks == bids_table{:,"init_name"},2)),"BIDS_name"}';
+BIDS_run_seq = bids_table{boolean(sum(target_tasks == bids_table{:,"init_name"},2)),"run_num"}';
+
 for i = 1:length(BIDS_task_name)
     if isnan(BIDS_run_seq(i))
         BIDS_set_name(i) = string(BIDS_task_name(i));
@@ -54,35 +54,22 @@ max_allowed_missing_dataset = length(BIDS_set_name)-1; % effectively letting any
 
 % Fields are all in lower case, follwing the BIDS convention
 base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno"];
-req_info = [base_info, target_tasks]; target_info = [base_info, BIDS_task_name];
+req_info = [base_info, target_tasks];
 
-%% define the pInfo descriptions
-pInfo_desc.participant_id.Description = 'The prticipant ID set in the HBN dataset';
-pInfo_desc.release_number.Description = 'The release in which the dataset was made available via the HBN project';
-pInfo_desc.sex.LongName = 'Gender'; pInfo_desc.sex.Description = 'Gender';
-pInfo_desc.sex.Levels.F = 'Female'; pInfo_desc.sex.Levels.M = 'Male' ;
-pInfo_desc.age.LongName = 'Age'; pInfo_desc.age.Description = 'Age in years';
-pInfo_desc.ehq_total.LongName = 'Handedness';
-pInfo_desc.ehq_total.Description = 'Edinburgh Handedness Questionnaire, +100=Fully Right-handed, -100=Fully Left-handed';
-pInfo_desc.commercial_use.Description = 'Did the participant consent to commercial use of data?';
-pInfo_desc.commercial_use.Levels.Yes = 'Subject gave consent to commercial use of data';
-pInfo_desc.commercial_use.Levels.No = 'Subject did not give consent to commercial use of data';
-pInfo_desc.full_pheno.Description = 'Does the participant have a full phenotypic file?';
-pInfo_desc.full_pheno.levels.Yes = 'Subject has full phenotypic file';
-pInfo_desc.full_pheno.levels.No = 'Subject does not have full phenotypic file';
+%% define the pInfo descriptions, eInfo, and eInfo descriptionsdbquit
+pInfo_desc = struct();
+for i = BIDS_set_name
+    temp = load("participant_info_descriptions.mat", i);
+    pInfo_desc.(i) = temp.(i);
+end
 
-pInfo_desc.RestingState.Description = 'File size of the resting-state trial in (kB)';
-pInfo_desc.DespicableMe.Description = 'File size of watching the Despicable Me trial (kB)';
-pInfo_desc.FunwithFractals.Description = 'File size of watching the Fun with Fractals trial (kB)';
-pInfo_desc.ThePresent.Description = 'File size of watching the The Present trial (kB)';
-pInfo_desc.DiaryOfAWimpyKid.Description = 'File size of watching the Diary Of A Wimpy Kid trial (kB)';
-pInfo_desc.contrastChangeDetection_1.Description = 'File size of the 1st run of the contrast change task (KB)';
-pInfo_desc.contrastChangeDetection_2.Description = 'File size of the 2nd run of the contrast change task (KB)';
-pInfo_desc.contrastChangeDetection_3.Description = 'File size of the 3rd run of the contrast change task (KB)';
-pInfo_desc.surroundSupp_1.Description = 'File size of the 1st run of the surround suppression task (KB)';
-pInfo_desc.surroundSupp_2.Description = 'File size of the 2nd run of the surround suppression task (KB)';
-pInfo_desc.seqLearning.Description = 'File size of the sequence learning task (KB)';
-pInfo_desc.symbolSearch.Description = 'File size of the symbol search task (KB)';
+eInfo = {};
+if length(unique(string(BIDS_task_name))) == 1  % eInfo can't be for more than ONE task
+    temp = load("event_information.mat",unique(string(BIDS_task_name)));
+    eInfo = temp.(unique(string(BIDS_task_name)));
+end
+
+eInfo_desc = load("event_info_descriptions.mat");
 
 %% Create the structure as required by EEGLAB's bids export.
 % While the files are not remedied and are not on EEGLAB's format, it is good 
@@ -120,6 +107,7 @@ end
 data(1) = [];
 
 tInfo.PowerLineFrequency = 60; % task info, it one per experiment.
+
 %% Remedy the files
 % This step is simialr to the import and remedy sections of step1.
 unav_dataset = [];
@@ -161,8 +149,11 @@ for i = 1:length(data)
     end       
 end
 pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
+
 %% Now we probably can call bids_export
 % keep only relevant information in pInfo_desc
-pInfo_fields = string(fieldnames(pInfo_desc))'; undesired_pInfo_field = pInfo_fields(~contains(pInfo_fields,target_info,'IgnoreCase',true));
-pInfo_desc = rmfield(pInfo_desc,undesired_pInfo_field);
-bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo);
+
+task = 'unnamed';
+if length(unique(BIDS_task_name)) == 1, task = BIDS_task_name{1}; end
+bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
+    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off');
