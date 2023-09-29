@@ -35,7 +35,7 @@ if filename == "WISC_ProcSpeed.mat"  % symbol search task
         error("Behavior event count is different from the EEG.event counts. Please check!")
     end
     for i = 1:num_beh_resp
-        EEG.event(eeg_event_idx(i)).answer = subj_resp_vector(i);
+        EEG.event(eeg_event_idx(i)).user_answer = subj_resp_vector(i);
         EEG.event(eeg_event_idx(i)).correct_answer = correct_resp_vector(i);
     end
 
@@ -49,8 +49,8 @@ elseif filename == "vis_learn.mat"  % sequence learning task
         return
     end
     for i = 1:length(EEG.event)
-        if any(str2double(EEG.event(i).type_code) == type_toAdd_event)
-            EEG.event(i-1).answer = subj_resp(str2double(EEG.event(i).type_code) == type_toAdd_event,:);
+        if any(str2double(EEG.event(i).event_code) == type_toAdd_event)
+            EEG.event(i-1).user_answer = subj_resp(str2double(EEG.event(i).event_code) == type_toAdd_event,:);
             EEG.event(i-1).correct_answer = correct_resp;
         end
     end
