@@ -26,7 +26,7 @@ if filename == "WISC_ProcSpeed.mat"  % symbol search task
     % First check if we have the same number of events
     correct_resp = readtable("symbolSearch_correct_response.tsv","filetype","text"); correct_resp_vector = reshape(correct_resp.Variables,[],1);
     subj_resp = beh_event.par.activated_resp(:,:,1);
-    subj_resp_vector = reshape(subj_resp',[],1); % making the response a single vecotr, simialr to EEG.event.
+    subj_resp_vector = reshape(subj_resp',[],1); % making the response a single vector, simialr to EEG.event.
     num_beh_resp = length(union(find(subj_resp==0), find(subj_resp==1)));
     eeg_event_idx = find(string({EEG.event(:).type})=="trialResponse");
     if num_beh_resp == length(eeg_event_idx)
@@ -35,8 +35,8 @@ if filename == "WISC_ProcSpeed.mat"  % symbol search task
         error("Behavior event count is different from the EEG.event counts. Please check!")
     end
     for i = 1:num_beh_resp
-        EEG.event(eeg_event_idx(i)).user_answer = subj_resp_vector(i);
-        EEG.event(eeg_event_idx(i)).correct_answer = correct_resp_vector(i);
+        EEG.event(eeg_event_idx(i)).user_answer = num2str(subj_resp_vector(i));
+        EEG.event(eeg_event_idx(i)).correct_answer = num2str(correct_resp_vector(i));
     end
 
 elseif filename == "vis_learn.mat"  % sequence learning task
@@ -50,15 +50,15 @@ elseif filename == "vis_learn.mat"  % sequence learning task
     end
     for i = 1:length(EEG.event)
         if any(str2double(EEG.event(i).event_code) == type_toAdd_event)
-            EEG.event(i-1).user_answer = subj_resp(str2double(EEG.event(i).event_code) == type_toAdd_event,:);
-            EEG.event(i-1).correct_answer = correct_resp;
+            EEG.event(i-1).user_answer = num2str(subj_resp(str2double(EEG.event(i).event_code) == type_toAdd_event,:));
+            EEG.event(i-1).correct_answer = num2str(correct_resp);
         end
     end
 
 elseif filename == "SurroundSupp_Block1.mat" || filename == "SurroundSupp_Block2.mat"  % surround supression task
     background_cont = beh_event.BGcon; % background or no background
-    background_cont_string = false(size(background_cont));
-    background_cont_string(background_cont==1) = true;
+    background_cont_string = zeros(size(background_cont));
+    background_cont_string(background_cont==1) = 1;
     forground_cont = beh_event.CNTcon; % contrast  of the forground
     stimulus_cond = beh_event.StimCond; % Stimulus condition
 
@@ -67,12 +67,12 @@ elseif filename == "SurroundSupp_Block1.mat" || filename == "SurroundSupp_Block2
 
     if length(stim_off) == length(stim_on) && length(stim_off) == length(background_cont)
         for i = stim_on
-            EEG.event(i).background = background_cont_string(i==stim_on);
-            EEG.event(i+1).background = background_cont_string(i==stim_on);
-            EEG.event(i).forground_contrast = forground_cont(i==stim_on);
-            EEG.event(i+1).forground_contrast = forground_cont(i==stim_on);
-            EEG.event(i).stimulus_cond = stimulus_cond(i==stim_on);
-            EEG.event(i+1).stimulus_cond = stimulus_cond(i==stim_on);            
+            EEG.event(i).background = num2str(background_cont_string(i==stim_on));
+            EEG.event(i+1).background = num2str(background_cont_string(i==stim_on));
+            EEG.event(i).forground_contrast = num2str(forground_cont(i==stim_on));
+            EEG.event(i+1).forground_contrast = num2str(forground_cont(i==stim_on));
+            EEG.event(i).stimulus_cond = num2str(stimulus_cond(i==stim_on));
+            EEG.event(i+1).stimulus_cond = num2str(stimulus_cond(i==stim_on));            
         end
     else
         warning("legnth of the stimulation on in EEG.event mismatches the behavior file, skipping adding the events.")

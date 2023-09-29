@@ -20,6 +20,7 @@ target_release = ["R3"]; %#ok<NBRAK2>
 num_subjects = 10; % if -1, all subjects in the release will be added.
 
 p2l = init_paths("linux", "sccn", "HBN", 1, 1);
+addpath(genpath(p2l.codebase))
 f2l.elocs = p2l.eegRepo + "GSN_HydroCel_129.sfp";  % f2l = file to load
 
 plist = readtable("participants_augmented_filesize.tsv", "FileType","text");
@@ -31,7 +32,6 @@ remediedrepo = p2l.temp + "/taskBIDS_test/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
 bids_export_path = p2l.yahya + "/test_bids_R3_10/";
-addpath(genpath(p2l.codebase))
 no_subj_info_cols = 8; % 
 tnames = string(plist.Properties.VariableNames); % task names
 tnames = tnames(no_subj_info_cols+1:end);
@@ -63,8 +63,11 @@ for i = BIDS_set_name
     pInfo_desc.(i) = temp.(i);
 end
 
-temp = load("event_information.mat",unique(string(BIDS_task_name)));
-eInfo = temp.(unique(string(BIDS_task_name))); % eInfo can't be for more than ONE task
+eInfo = {};
+if length(unique(string(BIDS_task_name)))
+    temp = load("event_information.mat",unique(string(BIDS_task_name)));
+    eInfo = temp.(unique(string(BIDS_task_name))); % eInfo can't be for more than ONE task
+end
 
 %% Create the structure as required by EEGLAB's bids export.
 % While the files are not remedied and are not on EEGLAB's format, it is good 
@@ -148,6 +151,7 @@ pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 %% Now we probably can call bids_export
 % keep only relevant information in pInfo_desc
 
+task = 'unnamed';
 if length(unique(BIDS_task_name)) == 1, task = BIDS_task_name{1}; end
 bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
     'eInfo', eInfo, 'taskName', task, 'deleteExportDir', 'off');
