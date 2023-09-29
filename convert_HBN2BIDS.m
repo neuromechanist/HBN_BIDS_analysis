@@ -17,7 +17,7 @@ if ~exist("target_tasks","var") || isempty(target_tasks)
 end
 
 target_release = ["R3"]; %#ok<NBRAK2> 
-num_subjects = 10; % if -1, all subjects in the release will be added.
+num_subjects = 22; % if -1, all subjects in the release will be added.
 
 p2l = init_paths("linux", "sccn", "HBN", 1, 1);
 addpath(genpath(p2l.codebase))
@@ -31,7 +31,7 @@ plist.Sex(plist.Sex=="1") = "F"; plist.Sex(plist.Sex=="0") = "M";
 remediedrepo = p2l.temp + "/taskBIDS_test/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
-bids_export_path = p2l.yahya + "/test_bids_R3_10/";
+bids_export_path = p2l.yahya + "/cmi_bids_R3_20/";
 no_subj_info_cols = 8; % 
 tnames = string(plist.Properties.VariableNames); % task names
 tnames = tnames(no_subj_info_cols+1:end);
@@ -58,9 +58,16 @@ req_info = [base_info, target_tasks];
 
 %% define the pInfo descriptions, eInfo, and eInfo descriptionsdbquit
 pInfo_desc = struct();
-for i = BIDS_set_name
+for i = base_info
     temp = load("participant_info_descriptions.mat", i);
     pInfo_desc.(i) = temp.(i);
+end
+set_name_with_dim = [];
+for i = BIDS_set_name
+    snwd = i + "_in_kB";
+    temp = load("participant_info_descriptions.mat", i);
+    pInfo_desc.(snwd) = temp.(i);
+    set_name_with_dim = [set_name_with_dim snwd];
 end
 
 eInfo = {};
@@ -76,8 +83,7 @@ eInfo_desc = load("event_info_descriptions.mat");
 % to have the strucutre to later on use it for adjusting the raw files and then 
 % making the structure.
 data = struct;
-pInfo = cellstr([lower(["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno"]), ...
-    BIDS_set_name]);
+pInfo = cellstr([lower(base_info), set_name_with_dim]);
 if target_release == "all"
     target_table = plist;
 else
@@ -156,4 +162,4 @@ pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 task = 'unnamed';
 if length(unique(BIDS_task_name)) == 1, task = BIDS_task_name{1}; end
 bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
-    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off');
+    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off', 'writePInfoOnly', 'on');
