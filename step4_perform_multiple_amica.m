@@ -27,8 +27,10 @@ if ~exist('run_ICA','var') || isempty(run_ICA), run_ICA = 1; end
 if ~exist('num_prior','var') || isempty(num_prior), num_prior = string(3); else, num_prior = string(num_prior); end
 
 mergedSetName = "everyEEG";
-cores = "64"; block_size = "1024";
+cores = "64"; block_size = "512";
 process_params = cores + "c_b"+ block_size;
+
+if str2num(cores)> 100, partition = "compute"; else, partition = "shared"; end
 %% construct necessary paths and files & adding paths
 addpath(genpath(fPath))
 p2l = init_paths(platform, machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
@@ -72,7 +74,7 @@ if saveFloat
         expanse_opts = ["files",p2l.mAmica + f2l.float_lin,"outdir", p2l.incr + "amicaout/"];
         general_opts = ["data_dim", string(EEG.nbchan),...
             "field_dim", string(EEG.pnts), "pcakeep", string(EEG.nbchan-1),...
-            "numprocs", 1, "max_threads", 60, "block_size", 1024, "do_opt_block", 0,...
+            "numprocs", 1, "max_threads", str2num(cores)-3, "block_size", str2num(block_size), "do_opt_block", 0,...
             "doPCA", 1, "writestep", 50, "do_history", 1, "histstep", 50,...
             "num_models", i, "num_mix_comps", str2num(num_prior),...
             "do_reject", amica_frame_rej, "numrej", 5, "rejstart", 1, "rejint", 3, "rejsig", 3.01,...
@@ -96,8 +98,8 @@ for i = model_count
     f2l.SLURM = p2l.incr + subj + "_m" + string(i) + "_amica_expanse";
     f2l.param_stokes = p2l.incr + subj + "_" + mergedSetName + "_m" + string(i) + "_expanse.param";
     opt.file = f2l.SLURM; opt.jobName = "mamc_" + subj + "_" + string(i);
-    opt.partition = "shared"; opt.account = "csd403"; opt.maxThreads = 64; % param file max_threads + 2
-    opt.email = "syshirazi@ucsd.edu"; opt.memory = floor(opt.maxThreads*2*0.94); % opt.maxThreads*2-1;
+    opt.partition = partition; opt.account = "csd403"; opt.maxThreads = str2num(cores); % param file max_threads + 2
+    opt.email = "syshirazi@ucsd.edu"; opt.memory = floor(opt.maxThreads*2*1.5); % opt.maxThreads*2-1;
     opt.walltime = "20:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
     opt.incr_path = p2l.incr;
     write_AMICA_SLURM_file(opt);
