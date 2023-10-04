@@ -58,7 +58,7 @@ req_info = [base_info, target_tasks];
 
 %% define the pInfo descriptions, eInfo, and eInfo descriptionsdbquit
 pInfo_desc = struct();
-for i = base_info
+for i = lower(base_info)
     temp = load("participant_info_descriptions.mat", i);
     pInfo_desc.(i) = temp.(i);
 end
@@ -162,4 +162,4 @@ pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 task = 'unnamed';
 if length(unique(BIDS_task_name)) == 1, task = BIDS_task_name{1}; end
 bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
-    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off', 'writePInfoOnly', 'on');
+    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off');
