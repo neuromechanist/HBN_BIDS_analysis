@@ -69,8 +69,8 @@ elseif filename == "SurroundSupp_Block1.mat" || filename == "SurroundSupp_Block2
         for i = stim_on
             EEG.event(i).background = num2str(background_cont_string(i==stim_on));
             EEG.event(i+1).background = num2str(background_cont_string(i==stim_on));
-            EEG.event(i).forground_contrast = num2str(forground_cont(i==stim_on));
-            EEG.event(i+1).forground_contrast = num2str(forground_cont(i==stim_on));
+            EEG.event(i).foreground_contrast = num2str(forground_cont(i==stim_on));
+            EEG.event(i+1).foreground_contrast = num2str(forground_cont(i==stim_on));
             EEG.event(i).stimulus_cond = num2str(stimulus_cond(i==stim_on));
             EEG.event(i+1).stimulus_cond = num2str(stimulus_cond(i==stim_on));            
         end
