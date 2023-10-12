@@ -28,6 +28,18 @@ plist.Full_Pheno = string(plist{:,"Full_Pheno"}); % to change the variable type 
 plist.Commercial_Use = string(plist{:,"Commercial_Use"});
 plist.Sex = string(plist{:,"Sex"});
 plist.Sex(plist.Sex=="1") = "F"; plist.Sex(plist.Sex=="0") = "M";
+% remove the dublicates
+duplicate_ids = ["NDARDZ322ZFC","NDARNZ792HBN"]; % the ids were found by shell-cmd inspection upto R11.
+for i = duplicate_ids, dup_idx = find(strcmp(plist{:,"participant_id"},i)); plist(dup_idx(end),:) =[]; end
+plist.Properties.RowNames = plist.participant_id;
+
+bifactor = readtable("RBC_HBN_McElroy_Bifactor_scores.csv");
+pfactor = bifactor(:,["EID","P_factor"]);
+pfactor(~contains(pfactor{:,"EID"},string(plist{:,"participant_id"})),:) =[];
+
+plist(pfactor.EID,"P_factor") = pfactor(:,"P_factor");
+plist{~contains(plist.Row,string(pfactor{:,"EID"})),"P_factor"} = nan;
+
 remediedrepo = p2l.temp + "/taskBIDS_test/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
@@ -53,10 +65,10 @@ end
 max_allowed_missing_dataset = length(BIDS_set_name)-1; % effectively letting any subkect with as few as one run to be included
 
 % Fields are all in lower case, follwing the BIDS convention
-base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno"];
+base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno", "P_factor"];
 req_info = [base_info, target_tasks];
 
-%% define the pInfo descriptions, eInfo, and eInfo descriptionsdbquit
+%% define the pInfo descriptions, eInfo, and eInfo descriptions
 pInfo_desc = struct();
 for i = lower(base_info)
     temp = load("participant_info_descriptions.mat", i);
