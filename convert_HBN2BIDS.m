@@ -148,6 +148,7 @@ for i = 1:length(data)
         pop_saveset(EEG.(n), 'filename', char(n), 'filepath', char(p2l.rawEEG_updated));
         disp("saved the remedied file for " + n)
     end
+    quality_table = task_run_quality_check(EEG);
     catch
         unav_dataset = [unav_dataset, string(data(i).subject)];
         unav_dataset_idx = [unav_dataset_idx i];
