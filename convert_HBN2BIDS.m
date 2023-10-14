@@ -40,8 +40,8 @@ clear EEG
 %% Define tasks
 % Define the BIDS-name couterpart and run numbers
 bids_table = readtable("task_bids_conversion.tsv","FileType","text");
-BIDS_task_name = bids_table{boolean(sum(target_tasks == bids_table{:,"init_name"},2)),"BIDS_name"}';
-BIDS_run_seq = bids_table{boolean(sum(target_tasks == bids_table{:,"init_name"},2)),"run_num"}';
+BIDS_task_name = bids_table{logical(sum(target_tasks == bids_table{:,"init_name"},2)),"BIDS_name"}';
+BIDS_run_seq = bids_table{logical(sum(target_tasks == bids_table{:,"init_name"},2)),"run_num"}';
 
 for i = 1:length(BIDS_task_name)
     if isnan(BIDS_run_seq(i))
@@ -148,7 +148,7 @@ for i = 1:length(data)
         pop_saveset(EEG.(n), 'filename', char(n), 'filepath', char(p2l.rawEEG_updated));
         disp("saved the remedied file for " + n)
     end
-    quality_table = task_run_quality_check(EEG);
+    quality_table = run_quality_metrics(EEG);
     catch
         unav_dataset = [unav_dataset, string(data(i).subject)];
         unav_dataset_idx = [unav_dataset_idx i];
