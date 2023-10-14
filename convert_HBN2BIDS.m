@@ -20,6 +20,7 @@ target_release = ["R3"]; %#ok<NBRAK2>
 num_subjects = 22; % if -1, all subjects in the release will be added.
 
 p2l = init_paths("linux", "sccn", "HBN", 1, 1);
+clear EEG
 addpath(genpath(p2l.codebase))
 f2l.elocs = p2l.eegRepo + "GSN_HydroCel_129.sfp";  % f2l = file to load
 
@@ -35,7 +36,8 @@ bids_export_path = p2l.yahya + "/cmi_bids_R3_20/";
 no_subj_info_cols = 8; % 
 tnames = string(plist.Properties.VariableNames); % task names
 tnames = tnames(no_subj_info_cols+1:end);
-clear EEG
+
+f2l.quality_table = remediedrepo + target_release + "_" + string(num_subjects);
 
 %% Define tasks
 % Define the BIDS-name couterpart and run numbers
@@ -118,7 +120,9 @@ tInfo.PowerLineFrequency = 60; % task info, it one per experiment.
 % This step is simialr to the import and remedy sections of step1.
 unav_dataset = [];
 unav_dataset_idx = [];
-quality_table = table();
+error_message = [];
+if exist(f2l.quality_table,"file"), load(f2l.quality_table); else, quality_table = table(); end
+
 for i = 1:length(data)
     try
         EEG = [];
@@ -150,13 +154,17 @@ for i = 1:length(data)
         disp("saved the remedied file for " + n)
     end
     quality_table = run_quality_metrics(EEG, quality_table, 0);
-    catch
+    catch ME
+        error_message = [error_message; string([ME.identifier, ME.message])];
         unav_dataset = [unav_dataset, string(data(i).subject)];
         unav_dataset_idx = [unav_dataset_idx i];
         warning("data from " +string(data(i).subject)+" is not available, removing corresponding entries")   
     end       
 end
+save(f2l.quality_table,"quality_table");
 pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
+
+%% construct pInfo
 
 %% Now we probably can call bids_export
 % keep only relevant information in pInfo_desc
