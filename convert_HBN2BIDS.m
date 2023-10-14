@@ -118,6 +118,7 @@ tInfo.PowerLineFrequency = 60; % task info, it one per experiment.
 % This step is simialr to the import and remedy sections of step1.
 unav_dataset = [];
 unav_dataset_idx = [];
+quality_table = table();
 for i = 1:length(data)
     try
         EEG = [];
@@ -148,7 +149,7 @@ for i = 1:length(data)
         pop_saveset(EEG.(n), 'filename', char(n), 'filepath', char(p2l.rawEEG_updated));
         disp("saved the remedied file for " + n)
     end
-    quality_table = run_quality_metrics(EEG);
+    quality_table = run_quality_metrics(EEG, quality_table, 0);
     catch
         unav_dataset = [unav_dataset, string(data(i).subject)];
         unav_dataset_idx = [unav_dataset_idx i];
