@@ -17,12 +17,16 @@ function EEG = augment_behavior_events(EEG,filename, beh_path)
 %% initialize
 target_files = ["WISC_ProcSpeed.mat","vis_learn.mat","SurroundSupp_Block1.mat", "SurroundSupp_Block2.mat"];
 if ~contains(filename, target_files), return, end
+EEG.etc.quality_checks.event_augmentation = [];
 
 subject = string(EEG.subject);
 file = beh_path + filesep + subject + "_" + filename;
-beh_event = load(file);
+try beh_event = load(file);
+catch
+    EEG.etc.quality_checks.event_augmentation = "Behavior file not present";
+    return;
+end
 
-EEG.etc.quality_checks.event_augmentation = [];
 %% main
 if filename == "WISC_ProcSpeed.mat"  % symbol search task
     % First check if we have the same number of events
@@ -34,11 +38,12 @@ if filename == "WISC_ProcSpeed.mat"  % symbol search task
     if num_beh_resp == length(eeg_event_idx)
         disp("Number of behavior repsonses mathces the corresponsding EEG.event items.")
     elseif num_beh_resp < length(eeg_event_idx)
-        warning("Number of behavior events are less than the corresponding EEG.event items, will populate EEG.event items from the begining"
-        EEG.etc.quality_checks.event_augmentation = "Bbehavior events less than EEG.event";
+        warning("Number of behavior events are less than the corresponding EEG.event items, will populate EEG.event items from the begining")
+        EEG.etc.quality_checks.event_augmentation = "Behavior events less than EEG.event";
     else
         warning("Behavior event count is different from the EEG.event counts. Please check!")
         EEG.etc.quality_checks.event_augmentation = "Behavior events greater than EEG.event, skipped";
+        return;
     end
     for i = 1:num_beh_resp
         EEG.event(eeg_event_idx(i)).user_answer = num2str(subj_resp_vector(i));
