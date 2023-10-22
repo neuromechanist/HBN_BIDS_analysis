@@ -135,31 +135,32 @@ for i = 1:length(data)
             behavior_dir = p2l.raw + string(data(i).subject) + "/Behavioral/mat_format/";
             disp("loaded "+p2l.rawEEG + data(i).raw_file(n==eeg_set_names))
         end
-    
-    p2l.rawEEG_updated = remediedrepo + string(data(i).subject) + dpath;
-    if ~exist(p2l.rawEEG_updated, "dir"), mkdir(p2l.rawEEG_updated); end
-    for n = string(fieldnames(EEG))'
-        EEG.(n).setname = char(subj + "_" + n);
-        EEG.(n).subject = char(subj);
-        EEG.(n) = eeg_checkset(EEG.(n));
-        EEG.(n) = pop_chanedit(EEG.(n), 'load', {char(f2l.elocs),'filetype','autodetect'});
-        EEG.(n) = pop_chanedit(EEG.(n), 'setref',{'1:129','Cz'});
-        [EEG.(n).event.latency] = deal(EEG.(n).event.sample);
-        EEG.(n) = replace_event_type(EEG.(n), 'funcs/tsv/lookup_events.tsv', 1);
-        EEG.(n) = augment_behavior_events(EEG.(n), data(i).raw_file(n==string(fieldnames(EEG))'), behavior_dir);
-        EEG.(n) = eeg_checkset(EEG.(n), 'makeur');
-        EEG.(n) = eeg_checkset(EEG.(n), 'chanlocs_homogeneous');
-        % save the remedied EEG structure.
-        pop_saveset(EEG.(n), 'filename', char(n), 'filepath', char(p2l.rawEEG_updated));
-        disp("saved the remedied file for " + n)
-    end
-    quality_table = run_quality_metrics(EEG, quality_table, 0);
+
+        p2l.rawEEG_updated = remediedrepo + string(data(i).subject) + dpath;
+        if ~exist(p2l.rawEEG_updated, "dir"), mkdir(p2l.rawEEG_updated); end
+        for n = string(fieldnames(EEG))'
+            EEG.(n).setname = char(subj + "_" + n);
+            EEG.(n).subject = char(subj);
+            EEG.(n) = eeg_checkset(EEG.(n));
+            EEG.(n) = pop_chanedit(EEG.(n), 'load', {char(f2l.elocs),'filetype','autodetect'});
+            EEG.(n) = pop_chanedit(EEG.(n), 'setref',{'1:129','Cz'});
+            [EEG.(n).event.latency] = deal(EEG.(n).event.sample);
+            EEG.(n) = remove_brcnt(EEG.(n)); % remove data and event correpnding to break_cnt (see issue #6)
+            EEG.(n) = replace_event_type(EEG.(n), 'funcs/tsv/lookup_events.tsv', 1);
+            EEG.(n) = augment_behavior_events(EEG.(n), data(i).raw_file(n==string(fieldnames(EEG))'), behavior_dir);
+            EEG.(n) = eeg_checkset(EEG.(n), 'makeur');
+            EEG.(n) = eeg_checkset(EEG.(n), 'chanlocs_homogeneous');
+            % save the remedied EEG structure.
+            pop_saveset(EEG.(n), 'filename', char(n), 'filepath', char(p2l.rawEEG_updated));
+            disp("saved the remedied file for " + n)
+        end
+        quality_table = run_quality_metrics(EEG, quality_table, 0);
     catch ME
         error_message = [error_message; string([ME.identifier, ME.message])];
         unav_dataset = [unav_dataset, string(data(i).subject)];
         unav_dataset_idx = [unav_dataset_idx i];
-        warning("data from " +string(data(i).subject)+" is not available, removing corresponding entries")   
-    end       
+        warning("data from " +string(data(i).subject)+" is not available, removing corresponding entries")
+    end
 end
 save(f2l.quality_table,"quality_table");
 pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
