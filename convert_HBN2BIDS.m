@@ -121,8 +121,9 @@ tInfo.PowerLineFrequency = 60; % task info, it one per experiment.
 unav_dataset = [];
 unav_dataset_idx = [];
 error_message = [];
-if exist(f2l.quality_table,"file"), load(f2l.quality_table); else, quality_table = table(); end
-
+key_events = load("key_events.mat");
+% if exist(f2l.quality_table,"file"), load(f2l.quality_table); else, quality_table = table(); end
+quality_table = table();
 for i = 1:length(data)
     try
         EEG = [];
@@ -150,11 +151,11 @@ for i = 1:length(data)
             EEG.(n) = augment_behavior_events(EEG.(n), data(i).raw_file(n==string(fieldnames(EEG))'), behavior_dir);
             EEG.(n) = eeg_checkset(EEG.(n), 'makeur');
             EEG.(n) = eeg_checkset(EEG.(n), 'chanlocs_homogeneous');
+            quality_table = run_quality_metrics(EEG.(n), n, quality_table, key_events, 0);
             % save the remedied EEG structure.
             pop_saveset(EEG.(n), 'filename', char(n), 'filepath', char(p2l.rawEEG_updated));
             disp("saved the remedied file for " + n)
         end
-        quality_table = run_quality_metrics(EEG, quality_table, 0);
     catch ME
         error_message = [error_message; string([ME.identifier, ME.message])];
         unav_dataset = [unav_dataset, string(data(i).subject)];
