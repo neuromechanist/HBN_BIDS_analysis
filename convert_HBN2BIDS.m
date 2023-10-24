@@ -59,18 +59,7 @@ base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commerci
 req_info = [base_info, target_tasks];
 
 %% define the pInfo descriptions, eInfo, and eInfo descriptionsdbquit
-pInfo_desc = struct();
-for i = lower(base_info)
-    temp = load("participant_info_descriptions.mat", i);
-    pInfo_desc.(i) = temp.(i);
-end
-set_name_with_dim = [];
-for i = BIDS_set_name
-    snwd = i + "_in_kB";
-    temp = load("participant_info_descriptions.mat", i);
-    pInfo_desc.(snwd) = temp.(i);
-    set_name_with_dim = [set_name_with_dim snwd];
-end
+pInfo_desc = load("participant_info_descriptions.mat");
 
 eInfo = {};
 if length(unique(string(BIDS_task_name))) == 1  % eInfo can't be for more than ONE task
@@ -85,7 +74,7 @@ eInfo_desc = load("event_info_descriptions.mat");
 % to have the strucutre to later on use it for adjusting the raw files and then 
 % making the structure.
 data = struct;
-pInfo = cellstr([lower(base_info), set_name_with_dim]);
+pInfo = cellstr([lower(base_info), BIDS_set_name]);
 if target_release == "all"
     target_table = plist;
 else
