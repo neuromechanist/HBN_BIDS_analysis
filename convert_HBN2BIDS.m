@@ -156,7 +156,8 @@ save(f2l.quality_table,"quality_table");
 pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 
 %% construct pInfo
-
+load(f2l.quality_table, "quality_table");
+pInfo = rawFile_quality_pInfo(pInfo,quality_table);
 %% Now we probably can call bids_export
 % keep only relevant information in pInfo_desc
 
