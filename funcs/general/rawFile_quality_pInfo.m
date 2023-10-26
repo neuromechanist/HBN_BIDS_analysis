@@ -16,8 +16,8 @@ function pInfo = rawFile_quality_pInfo(pInfo, quality_table)
 
 %% main
 qt_subjs = string(quality_table.Properties.RowNames)';
-pInfo_subjs = string({pInfo{2:end,1}});
-
+pInfo_subjs = string(pInfo(2:end,1))';
+pInfo_cols = string(pInfo(1,:));
 qchecks = ["data_pnts", "event_cnt", "key_event_exist", "quality_checks"];
 
 % This should not happed, but we need to first check if there is any
@@ -34,12 +34,26 @@ for t = tasks
     qcheck.data_pnts = find(isoutlier(qtable.data_pnts, "median", "ThresholdFactor" ,5));
     qcheck.event_cnt = find(isoutlier(qtable.event_cnt, "median", "ThresholdFactor" ,5));
     qcheck.key_event_exist = find(qtable.key_events_exist == false);
-    qcheck.quality_checks = find(qtable.quality_checks~="n/a" || ismissing(qtable.quality_checks));
+    qcheck.quality_checks = find(qtable.quality_checks~="n/a");
 
     for q = qchecks
-        outlier_indices = [outlier_indices, qcheck.(q)];
+        outlier_indices = [outlier_indices, qcheck.(q)']; %#ok<AGROW>
     end
     outlier_indices = unique(outlier_indices);
-
-
+    outlier_subjs = qt_subjs(outlier_indices);
+ 
+    % While the task and subjects orders should be the same for pInfo and
+    % quality_table, I still make the assumption that they might chnage,
+    % and we should search for both.
+    task_id = find(t==pInfo_cols);
+    for s = qt_subjs
+        subj_id = find(s==pInfo_subjs) + 1;
+        if strcmp(pInfo{subj_id, task_id},'0')
+             pInfo{subj_id, task_id} = 'unavailable';
+        elseif contains(s, outlier_subjs)             
+            pInfo{subj_id, task_id} = 'caution'; 
+        else
+            pInfo{subj_id, task_id} = 'available';
+        end
+    end
 end
