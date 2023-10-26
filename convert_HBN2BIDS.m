@@ -157,11 +157,11 @@ pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 
 %% construct pInfo
 load(f2l.quality_table, "quality_table");
-pInfo = rawFile_quality_pInfo(pInfo,quality_table);
+pInfo2 = rawFile_quality_pInfo(pInfo,quality_table);
 %% Now we probably can call bids_export
 % keep only relevant information in pInfo_desc
 
 task = 'unnamed';
 if length(unique(BIDS_task_name)) == 1, task = BIDS_task_name{1}; end
-bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
+bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo2, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
     'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off');
