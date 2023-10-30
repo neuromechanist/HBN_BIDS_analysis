@@ -17,17 +17,11 @@ function EEG = augment_behavior_events(EEG,filename, beh_path)
 %% initialize
 target_files = ["WISC_ProcSpeed.mat","vis_learn.mat","SurroundSupp_Block1.mat", "SurroundSupp_Block2.mat"];
 if ~contains(filename, target_files), return, end
-EEG.etc.quality_checks.event_augmentation = [];
-
 subject = string(EEG.subject);
 file = beh_path + filesep + subject + "_" + filename;
-try beh_event = load(file);
-catch
-    EEG.etc.quality_checks.event_augmentation = "Behavior file not present";
-    return;
-end
+beh_event = load(file);
 
-%% main
+%% main loop
 if filename == "WISC_ProcSpeed.mat"  % symbol search task
     % First check if we have the same number of events
     correct_resp = readtable("symbolSearch_correct_response.tsv","filetype","text"); correct_resp_vector = reshape(correct_resp.Variables,[],1);
@@ -37,13 +31,8 @@ if filename == "WISC_ProcSpeed.mat"  % symbol search task
     eeg_event_idx = find(string({EEG.event(:).type})=="trialResponse");
     if num_beh_resp == length(eeg_event_idx)
         disp("Number of behavior repsonses mathces the corresponsding EEG.event items.")
-    elseif num_beh_resp < length(eeg_event_idx)
-        warning("Number of behavior events are less than the corresponding EEG.event items, will populate EEG.event items from the begining")
-        EEG.etc.quality_checks.event_augmentation = "Behavior events less than EEG.event";
     else
-        warning("Behavior event count is different from the EEG.event counts. Please check!")
-        EEG.etc.quality_checks.event_augmentation = "Behavior events greater than EEG.event, skipped";
-        return;
+        error("Behavior event count is different from the EEG.event counts. Please check!")
     end
     for i = 1:num_beh_resp
         EEG.event(eeg_event_idx(i)).user_answer = num2str(subj_resp_vector(i));
@@ -57,7 +46,6 @@ elseif filename == "vis_learn.mat"  % sequence learning task
     type_toAdd_event = [32,33,34,35,50]; % the response should be added just before these events
     if beh_event.par.numrepet ~= size(beh_event.par.resp_click,1) % failsafe.
         warning("EEG response count mismatches number of behavior reps in the sequence learning task, skipping adding the events")
-        EEG.etc.quality_checks.event_augmentation = "Behavior events does not match EEG.event, skipped";
         return
     end
     for i = 1:length(EEG.event)
@@ -88,6 +76,5 @@ elseif filename == "SurroundSupp_Block1.mat" || filename == "SurroundSupp_Block2
         end
     else
         warning("legnth of the stimulation on in EEG.event mismatches the behavior file, skipping adding the events.")
-        EEG.etc.quality_checks.event_augmentation = "Behavior events does not match EEG.event, skipped";
     end
 end
