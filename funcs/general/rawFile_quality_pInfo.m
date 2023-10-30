@@ -1,4 +1,4 @@
-function pInfo = rawFile_quality_pInfo(pInfo, quality_table)
+function pInfo = rawFile_quality_pInfo(pInfo, quality_table, save_path)
 %RAWFILE_QUALITY_PINFO Sumariuze quality metrics into a handful of flags.
 %   Based on the QUALITY_TABLE, we can prvide a seires of flags to guide
 %   the user about the data. This can be much simppler than the legnth of
@@ -12,6 +12,7 @@ function pInfo = rawFile_quality_pInfo(pInfo, quality_table)
 %       being able to read the data file or if the data file is not present
 %       at all.
 %
+%   If save
 % (c) Seyed Yahya Shirazi, 10/2023 SCCN, INC, UCSD
 
 %% main
@@ -31,6 +32,11 @@ for t = tasks
     outlier_indices = [];
     qtable = quality_table.(t);
     
+    % write the table
+    if exist("save_path","var")
+        writetable(qtable, save_path + t + "_quality_table.tsv", "FileType", "text")
+    end
+
     outliers = find(isoutlier(qtable.data_pnts, "median", "ThresholdFactor" ,5));
     poutliers = find_outlier_by_percent(qtable.data_pnts, 0.2);
     qcheck.data_pnts = intersect(outliers,poutliers);
