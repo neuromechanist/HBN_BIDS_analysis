@@ -12,7 +12,18 @@ function pInfo = rawFile_quality_pInfo(pInfo, quality_table, save_path)
 %       being able to read the data file or if the data file is not present
 %       at all.
 %
-%   If save
+%   INPUTS:
+%       pInfo: The standrard participant information requireed cell array
+%       required for the BIDS_EXPORT function. This array is created using
+%       the CONVERT_HBN2BIDS function.
+%       quality_table: The table that includes a summary of the quality
+%       checks performed on the dataset. Currently the data points, number
+%       of events and key events are hardcoded in the table (from
+%       RUN_QUALITY_METRICS) and here. For additional checks, you can use
+%       EEG.etc.quality_checks.
+%       save_path: If present, the quality table for each task will be
+%       savewd in the path as a TSV file.
+%
 % (c) Seyed Yahya Shirazi, 10/2023 SCCN, INC, UCSD
 
 %% main
@@ -31,10 +42,10 @@ tasks(tasks == "participant_id") = [];  % this is not a task
 for t = tasks
     outlier_indices = [];
     qtable = quality_table.(t);
-    
+    qtable.Properties.RowNames = quality_table.Properties.RowNames;
     % write the table
     if exist("save_path","var")
-        writetable(qtable, save_path + t + "_quality_table.tsv", "FileType", "text")
+        writetable(qtable, save_path + t + "_quality_table.tsv", "FileType", "text", "WriteRowNames",true)
     end
 
     outliers = find(isoutlier(qtable.data_pnts, "median", "ThresholdFactor" ,5));

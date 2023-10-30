@@ -38,8 +38,8 @@ tnames = string(plist.Properties.VariableNames); % task names
 tnames = tnames(no_subj_info_cols+1:end);
 
 f2l.quality_table = remediedrepo + target_release + "_" + string(num_subjects);
-p2l.code = bids_export_path + "code/";
-if ~exist(p2l.code, "dir"), mkdir(p2l.code); end
+p2l.BIDS_code = bids_export_path + "code/";
+if ~exist(p2l.BIDS_code, "dir"), mkdir(p2l.code); end
 
 %% Define tasks
 % Define the BIDS-name couterpart and run numbers
@@ -159,7 +159,7 @@ pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 
 %% construct pInfo
 load(f2l.quality_table, "quality_table");
-pInfo2 = rawFile_quality_pInfo(pInfo,quality_table, p2l.code);
+pInfo2 = rawFile_quality_pInfo(pInfo,quality_table, p2l.BIDS_code);
 %% Now we probably can call bids_export
 % keep only relevant information in pInfo_desc
 
