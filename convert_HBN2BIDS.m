@@ -164,4 +164,4 @@ pInfo2 = rawFile_quality_pInfo(pInfo,quality_table);
 task = 'unnamed';
 if length(unique(BIDS_task_name)) == 1, task = BIDS_task_name{1}; end
 bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo2, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
-    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off');
+    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off', 'writePInfoOnly', 'off');
