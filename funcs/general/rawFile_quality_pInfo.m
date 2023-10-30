@@ -31,8 +31,14 @@ for t = tasks
     outlier_indices = [];
     qtable = quality_table.(t);
     
-    qcheck.data_pnts = find(isoutlier(qtable.data_pnts, "median", "ThresholdFactor" ,5));
-    qcheck.event_cnt = find(isoutlier(qtable.event_cnt, "median", "ThresholdFactor" ,5));
+    outliers = find(isoutlier(qtable.data_pnts, "median", "ThresholdFactor" ,5));
+    poutliers = find_outlier_by_percent(qtable.data_pnts, 0.2);
+    qcheck.data_pnts = intersect(outliers,poutliers);
+
+    outliers = find(isoutlier(qtable.event_cnt, "median", "ThresholdFactor" ,5));
+    poutliers = find_outlier_by_percent(qtable.event_cnt, 0.2);
+    qcheck.event_cnt = intersect(outliers,poutliers);
+    
     qcheck.key_event_exist = find(qtable.key_events_exist == false);
     qcheck.quality_checks = find(qtable.quality_checks~="n/a");
 
@@ -57,3 +63,12 @@ for t = tasks
         end
     end
 end
+
+function idx = find_outlier_by_percent(values, percentage)
+
+mid = median(values);
+
+bigger = find(values > (mid * (1 + percentage)));
+smaller = find(values < (mid * (1 - percentage)));
+
+idx = union(bigger, smaller);
