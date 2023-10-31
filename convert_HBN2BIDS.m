@@ -22,12 +22,13 @@ num_subjects = 22; % if -1, all subjects in the release will be added.
 p2l = init_paths("linux", "sccn", "HBN", 1, 1);
 addpath(genpath(p2l.codebase))
 f2l.elocs = p2l.eegRepo + "GSN_HydroCel_129.sfp";  % f2l = file to load
-
+%%
 plist = readtable("participants_augmented_filesize.tsv", "FileType","text");
 plist.Full_Pheno = string(plist{:,"Full_Pheno"}); % to change the variable type to string
 plist.Commercial_Use = string(plist{:,"Commercial_Use"});
 plist.Sex = string(plist{:,"Sex"});
 plist.Sex(plist.Sex=="1") = "F"; plist.Sex(plist.Sex=="0") = "M";
+
 % remove the dublicates
 duplicate_ids = ["NDARDZ322ZFC","NDARNZ792HBN"]; % the ids were found by shell-cmd inspection upto R11.
 for i = duplicate_ids, dup_idx = find(strcmp(plist{:,"participant_id"},i)); plist(dup_idx(end),:) =[]; end
@@ -56,8 +57,8 @@ if ~exist(p2l.BIDS_code, "dir"), mkdir(p2l.code); end
 %% Define tasks
 % Define the BIDS-name couterpart and run numbers
 bids_table = readtable("task_bids_conversion.tsv","FileType","text");
-BIDS_task_name = bids_table{boolean(sum(target_tasks == bids_table{:,"init_name"},2)),"BIDS_name"}';
-BIDS_run_seq = bids_table{boolean(sum(target_tasks == bids_table{:,"init_name"},2)),"run_num"}';
+BIDS_task_name = bids_table{logical(sum(target_tasks == bids_table{:,"init_name"},2)),"BIDS_name"}';
+BIDS_run_seq = bids_table{logical(sum(target_tasks == bids_table{:,"init_name"},2)),"run_num"}';
 
 for i = 1:length(BIDS_task_name)
     if isnan(BIDS_run_seq(i))
@@ -73,18 +74,7 @@ base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commerci
 req_info = [base_info, target_tasks];
 
 %% define the pInfo descriptions, eInfo, and eInfo descriptions
-pInfo_desc = struct();
-for i = lower(base_info)
-    temp = load("participant_info_descriptions.mat", i);
-    pInfo_desc.(i) = temp.(i);
-end
-set_name_with_dim = [];
-for i = BIDS_set_name
-    snwd = i + "_in_kB";
-    temp = load("participant_info_descriptions.mat", i);
-    pInfo_desc.(snwd) = temp.(i);
-    set_name_with_dim = [set_name_with_dim snwd];
-end
+pInfo_desc = load("participant_info_descriptions.mat");
 
 eInfo = {};
 if length(unique(string(BIDS_task_name))) == 1  % eInfo can't be for more than ONE task
@@ -99,7 +89,7 @@ eInfo_desc = load("event_info_descriptions.mat");
 % to have the strucutre to later on use it for adjusting the raw files and then 
 % making the structure.
 data = struct;
-pInfo = cellstr([lower(base_info), set_name_with_dim]);
+pInfo = cellstr([lower(base_info), BIDS_set_name]);
 if target_release == "all"
     target_table = plist;
 else
