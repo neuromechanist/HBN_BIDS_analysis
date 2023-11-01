@@ -146,10 +146,12 @@ for i = 1:length(data)
         EEG.(n) = pop_chanedit(EEG.(n), 'load', {char(f2l.elocs),'filetype','autodetect'});
         EEG.(n) = pop_chanedit(EEG.(n), 'setref',{'1:129','Cz'});
         [EEG.(n).event.latency] = deal(EEG.(n).event.sample);
+        EEG.(n) = remove_brcnt(EEG.(n)); % remove data and event correpnding to break_cnt (see issue #6)
         EEG.(n) = replace_event_type(EEG.(n), 'funcs/tsv/lookup_events.tsv', 1);
         EEG.(n) = augment_behavior_events(EEG.(n), data(i).raw_file(n==string(fieldnames(EEG))'), behavior_dir);
         EEG.(n) = eeg_checkset(EEG.(n), 'makeur');
         EEG.(n) = eeg_checkset(EEG.(n), 'chanlocs_homogeneous');
+        quality_table = run_quality_metrics(EEG.(n), n, quality_table, key_events, 0);
         % save the remedied EEG structure.
         pop_saveset(EEG.(n), 'filename', char(n), 'filepath', char(p2l.rawEEG_updated));
         disp("saved the remedied file for " + n)
