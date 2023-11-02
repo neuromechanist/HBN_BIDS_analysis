@@ -17,7 +17,7 @@ if ~exist("target_tasks","var") || isempty(target_tasks)
 end
 
 target_release = ["R3"]; %#ok<NBRAK2> 
-num_subjects = 20; % if -1, all subjects in the release will be added.
+num_subjects = 22; % if -1, all subjects in the release will be added.
 
 p2l = init_paths("linux", "sccn", "HBN", 1, 1);
 addpath(genpath(p2l.codebase))
@@ -41,7 +41,7 @@ pfactor(~contains(pfactor{:,"EID"},string(plist{:,"participant_id"})),:) =[];
 plist(pfactor.EID,"P_factor") = pfactor(:,"P_factor");
 plist{~contains(plist.Row,string(pfactor{:,"EID"})),"P_factor"} = nan;
 
-remediedrepo = p2l.temp + "/taskBIDS_test2/";
+remediedrepo = p2l.temp + "/taskBIDS_test/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
 bids_export_path = p2l.yahya + "/cmi_bids_R3_20/";
@@ -74,7 +74,11 @@ base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commerci
 req_info = [base_info, target_tasks];
 
 %% define the pInfo descriptions, eInfo, and eInfo descriptions
-pInfo_desc = load("participant_info_descriptions.mat");
+pInfo_desc = struct();
+for i = [lower(base_info), BIDS_set_name]
+    temp = load("participant_info_descriptions.mat", i);
+    pInfo_desc.(i) = temp.(i);
+end
 
 eInfo = {};
 if length(unique(string(BIDS_task_name))) == 1  % eInfo can't be for more than ONE task
@@ -176,7 +180,6 @@ load(f2l.quality_table, "quality_table");
 if ~isempty(rm_id), data(rm_id) = []; end
 
 %% Now we probably can call bids_export
-% keep only relevant information in pInfo_desc
 
 task = 'unnamed';
 if length(unique(BIDS_task_name)) == 1, task = BIDS_task_name{1}; end
