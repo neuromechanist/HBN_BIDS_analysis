@@ -172,6 +172,7 @@ for i = 1:length(data)
     end       
 end
 save(f2l.quality_table, "quality_table");
+save(remediedrepo+"unav_dataset_summary.mat","unav_dataset","error_message");
 pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 
 %% construct pInfo
