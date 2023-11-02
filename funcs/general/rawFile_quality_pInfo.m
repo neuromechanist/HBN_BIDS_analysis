@@ -31,6 +31,7 @@ qt_subjs = string(quality_table.Properties.RowNames)';
 pInfo_subjs = string(pInfo(2:end,1))';
 pInfo_cols = string(pInfo(1,:));
 qchecks = ["data_pnts", "event_cnt", "key_event_exist", "quality_checks"];
+rm_id = [];
 
 % This should not happed, but we need to first check if there is any
 % heterogenity inthe two subject lists
@@ -41,13 +42,18 @@ if ~isempty(unique_subjs)
         error("Unique subjects in the list, resolve the issue to proceed");
     else
         if contains(unique_subjs, pInfo_subjs)
-            rm_id = find(unique_subjs == pInfo_subjs);
-            pInfo(rm_id+1,:) = [];
-            pInfo_subjs = string(pInfo(2:end,1))';
-            warning("pInfo has more subjects, but you chose to continue, removing the subject from dataset");
+            for u = unique_subjs
+                rm_id = [rm_id, find(u == pInfo_subjs)];
+                pInfo(find(u == pInfo_subjs)+1,:) = [];
+                pInfo_subjs = string(pInfo(2:end,1))';
+                warning("pInfo has more subjects, but you chose to continue, removing the subject from dataset");        
+            end
         else
-            quality_table(unique_subjs,:) = [];
-            warning("quality_table has extra subjects, but you  chose to continue, removing the subject from table")
+            for u = unique_subjs
+                quality_table(u,:) = [];
+                qt_subjs = string(quality_table.Properties.RowNames)';
+                warning("quality_table has extra subjects, but you  chose to continue, removing the subject from table")
+            end
         end
     end
 end
