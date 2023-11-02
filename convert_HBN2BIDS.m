@@ -19,11 +19,11 @@ end
 target_release = ["R3"]; %#ok<NBRAK2> 
 num_subjects = 22; % if -1, all subjects in the release will be added.
 
-p2l = init_paths("linux", "sccn", "HBN", 1, 1);
+p2l = init_paths("linux", "expanse", "HBN", 1, 1);
 addpath(genpath(p2l.codebase))
 f2l.elocs = p2l.eegRepo + "GSN_HydroCel_129.sfp";  % f2l = file to load
 
-plist = readtable("participants_augmented_filesize.tsv", "FileType","text");
+plist = readtable("participants_augmented_filesize.tsv", "FileType", "text");
 plist.Full_Pheno = string(plist{:,"Full_Pheno"}); % to change the variable type to string
 plist.Commercial_Use = string(plist{:,"Commercial_Use"});
 plist.Sex = string(plist{:,"Sex"});
@@ -41,7 +41,7 @@ pfactor(~contains(pfactor{:,"EID"},string(plist{:,"participant_id"})),:) =[];
 plist(pfactor.EID,"P_factor") = pfactor(:,"P_factor");
 plist{~contains(plist.Row,string(pfactor{:,"EID"})),"P_factor"} = nan;
 
-remediedrepo = p2l.temp + "/taskBIDS_test/";
+remediedrepo = p2l.temp + "/taskBIDS_test2/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
 bids_export_path = p2l.yahya + "/cmi_bids_R3_20/";
@@ -53,6 +53,7 @@ clear EEG
 f2l.quality_table = remediedrepo + target_release + "_" + string(num_subjects);
 p2l.BIDS_code = bids_export_path + "code/";
 if ~exist(p2l.BIDS_code, "dir"), mkdir(p2l.BIDS_code); end
+f2l.error_summary = remediedrepo + "unav_dataset_summary.mat";
 
 %% Define tasks
 % Define the BIDS-name couterpart and run numbers
@@ -172,17 +173,21 @@ for i = 1:length(data)
     end       
 end
 save(f2l.quality_table, "quality_table");
-save(remediedrepo+"unav_dataset_summary.mat","unav_dataset","error_message","-mat","-append");
+if ~exist(f2l.error_summary, "file")
+    save(f2l.error_summary,"unav_dataset","error_message");
+else
+    save(f2l.error_summary,"unav_dataset","error_message","-mat","-append");
+end
 pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 
 %% construct pInfo
 load(f2l.quality_table, "quality_table");
 [pInfo2, rm_id] = rawFile_quality_pInfo(pInfo,quality_table, 1, p2l.BIDS_code);
-if ~isempty(rm_id), data(rm_id) = []; end
+if ~isempty(rm_id), data(unique(rm_id)) = []; end
 
-%% Now we probably can call bids_export
+    %% Now we probably can call bids_export
 
 task = 'unnamed';
 if length(unique(BIDS_task_name)) == 1, task = BIDS_task_name{1}; end
 bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo2, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
-    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off', 'writePInfoOnly', 'off');
+    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off', 'writePInfoOnly', 'on');
