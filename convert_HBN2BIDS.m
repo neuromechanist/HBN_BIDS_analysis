@@ -1,10 +1,14 @@
-function convert_HBN2BIDS(target_tasks)
+function convert_HBN2BIDS(target_tasks, write_qtable)
 %CONVERT_HBN2BIDS Convert HBN data to BIDS
 % This script convert the list of specified tasks |task_list| to a BIDS dataset 
 % uising EEGLAB's |bids_export|. Only the subjects whithin the defined |release| 
 % and having all the datasets included in the |task_list| will be included in 
 % the BIDS dataset.
-% 
+%   INPUTS:
+%       traget_tasks: Array of strings to provide the tasks (in their
+%       original name) for conversion.
+%       write_table: if set to 1, the code ONLY compiles the quality table
+%       and replace it in the participants.tsv. See #23 for more details
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% Initialize
@@ -15,6 +19,8 @@ if ~exist("target_tasks","var") || isempty(target_tasks)
     "SAIIT_2AFC_Block1", "SAIIT_2AFC_Block2", "SAIIT_2AFC_Block3",...
     "SurroundSupp_Block1", "SurroundSupp_Block2", "vis_learn", "WISC_ProcSpeed"];
 end
+
+if ~exist("write_qtable","var") || isempty(write_qtable), write_qtable = 0; end
 
 target_release = ["R3"]; %#ok<NBRAK2> 
 num_subjects = 22; % if -1, all subjects in the release will be added.
@@ -50,10 +56,10 @@ tnames = string(plist.Properties.VariableNames); % task names
 tnames = tnames(no_subj_info_cols+1:end);
 clear EEG
 
-f2l.quality_table = remediedrepo + target_release + "_" + string(num_subjects);
+f2l.quality_table = remediedrepo + target_release + "_" + string(num_subjects)+"_qulaity-table.mat";
 p2l.BIDS_code = bids_export_path + "code/";
 if ~exist(p2l.BIDS_code, "dir"), mkdir(p2l.BIDS_code); end
-f2l.error_summary = remediedrepo + "unav_dataset_summary.mat";
+f2l.error_summary = remediedrepo + "unav_dataset-summary.mat";
 
 %% Define tasks
 % Define the BIDS-name couterpart and run numbers
@@ -130,6 +136,7 @@ tInfo.PowerLineFrequency = 60; % task info, it one per experiment.
 unav_dataset = [];
 unav_dataset_idx = [];
 error_message = [];
+error_stack = {};
 key_events = load("key_events.mat");
 if exist(f2l.quality_table,"file"), load(f2l.quality_table); else, quality_table = table(); end
 % quality_table = table();
@@ -167,27 +174,30 @@ for i = 1:length(data)
     end
     catch ME
         error_message = [error_message; string([ME.identifier, ME.message])];
+        error_stack{end+1} = ME.stack;
         unav_dataset = [unav_dataset, string(data(i).subject)];
         unav_dataset_idx = [unav_dataset_idx i];
         warning("data from " +string(data(i).subject)+" is not available, removing corresponding entries")   
     end       
 end
+
 save(f2l.quality_table, "quality_table");
+
 if ~exist(f2l.error_summary, "file")
-    save(f2l.error_summary,"unav_dataset","error_message");
+    save(f2l.error_summary,"unav_dataset","error_message", "error_stack");
 else
-    save(f2l.error_summary,"unav_dataset","error_message","-mat","-append");
+    save(f2l.error_summary,"unav_dataset","error_message", "error_stack", "-mat", "-append");
 end
 pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 
 %% construct pInfo
-load(f2l.quality_table, "quality_table");
-[pInfo2, rm_id] = rawFile_quality_pInfo(pInfo,quality_table, 1, p2l.BIDS_code);
-if ~isempty(rm_id), data(unique(rm_id)) = []; end
+% load(f2l.quality_table, "quality_table");
+% [pInfo2, rm_id] = rawFile_quality_pInfo(pInfo,quality_table, 1, p2l.BIDS_code);
+% if ~isempty(rm_id), data(unique(rm_id)) = []; end
 
     %% Now we probably can call bids_export
 
 task = 'unnamed';
 if length(unique(BIDS_task_name)) == 1, task = BIDS_task_name{1}; end
-bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo2, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
-    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off', 'writePInfoOnly', 'on');
+bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
+    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off', 'writePInfoOnly', 'off');
