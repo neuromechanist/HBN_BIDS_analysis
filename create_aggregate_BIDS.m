@@ -15,3 +15,6 @@ target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", 
 for t = target_tasks
     convert_HBN2BIDS(t);
 end
+
+% create the nice participant.tsv file
+convert_HBN2BIDS([],1);
