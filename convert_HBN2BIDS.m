@@ -7,12 +7,12 @@ function convert_HBN2BIDS(target_tasks, write_qtable)
 %   INPUTS:
 %       traget_tasks: Array of strings to provide the tasks (in their
 %       original name) for conversion.
-%       write_table: if set to 1, the code ONLY compiles the quality table
+%       write_qtable: if set to 1, the code ONLY compiles the quality table
 %       and replace it in the participants.tsv. See #23 for more details
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% Initialize
-clearvars -except target_tasks
+clearvars -except target_tasks write_qtable
 
 if ~exist("target_tasks","var") || isempty(target_tasks)
     target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", ...
@@ -21,6 +21,7 @@ if ~exist("target_tasks","var") || isempty(target_tasks)
 end
 
 if ~exist("write_qtable","var") || isempty(write_qtable), write_qtable = 0; end
+if write_qtable, writePInfoOnly = 'on'; else, writePInfoOnly = 'off'; end
 
 target_release = ["R3"]; %#ok<NBRAK2> 
 num_subjects = 22; % if -1, all subjects in the release will be added.
@@ -133,71 +134,28 @@ tInfo.PowerLineFrequency = 60; % task info, it one per experiment.
 
 %% Remedy the files
 % This step is similar to the import and remedy sections of step1.
-unav_dataset = [];
-unav_dataset_idx = [];
-error_message = [];
-error_stack = {};
-key_events = load("key_events.mat");
-if exist(f2l.quality_table,"file"), load(f2l.quality_table); else, quality_table = table(); end
-% quality_table = table();
-for i = 1:length(data)
-    try
-        EEG = [];
-        subj = string(data(i).subject);
-        eeg_set_names = data(i).set_name;
-        for n = eeg_set_names
-            p2l.rawEEG = p2l.raw + string(data(i).subject) + dpath;
-            tempload = load(p2l.rawEEG + data(i).raw_file(n==eeg_set_names));
-            EEG.(n) = tempload.EEG;
-            behavior_dir = p2l.raw + string(data(i).subject) + "/Behavioral/mat_format/";
-            disp("loaded "+p2l.rawEEG + data(i).raw_file(n==eeg_set_names))
-        end
+if ~write_qtable
+    [unav_dataset, unav_dataset_idx, err_message, err_stack, quality_table] = remedy_HBN_EEG(f2l, data, p2l, dpath, remediedrepo);
 
-    p2l.rawEEG_updated = remediedrepo + string(data(i).subject) + dpath;
-    if ~exist(p2l.rawEEG_updated, "dir"), mkdir(p2l.rawEEG_updated); end
-    for n = string(fieldnames(EEG))'
-        EEG.(n).setname = char(subj + "_" + n);
-        EEG.(n).subject = char(subj);
-        EEG.(n) = eeg_checkset(EEG.(n));
-        EEG.(n) = pop_chanedit(EEG.(n), 'load', {char(f2l.elocs),'filetype','autodetect'});
-        EEG.(n) = pop_chanedit(EEG.(n), 'setref',{'1:129','Cz'});
-        [EEG.(n).event.latency] = deal(EEG.(n).event.sample);
-        EEG.(n) = remove_brcnt(EEG.(n)); % remove data and event correpnding to break_cnt (see issue #6)
-        EEG.(n) = replace_event_type(EEG.(n), 'funcs/tsv/lookup_events.tsv', 1);
-        EEG.(n) = augment_behavior_events(EEG.(n), data(i).raw_file(n==string(fieldnames(EEG))'), behavior_dir);
-        EEG.(n) = eeg_checkset(EEG.(n), 'makeur');
-        EEG.(n) = eeg_checkset(EEG.(n), 'chanlocs_homogeneous');
-        quality_table = run_quality_metrics(EEG.(n), n, quality_table, key_events, 0);
-        % save the remedied EEG structure.
-        pop_saveset(EEG.(n), 'filename', char(n), 'filepath', char(p2l.rawEEG_updated));
-        disp("saved the remedied file for " + n)
+    save(f2l.quality_table, "quality_table");
+    if ~exist(f2l.error_summary, "file")
+        save(f2l.error_summary,"unav_dataset","err_message", "err_stack");
+    else
+        save(f2l.error_summary,"unav_dataset","err_stack", "err_stack", "-mat", "-append");
     end
-    catch ME
-        error_message = [error_message; string([ME.identifier, ME.message])];
-        error_stack{end+1} = ME.stack;
-        unav_dataset = [unav_dataset, string(data(i).subject)];
-        unav_dataset_idx = [unav_dataset_idx i];
-        warning("data from " +string(data(i).subject)+" is not available, removing corresponding entries")   
-    end       
+    pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 end
-
-save(f2l.quality_table, "quality_table");
-
-if ~exist(f2l.error_summary, "file")
-    save(f2l.error_summary,"unav_dataset","error_message", "error_stack");
-else
-    save(f2l.error_summary,"unav_dataset","error_message", "error_stack", "-mat", "-append");
-end
-pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 
 %% construct pInfo
-% load(f2l.quality_table, "quality_table");
-% [pInfo2, rm_id] = rawFile_quality_pInfo(pInfo,quality_table, 1, p2l.BIDS_code);
-% if ~isempty(rm_id), data(unique(rm_id)) = []; end
+if write_qtable
+    load(f2l.quality_table, "quality_table");
+    [pInfo, rm_id] = rawFile_quality_pInfo(pInfo,quality_table, 1, p2l.BIDS_code);
+    if ~isempty(rm_id), data(unique(rm_id)) = []; end
+end
 
-    %% Now we probably can call bids_export
+%% Call bids_export
 
 task = 'unnamed';
 if length(unique(BIDS_task_name)) == 1, task = BIDS_task_name{1}; end
 bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
-    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off', 'writePInfoOnly', 'off');
+    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off', 'writePInfoOnly', writePInfoOnly);
