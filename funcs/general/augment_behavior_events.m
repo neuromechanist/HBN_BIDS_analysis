@@ -15,7 +15,8 @@ function EEG = augment_behavior_events(EEG,filename, beh_path)
 % (c) Seyed Yahya Shirazi, 09/2023 SCCN, INC, UCSD
 
 %% initialize
-target_files = ["WISC_ProcSpeed.mat","vis_learn.mat","SurroundSupp_Block1.mat", "SurroundSupp_Block2.mat"];
+target_files = ["WISC_ProcSpeed.mat","vis_learn.mat","SurroundSupp_Block1.mat", "SurroundSupp_Block2.mat",...
+    "SAIIT_2AFC_Block1.mat", "SAIIT_2AFC_Block2.mat", "SAIIT_2AFC_Block3.mat"];
 if ~contains(filename, target_files), return, end
 subject = string(EEG.subject);
 file = beh_path + filesep + subject + "_" + filename;
@@ -76,5 +77,26 @@ elseif filename == "SurroundSupp_Block1.mat" || filename == "SurroundSupp_Block2
         end
     else
         warning("legnth of the stimulation on in EEG.event mismatches the behavior file, skipping adding the events.")
+    end
+
+elseif  filename == "SAIIT_2AFC_Block1.mat" || filename == "SAIIT_2AFC_Block2.mat" || filename == "SAIIT_2AFC_Block3.mat" % surround supression task.
+    for i = 1:length(EEG.event)
+        if strcmp(EEG.event(i).type, 'right_buttonPress')
+            if strcmp(EEG.event(i-1).type, 'right_target')
+                EEG.event(i).feedback = 'smiley_face';
+            elseif strcmp(EEG.event(i-1).type, 'left_target')
+                EEG.event(i).feedback = 'sad_face';
+            else
+                EEG.event(i).feedback = 'non_target';
+            end
+        elseif strcmp(EEG.event(i).type, 'left_buttonPress')
+            if strcmp(EEG.event(i-1).type, 'left_target')
+                EEG.event(i).feedback = 'smiley_face';
+            elseif strcmp(EEG.event(i-1).type, 'right_target')
+                EEG.event(i).feedback = 'sad_face';
+            else
+                EEG.event(i).feedback = 'non_target';
+            end
+        end
     end
 end
