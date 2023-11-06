@@ -1,4 +1,4 @@
-function pInfo = rawFile_quality_pInfo(pInfo, quality_table, save_path)
+function [pInfo, rm_id] = rawFile_quality_pInfo(pInfo, quality_table, override_pInfo, save_path)
 %RAWFILE_QUALITY_PINFO Sumariuze quality metrics into a handful of flags.
 %   Based on the QUALITY_TABLE, we can prvide a seires of flags to guide
 %   the user about the data. This can be much simppler than the legnth of
@@ -31,11 +31,32 @@ qt_subjs = string(quality_table.Properties.RowNames)';
 pInfo_subjs = string(pInfo(2:end,1))';
 pInfo_cols = string(pInfo(1,:));
 qchecks = ["data_pnts", "event_cnt", "key_event_exist", "quality_checks"];
+rm_id = [];
 
 % This should not happed, but we need to first check if there is any
 % heterogenity inthe two subject lists
 unique_subjs = setxor(qt_subjs, pInfo_subjs);
-if ~isempty(unique_subjs), error("Unique subjects in the list, resolve the issue to proceed"); end
+
+if ~isempty(unique_subjs)
+    if ~override_pInfo
+        error("Unique subjects in the list, resolve the issue to proceed");
+    else
+        if contains(unique_subjs, pInfo_subjs)
+            for u = unique_subjs
+                rm_id = [rm_id, find(u == pInfo_subjs)];
+                pInfo(find(u == pInfo_subjs)+1,:) = [];
+                pInfo_subjs = string(pInfo(2:end,1))';
+                warning("pInfo has more subjects, but you chose to continue, removing the subject from dataset");        
+            end
+        else
+            for u = unique_subjs
+                quality_table(u,:) = [];
+                qt_subjs = string(quality_table.Properties.RowNames)';
+                warning("quality_table has extra subjects, but you  chose to continue, removing the subject from table")
+            end
+        end
+    end
+end
 
 tasks = string(quality_table.Properties.VariableNames);
 tasks(tasks == "participant_id") = [];  % this is not a task

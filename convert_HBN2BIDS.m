@@ -1,14 +1,18 @@
-function convert_HBN2BIDS(target_tasks)
+function convert_HBN2BIDS(target_tasks, write_qtable)
 %CONVERT_HBN2BIDS Convert HBN data to BIDS
 % This script convert the list of specified tasks |task_list| to a BIDS dataset 
 % uising EEGLAB's |bids_export|. Only the subjects whithin the defined |release| 
 % and having all the datasets included in the |task_list| will be included in 
 % the BIDS dataset.
-% 
+%   INPUTS:
+%       traget_tasks: Array of strings to provide the tasks (in their
+%       original name) for conversion.
+%       write_qtable: if set to 1, the code ONLY compiles the quality table
+%       and replace it in the participants.tsv. See #23 for more details
 % (c) Seyed Yahya Shirazi, 01/2023 UCSD, INC, SCCN
 
 %% Initialize
-clearvars -except target_tasks
+clearvars -except target_tasks write_qtable
 
 if ~exist("target_tasks","var") || isempty(target_tasks)
     target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", ...
@@ -16,14 +20,17 @@ if ~exist("target_tasks","var") || isempty(target_tasks)
     "SurroundSupp_Block1", "SurroundSupp_Block2", "vis_learn", "WISC_ProcSpeed"];
 end
 
+if ~exist("write_qtable","var") || isempty(write_qtable), write_qtable = 0; end
+if write_qtable, writePInfoOnly = 'on'; else, writePInfoOnly = 'off'; end
+
 target_release = ["R3"]; %#ok<NBRAK2> 
 num_subjects = 22; % if -1, all subjects in the release will be added.
 
-p2l = init_paths("linux", "sccn", "HBN", 1, 1);
+p2l = init_paths("linux", "expanse", "HBN", 1, 1);
 addpath(genpath(p2l.codebase))
 f2l.elocs = p2l.eegRepo + "GSN_HydroCel_129.sfp";  % f2l = file to load
-%%
-plist = readtable("participants_augmented_filesize.tsv", "FileType","text");
+
+plist = readtable("participants_augmented_filesize.tsv", "FileType", "text");
 plist.Full_Pheno = string(plist{:,"Full_Pheno"}); % to change the variable type to string
 plist.Commercial_Use = string(plist{:,"Commercial_Use"});
 plist.Sex = string(plist{:,"Sex"});
@@ -41,7 +48,7 @@ pfactor(~contains(pfactor{:,"EID"},string(plist{:,"participant_id"})),:) =[];
 plist(pfactor.EID,"P_factor") = pfactor(:,"P_factor");
 plist{~contains(plist.Row,string(pfactor{:,"EID"})),"P_factor"} = nan;
 
-remediedrepo = p2l.temp + "/taskBIDS_test/";
+remediedrepo = p2l.temp + "/taskBIDS_test2/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
 bids_export_path = p2l.yahya + "/cmi_bids_R3_20/";
@@ -50,9 +57,10 @@ tnames = string(plist.Properties.VariableNames); % task names
 tnames = tnames(no_subj_info_cols+1:end);
 clear EEG
 
-f2l.quality_table = remediedrepo + target_release + "_" + string(num_subjects);
+f2l.quality_table = remediedrepo + target_release + "_" + string(num_subjects)+"_qulaity-table.mat";
 p2l.BIDS_code = bids_export_path + "code/";
-if ~exist(p2l.BIDS_code, "dir"), mkdir(p2l.code); end
+if ~exist(p2l.BIDS_code, "dir"), mkdir(p2l.BIDS_code); end
+f2l.error_summary = remediedrepo + "unav_dataset-summary.mat";
 
 %% Define tasks
 % Define the BIDS-name couterpart and run numbers
@@ -74,7 +82,11 @@ base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commerci
 req_info = [base_info, target_tasks];
 
 %% define the pInfo descriptions, eInfo, and eInfo descriptions
-pInfo_desc = load("participant_info_descriptions.mat");
+pInfo_desc = struct();
+for i = [lower(base_info), BIDS_set_name]
+    temp = load("participant_info_descriptions.mat", i);
+    pInfo_desc.(i) = temp.(i);
+end
 
 eInfo = {};
 if length(unique(string(BIDS_task_name))) == 1  % eInfo can't be for more than ONE task
@@ -121,54 +133,29 @@ data(1) = [];
 tInfo.PowerLineFrequency = 60; % task info, it one per experiment.
 
 %% Remedy the files
-% This step is simialr to the import and remedy sections of step1.
-unav_dataset = [];
-unav_dataset_idx = [];
-for i = 1:length(data)
-    try
-        EEG = [];
-        subj = string(data(i).subject);
-        eeg_set_names = data(i).set_name;
-        for n = eeg_set_names
-            p2l.rawEEG = p2l.raw + string(data(i).subject) + dpath;
-            tempload = load(p2l.rawEEG + data(i).raw_file(n==eeg_set_names));
-            EEG.(n) = tempload.EEG;
-            behavior_dir = p2l.raw + string(data(i).subject) + "/Behavioral/mat_format/";
-            disp("loaded "+p2l.rawEEG + data(i).raw_file(n==eeg_set_names))
-        end
-    
-    p2l.rawEEG_updated = remediedrepo + string(data(i).subject) + dpath;
-    if ~exist(p2l.rawEEG_updated, "dir"), mkdir(p2l.rawEEG_updated); end
-    for n = string(fieldnames(EEG))'
-        EEG.(n).setname = char(subj + "_" + n);
-        EEG.(n).subject = char(subj);
-        EEG.(n) = eeg_checkset(EEG.(n));
-        EEG.(n) = pop_chanedit(EEG.(n), 'load', {char(f2l.elocs),'filetype','autodetect'});
-        EEG.(n) = pop_chanedit(EEG.(n), 'setref',{'1:129','Cz'});
-        [EEG.(n).event.latency] = deal(EEG.(n).event.sample);
-        EEG.(n) = replace_event_type(EEG.(n), 'funcs/tsv/lookup_events.tsv', 1);
-        EEG.(n) = augment_behavior_events(EEG.(n), data(i).raw_file(n==string(fieldnames(EEG))'), behavior_dir);
-        EEG.(n) = eeg_checkset(EEG.(n), 'makeur');
-        EEG.(n) = eeg_checkset(EEG.(n), 'chanlocs_homogeneous');
-        % save the remedied EEG structure.
-        pop_saveset(EEG.(n), 'filename', char(n), 'filepath', char(p2l.rawEEG_updated));
-        disp("saved the remedied file for " + n)
+% This step is similar to the import and remedy sections of step1.
+if ~write_qtable
+    [unav_dataset, unav_dataset_idx, err_message, err_stack, quality_table] = remedy_HBN_EEG(f2l, data, p2l, dpath, remediedrepo);
+
+    save(f2l.quality_table, "quality_table");
+    if ~exist(f2l.error_summary, "file")
+        save(f2l.error_summary,"unav_dataset","err_message", "err_stack");
+    else
+        save(f2l.error_summary,"unav_dataset","err_stack", "err_stack", "-mat", "-append");
     end
-    catch
-        unav_dataset = [unav_dataset, string(data(i).subject)];
-        unav_dataset_idx = [unav_dataset_idx i];
-        warning("data from " +string(data(i).subject)+" is not available, removing corresponding entries")   
-    end       
+    pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 end
-pInfo(unav_dataset_idx+1,:) = []; data(unav_dataset_idx) = [];
 
 %% construct pInfo
-load(f2l.quality_table, "quality_table");
-pInfo2 = rawFile_quality_pInfo(pInfo,quality_table, p2l.BIDS_code);
-%% Now we probably can call bids_export
-% keep only relevant information in pInfo_desc
+if write_qtable
+    load(f2l.quality_table, "quality_table");
+    [pInfo, rm_id] = rawFile_quality_pInfo(pInfo,quality_table, 1, p2l.BIDS_code);
+    if ~isempty(rm_id), data(unique(rm_id)) = []; end
+end
+
+%% Call bids_export
 
 task = 'unnamed';
 if length(unique(BIDS_task_name)) == 1, task = BIDS_task_name{1}; end
-bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo2, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
-    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off', 'writePInfoOnly', 'off');
+bids_export(data, 'targetdir', char(bids_export_path), 'pInfo', pInfo, 'pInfoDesc', pInfo_desc, 'tInfo', tInfo, ...
+    'eInfo', eInfo, 'eInfoDesc', eInfo_desc, 'taskName', task, 'deleteExportDir', 'off', 'writePInfoOnly', writePInfoOnly);
