@@ -13,7 +13,7 @@ function EEG = expand_events(EEG, stim_file, stim_column, resample_beyond_5p)
 %       expansion.
 %       STIM_COLUMN: The column that should be used form the stim file to
 %       expand the EEG.event. default is "VALUE".
-%       RESAMPLE_BEYOND_5p: In case there is descrepency between the
+%       RESAMPLE_BEYOND_5p: In case there is discrepancy between the
 %       key_point times, should the STIM_FILE be resampled beyon 5% of it's
 %       length. If the difference is <5%, the resmapling will be
 %       performed. Default is 0.
@@ -34,3 +34,21 @@ if ~exist('stim_column','var') || isempty(stim_column)
     stim_column = "value";
 end
 if ~exist('resample_beyond_5p','var') || isempty(resample_beyond_5p), resample_beyond_5p = 0; end
+
+required_columns = ["onset", "duration"];
+
+%% load and extract STIM-FILE events
+opts = detectImportOptions(stim_file, "FileType", "text"); 
+opts = setvartype(opts, 'string'); % crtitical to import everything as string/char
+stim_table = readtable(stim_file, opts);
+
+% check if the required columns and stim_colums are presents
+if ~all(contains(required_columns,stim_table.Properties.VariableNames))
+    error("required columns (i.e., ONSET and DURATION) are not in the stim file.")
+end
+if ~all(contains(stim_column,stim_table.Properties.VariableNames))
+    error("The stim_columns provided as an input is not included in the stim file.")
+end
+
+% convert onset and duration to double entities
+stim_table = convertvars(stim_table, required_columns, "double");
