@@ -23,7 +23,7 @@ function EEG = expand_events(EEG, stim_file, stim_column, resample_beyond_thres)
 %
 % (c) Seyed Yahya Shirazi, 12/2023 SCCN, INC, UCSD
 
-%% Inititialize
+%% Initialize
 if ~exist('EEG','var') || isempty(EEG) || ~isstruct(EEG), error("No EEG strucutre is detected!"); end
 if ~exist('stim_file','var') || isempty(stim_file)
     warning("No explicit STIM_FILE provided, will try to get it from BIDS stim directory");
@@ -92,12 +92,16 @@ for s = stim_column
 end
 
     %% correct the time difference
+duplicate_flag = 0;
 for s = stim_column
     % this loop should be peformed once for columns with the same insetion points.
-    if find(s==stim_column)>1 && all(keys_present.(s).map == keys_present.(stim_column(1)).map,"all"),break; end
+    if find(s==stim_column)>1 && all(keys_present.(s).map == keys_present.(stim_column(1)).map,"all")
+        duplicate_flag = 1;
+        break;
+    end
 
-    if discrepancy_flag == 0 || resample_beyond_thres
-        for i = length(keys_present.(s).discrepancy)
+    if ~(length(keys_present.(s).idx) == 1) && (discrepancy_flag == 0 || resample_beyond_thres)
+        for i = 1:length(keys_present.(s).discrepancy)
             correct_ratio = keys_present.(s).eeg_timediff/keys_present.(s).timediff;
             stim_table{:, "onset"} = (stim_table{:, "onset"} - stim_table{keys_present.(s).idx(2*(i-1)+1), "onset"}) * correct_ratio ...
                 + stim_table{keys_present.(s).idx(2*(i-1)+1), "onset"};
@@ -105,3 +109,38 @@ for s = stim_column
         end
     end
 end
+
+%% pull a uniform idx to import to EEG.event
+keys_present.summary.idx = [];
+keys_present.summary.eeg_event_idx = [];
+for s = stim_column
+    keys_present.summary.idx = [keys_present.summary.idx, keys_present.(s).idx'];
+    keys_present.summary.eeg_event_idx = [keys_present.summary.eeg_event_idx keys_present.(s).eeg_event_idx];
+end
+
+[uidx, ia] = unique(keys_present.summary.idx); eeg_uidx = keys_present.summary.eeg_event_idx(ia);
+[keys_present.summary.uidx, is] = sort(uidx); keys_present.summary.eeg_event_uidx = eeg_uidx(is);
+
+%% import the events to EEG.event
+if length(keys_present.summary.idx) == 1, keys_present.summary.idx(end+1) = height(stim_table); end
+for i = 1:length(keys_present.summary.uidx) / 2
+    e0idx = keys_present.summary.eeg_event_uidx(2*(i-1)+1);  % idx0 of the segment in EEG.event
+    t0idx = keys_present.summary.uidx(2*(i-1)+1);  % idx0 of the segment in the table
+    temp_events = EEG.event(keys_present.summary.eeg_event_uidx(2*i):end);
+    EEG.event(keys_present.summary.eeg_event_uidx(2*i):end) = [];
+    for j = 0:(keys_present.summary.uidx(2*i) - keys_present.summary.uidx(2*(i-1)+1))
+        EEG.event(e0idx+j).latency = EEG.event(e0idx).latency + ...
+            round((stim_table{t0idx+j,"onset"} - stim_table{t0idx,"onset"}) * EEG.srate);
+
+        for s = stim_column
+            EEG.event(e0idx+j).(s) = char(stim_table{t0idx+j, s});
+        end
+    end
+    for t = string(fieldnames(temp_events))'
+        for k = 0: (length(temp_events)-1)
+            EEG.event(end+k).(t) = temp_events(k+1).(t);
+        end
+    end
+end
+
+EEG = eeg_checkset(EEG, 'makeur');
