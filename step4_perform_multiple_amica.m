@@ -42,8 +42,6 @@ if ~isfolder(p2l.mAmica), mkdir(p2l.mAmica); end
 f2l.ICA_STRUCT = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_rejbadchannels_diverse_incr_comps.mat";
 f2l.float = subj + "_" + mergedSetName + "_sel_incr.fdt"; % as an Exception, path is NOT included
 
-addpath(genpath(p2l.codebase))
-
 %% load EEG
 % The best dataset should be used. Also, there is no need to resave the
 % float file

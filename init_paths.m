@@ -50,6 +50,7 @@ if project == "HBN"
    end
 end
 
+addpath(genpath(p2l.codebase))
 %% Start eeglab
 if init_eeglab
     if subplat == "sccn", rmpath('/data/common/matlab/eeglab'); end

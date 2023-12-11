@@ -51,8 +51,6 @@ f2l.INCR_chan_frames = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_INCR_incre
 f2l.ICA_STRUCT = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_rejbadchannels_diverse_incr_comps.mat";
 f2l.sel_comps = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_rejbadchannels_diverse_select_comps.mat";
 
-addpath(genpath(p2l.codebase))
-
 %% load EEG
 % NOT REQUIRED, EEG IS LOADED IN THE NEXT SECTION.
 % EEG = pop_loadset( 'filename', char(f2l.alltasks), 'filepath', char(p2l.EEGsets));
