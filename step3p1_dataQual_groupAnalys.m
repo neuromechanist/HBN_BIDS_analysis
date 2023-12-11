@@ -12,11 +12,11 @@ close all; clc;
 fs = string(filesep)+string(filesep);
 
 if ~exist('platform','var') || isempty(platform), platform = "linux"; else, platform = string(platform); end
-if ~exist('mergedSetName','var') || isempty(mergedSetName), mergedSetName = "everyEEG"; end
 % if the code is being accessed from Expanse
 if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machine = string(machine); end
 p2l = init_paths(platform, machine, "HBN", 1, false);  % Initialize p2l and eeglab.
-addpath(genpath(p2l.codebase))
+
+if ~exist('mergedSetName','var') || isempty(mergedSetName), mergedSetName = "everyEEG"; end
 if ~exist('participant_list', 'var') || isempty(participant_list)
     contents = dir(p2l.eegRepo);
     participant_list = string({contents.name});

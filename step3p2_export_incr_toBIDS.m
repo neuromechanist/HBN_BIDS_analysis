@@ -31,7 +31,6 @@ BIDS_run_seq = [nan,nan,nan,nan,nan,...
     1,2,nan,nan];
 
 p2l = init_paths("linux", "expanse", "HBN", 1, 1);
-addpath(genpath(p2l.codebase))
 
 %% create a list of the datasets that have cleaned data
 EEG_dir_content = dir(EEG_files_path);

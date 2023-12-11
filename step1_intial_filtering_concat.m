@@ -52,7 +52,6 @@ for i = ["EEGsets", "ICA", "elocs", "powerSpectPlot", "rawEEG_updated"]
 end
 clear EEG
 f2l.elocs = p2l.elocs + "GSN_HydroCel_129.sfp";  % f2l = file to load
-addpath(genpath(p2l.codebase))
 
 %% import EEG datasets
 eeg_files = find_matfiles(p2l.rawEEG);

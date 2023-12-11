@@ -58,8 +58,6 @@ f2l.icaStruct = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_STRUCT_" + "incre
 f2l.icaIncr = p2l.incr0 + subj + "_" + mergedSetName + "_ICA_INCR_" + "incremental";
 f2l.param = p2l.incr0 + subj +"_"+ mergedSetName + "_"+"writeParam.mat"; % location of the rejection parameter file
 
-addpath(genpath(p2l.codebase))
-
 %% reject bad channels
 all_bad_chans =[129];
 EEG = pop_loadset('filename',char(f2l.alltasks),'filepath',char(p2l.EEGsets));
