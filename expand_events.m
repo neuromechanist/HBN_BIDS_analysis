@@ -1,4 +1,4 @@
-function EEG = expand_events(EEG, stim_file, stim_column, type_name, resample_beyond_thres)
+function EEG = expand_events(EEG, stim_file, stim_column, type_name, resample_beyond_thres, remove_unused_cols, cols_to_keep)
 %EXPAND_EVENTS Expands EEG.event structure with contencts of the stim_file
 %   With complex electrophys tasks such as watching a movie, the task events could
 %   be very long and repetitive across subjects. Instead, we can put the
@@ -22,6 +22,14 @@ function EEG = expand_events(EEG, stim_file, stim_column, type_name, resample_be
 %       key_point times, should the STIM_FILE be resampled beyon 5% of it's
 %       length. If the difference is <5%, the resmapling will be
 %       performed. Default is 0.
+%       REMOVE_UNUSED_COLS: If set to 1, it will remove the EEG.event columns that
+%       were not explicitly used by EEGLAB, or requested by user via COLS_TO_KEEP 
+%       from the EEG.event structure. Defaults is 0.
+%       COLS_TO_KEEP: The columns beyond the EEGLAB builin colums that user
+%       want to keep. in EEG.event EEGLAB has reseverd columns in EEG.event,
+%       that are 'type', d'uration', 'latency', 'urevent', and 'epoch'. THE
+%       EEGLAB COLUMNS ARE PROTECTED from removal. Add any other column
+%       that you WANT TO STAY. Defauls is STIM_COLUMN.
 %
 %   OUTPUTS:
 %       EEG: EEGLAB's EEG strucutre with the expanded EEG.event.
@@ -40,6 +48,8 @@ if ~exist('stim_column','var') || isempty(stim_column)
 end
 if ~exist('type_name','var') || isempty(type_name), type_name = 'stimuli'; else, type_name = char(type_name); end
 if ~exist('resample_beyond_thres','var') || isempty(resample_beyond_thres), resample_beyond_thres = 0; end
+if ~exist('remove_unused_cols','var') || isempty(remove_unused_cols), remove_unused_cols = 0; end
+if ~exist('cols_to_keep','var') || isempty(cols_to_keep), cols_to_keep = ["type", "latency", "urevent", "duration", "epoch", stim_column]; end
 
 required_columns = ["onset", "duration"];
 discrepancy_threshold = 0.05;
@@ -137,7 +147,9 @@ for i = 1:length(keys_present.summary.uidx) / 2
     for j = 0:(keys_present.summary.uidx(2*i) - keys_present.summary.uidx(2*(i-1)+1))
         EEG.event(e0idx+j).latency = EEG.event(e0idx).latency + ...
             round((stim_table{t0idx+j,"onset"} - stim_table{t0idx,"onset"}) * EEG.srate);
-        EEG.event(e0idx+j).type = type_name;
+        if j ~= 0 && j ~= (keys_present.summary.uidx(2*i) - keys_present.summary.uidx(2*(i-1)+1)) % do not replace EEG.type for the first and last
+            EEG.event(e0idx+j).type = type_name;
+        end
         for s = stim_column
             EEG.event(e0idx+j).(s) = char(stim_table{t0idx+j, s});
         end
@@ -147,6 +159,15 @@ for i = 1:length(keys_present.summary.uidx) / 2
             EEG.event(end+k).(t) = temp_events(k+1).(t);
         end
     end
+end
+
+%% delete unused columns
+% To ensure smooth operation of the EEGLAB suite, sometimes it is good to
+% remove unnecassary columns.
+if remove_unused_cols
+    event_fields = string(fieldnames(EEG.event))';
+    fields_to_remove = event_fields(~contains(event_fields, cols_to_keep));
+    EEG.event = rmfield(EEG.event, fields_to_remove);
 end
 
 EEG = eeg_checkset(EEG, 'makeur');
