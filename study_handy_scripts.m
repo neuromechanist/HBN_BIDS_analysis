@@ -1,6 +1,5 @@
 study_path = "C:\Users\syshirazi\GDrives\ucsd\My Drive\to share\HBN data\cmi_bids_R3_20\";
 out_path = study_path + "derivatives\eeglab_tetst\";
-expand_table = "the_present_stimulus-LogLumRatio.tsv";
 
 [STUDY, ALLEEG] = pop_importbids(char(study_path), 'eventtype','value','bidsevent','on','bidschanloc','on',...
     'outputdir',char(out_path),'bidstask','ThePresent');
@@ -11,10 +10,12 @@ for e = 1:length(EEG)
 end
 
 %% can we expand in place?
+expand_table = "the_present_stimulus-LogLumRatio.tsv";
 for e = 1:length(EEG)
     EEG(e) = expand_events(EEG(e), expand_table, ["shot_number", "LLR"],'shots');
 end
 ALLEEG = EEG;
+
 %% update the components
 % init_paths("linux", "expanse", "HBN", 1, false);
 fs = string(filesep)+string(filesep);
