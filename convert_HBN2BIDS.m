@@ -41,12 +41,17 @@ duplicate_ids = ["NDARDZ322ZFC","NDARNZ792HBN"]; % the ids were found by shell-c
 for i = duplicate_ids, dup_idx = find(strcmp(plist{:,"participant_id"},i)); plist(dup_idx(end),:) =[]; end
 plist.Properties.RowNames = plist.participant_id;
 
-bifactor = readtable("RBC_HBN_McElroy_Bifactor_scores.csv");
-pfactor = bifactor(:,["EID","P_factor"]);
+bifactor_table = readtable("HBN_cbcl_bifactor_2023.tsv", "FileType", "text");
+bifactors = ["P_factor", "Attention", "Internalizing", "Externalizing"];
+pfactor = bifactor_table(:,["EID", bifactors]);
+
+subjs_wo_pfactor = plist(~contains(plist{:,"participant_id"},pfactor{:,"EID"}),:);
+% writetable(subjs_wo_pfactor, "subjects_missing_bfactors.tsv", "FileType", "text", "Delimiter", "\t");
+
 pfactor(~contains(pfactor{:,"EID"},string(plist{:,"participant_id"})),:) =[];
 
-plist(pfactor.EID,"P_factor") = pfactor(:,"P_factor");
-plist{~contains(plist.Row,string(pfactor{:,"EID"})),"P_factor"} = nan;
+plist(pfactor.EID, bifactors) = pfactor(:, bifactors);
+plist{~contains(plist.Row,string(pfactor{:,"EID"})), bifactors} = nan;
 
 remediedrepo = p2l.temp + "/taskBIDS_test2/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
