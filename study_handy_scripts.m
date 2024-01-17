@@ -59,3 +59,25 @@ for i = 1:length(subjs')
 end
 close(f);
 ALLEEG = EEG;
+
+%% plot the components
+clustinfo = table;
+clustinfo(1,:) = {3, "VR", rgb('Orange')}; % VR
+clustinfo(2,:) = {4, "eye", rgb('Purple')}; % eye
+clustinfo(3,:) = {6, "FR", rgb('Cyan')}; % FR
+clustinfo(4,:) = {7, "MR", rgb('Lime')}; %MR
+clustinfo(5,:) = {8, "VC", rgb('Red')}; %VC
+clustinfo(6,:) = {9, "FC", rgb('Blue')}; % FC , SMA
+clustinfo(7,:) = {11, "ML", rgb('Teal')}; %ML
+clustinfo(8,:) = {13, "VR2", rgb('OrangeRed')}; %VR
+% clustinfo(9,:) = {14, "", rgb('Orange')};
+clustinfo(9,:) = {16, "FL", rgb('DeepSkyBlue')}; %FL
+clustinfo(10,:) = {17, "MC", rgb('Green')}; %MC
+clustinfo(11,:) = {18, "VL", rgb('DeepPink')}; %VL
+
+clustinfo.Properties.VariableNames = ["num","BA","color"];
+
+%% now really plot
+
+fig = diplotfig(STUDY, ALLEEG,transpose([clustinfo.num]),...
+        num2cell(clustinfo.color,2) ,1,'view',[1 -1 1],'gui','off','newfig','on'); 
