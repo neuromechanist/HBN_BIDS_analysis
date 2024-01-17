@@ -93,7 +93,7 @@ fig.dips = get(groot,'CurrentFigure');
 
 % centroids together
 dipOptions = {'spheres','on','dipolelength',0,'dipolesize',40,'mri',ALLEEG(1).dipfit.mrifile,...
-    'meshdata',ALLEEG(1).dipfit.hdmfile,'coordformat',ALLEEG(1).dipfit.coordformat,'color',colors2use};
+    'meshdata',ALLEEG(1).dipfit.hdmfile,'coordformat',ALLEEG(1).dipfit.coordformat,'color',colors2use, 'projwidth', 2, 'projimg', 'on'};
 if ~isempty(varargin), dipOptions = [dipOptions varargin]; end
 if centProjLine, dipOptions = [dipOptions {'projlines','on'}]; end
 dipplot(centsall,dipOptions{:});
