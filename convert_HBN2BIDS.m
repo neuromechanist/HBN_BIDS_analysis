@@ -83,7 +83,7 @@ end
 max_allowed_missing_dataset = length(BIDS_set_name)-1; % effectively letting any subkect with as few as one run to be included
 
 % Fields are all in lower case, follwing the BIDS convention
-base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno", "P_factor"];
+base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno", bifactors];
 req_info = [base_info, target_tasks];
 
 %% define the pInfo descriptions, eInfo, and eInfo descriptions
@@ -154,7 +154,7 @@ end
 %% construct pInfo
 if write_qtable
     load(f2l.quality_table, "quality_table");
-    [pInfo, rm_id] = rawFile_quality_pInfo(pInfo,quality_table, 1, p2l.BIDS_code);
+    [pInfo, rm_id] = rawFile_quality_pInfo(pInfo,quality_table, 1);
     if ~isempty(rm_id), data(unique(rm_id)) = []; end
 end
 
