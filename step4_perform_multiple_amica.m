@@ -22,15 +22,16 @@ if ~exist('machine','var') || isempty(machine), machine = "expanse"; else, machi
 % method all together to re-write parameter or batch files, Default is 1.
 if ~exist('saveFloat','var') || isempty(saveFloat), saveFloat = 1; end
 % if run AMICA on the shell which matlab is running on in the end
-if ~exist('run_ICA','var') || isempty(run_ICA), run_ICA = 1; end
+if ~exist('run_ICA','var') || isempty(run_ICA), run_ICA = 0; end
 % number of priors
 if ~exist('num_prior','var') || isempty(num_prior), num_prior = string(3); else, num_prior = string(num_prior); end
 
 mergedSetName = "everyEEG";
-cores = "64"; block_size = "512";
-process_params = cores + "c_b"+ block_size;
+cores = "mNode"; nodes = "4";  % Amica multi-node run
+block_size = "128";  % Observing Amica1.7, block size should be very low. 
+process_params = cores + "_n" + nodes + "_b"+ block_size;
 
-if str2num(cores)> 100, partition = "compute"; else, partition = "shared"; end
+partition = "compute";  % removed shared partition, observing Amica1.7
 %% construct necessary paths and files & adding paths
 addpath(genpath(fPath))
 p2l = init_paths(platform, machine, "HBN", 1, 1);  % Initialize p2l and eeglab.
@@ -72,11 +73,11 @@ if saveFloat
         expanse_opts = ["files",p2l.mAmica + f2l.float_lin,"outdir", p2l.incr + "amicaout/"];
         general_opts = ["data_dim", string(EEG.nbchan),...
             "field_dim", string(EEG.pnts), "pcakeep", string(EEG.nbchan-1),...
-            "numprocs", 1, "max_threads", str2num(cores)-3, "block_size", str2num(block_size), "do_opt_block", 0,...
-            "doPCA", 1, "writestep", 50, "do_history", 1, "histstep", 50,...
-            "num_models", i, "num_mix_comps", str2num(num_prior),...
+            "numprocs", nodes, "max_threads", 4, "block_size", str2num(block_size), "do_opt_block", 0,...
+            "doPCA", 1, "writestep", 1000, "do_history", 0, "histstep", 1000,...
+            "num_models", i, "num_mix_comps", str2num(num_prior),"lrate", 0.01,...
             "do_reject", amica_frame_rej, "numrej", 5, "rejstart", 1, "rejint", 3, "rejsig", 3.01,...
-            "min_grad_norm", "1.00000e-08", "min_dll", "1.00000e-08"];
+            "min_grad_norm", "1.00000e-08", "min_dll", "1.00000e-08", "max_iter", 2500];
 
         write_amica_param(f2l.param_lin,[linux_opts, general_opts]);
         write_amica_param(f2l.param_expanse,[expanse_opts, general_opts]);        
@@ -96,10 +97,10 @@ for i = model_count
     f2l.SLURM = p2l.incr + subj + "_m" + string(i) + "_amica_expanse";
     f2l.param_stokes = p2l.incr + subj + "_" + mergedSetName + "_m" + string(i) + "_expanse.param";
     opt.file = f2l.SLURM; opt.jobName = "mamc_" + subj + "_" + string(i);
-    opt.partition = partition; opt.account = "csd403"; opt.maxThreads = str2num(cores); % param file max_threads + 2
-    opt.email = "syshirazi@ucsd.edu"; opt.memory = floor(opt.maxThreads*2*1.5); % opt.maxThreads*2-1;
-    opt.walltime = "20:00:00"; opt.amica = "~/HBN_EEG/amica15ex"; opt.param = f2l.param_stokes;
-    opt.incr_path = p2l.incr;
+    opt.partition = partition; opt.account = "csd403"; opt.nodes = nodes;
+    opt.email = "syshirazi@ucsd.edu";
+    opt.walltime = "04:00:00"; opt.amica = "~/HBN_EEG/amica17nsg"; opt.param = f2l.param_stokes;
+    opt.incr_path = p2l.incr; opt.outdir = opt.incr_path + "amicaout/";
     write_AMICA_SLURM_file(opt);
 end
 % write a bash file to run AMICA on Expanse for the subject
@@ -111,13 +112,14 @@ slurm_path = p2l.mAmica + "/m$i/" + subj + "_m${i}_amica_expanse.slurm";
 fprintf(fid,"sbatch " + slurm_path + "\n");
 fprintf(fid,"done\n");
 fclose(fid);
+system(sprintf("chmod 775 ~/HBN_EEG/%s/ICA/mAmica_%sp_%s/%s_expanse_batch", subj, num_prior, process_params, subj));
+
 
 %% run the jobs
 % If the code is being developed on expanse, we can problably run all
 % increments as soon as the float files, param files and shell files are
 % created.
 if run_ICA
-    system(sprintf("chmod 775 ~/HBN_EEG/%s/ICA/mAmica_%sp_%s/%s_expanse_batch", subj, num_prior, process_params, subj));
     system(sprintf("sh ~/HBN_EEG/%s/ICA/mAmica_%sp_%s/%s_expanse_batch", subj, num_prior, process_params, subj));
 end
 
@@ -130,20 +132,19 @@ fprintf(fid,"#SBATCH -A " + opt.account + " # Account chrged for the job\n");
 fprintf(fid,"#SBATCH --job-name=" + opt.jobName + " # Job name\n");
 % fprintf(fid,"#SBATCH --mail-type=ALL  # Mail events (NONE, BEGIN, END, FAIL, ALL)\n");
 % fprintf(fid,"#SBATCH --mail-user=" + opt.email + "  # Where to send mail\n"); % disabled as it will create so many emails for incremental ICA :D
-fprintf(fid,"#SBATCH --ntasks=" + string(opt.maxThreads) + " # Run a single task\n");
-fprintf(fid,"#SBATCH --mem=" + string(opt.memory) + "G # default is 1G per task/core\n");
-fprintf(fid,"#SBATCH --nodes=1  # Number of CPU cores per task\n"); % only run on one node due to mpi config of amica15ub
+fprintf(fid,"#SBATCH --nodes=" + opt.nodes + "\n");
+fprintf(fid,"#SBATCH --ntasks-per-node=32\n");
+fprintf(fid,"#SBATCH --cpus-per-task=4\n");
+fprintf(fid,"#SBATCH --mem=249208M\n");
 fprintf(fid,"#SBATCH --time=" + opt.walltime + " # Time limit hrs:min:sec\n");
 fprintf(fid,"#SBATCH --output=" + opt.incr_path + opt.jobName + ".out # Standard output and error log\n");
 fprintf(fid,"#SBATCH --error=" + opt.incr_path + opt.jobName + ".err # Standard output and error log\n");
-fprintf(fid,'# Run your program with correct path and command line options\n');
+fprintf(fid,"# Run your program with correct path and command line options\n");
 % job commands
-fprintf(fid,"module purge\n");
-fprintf(fid,"module load cpu/0.17.3b  gcc/10.2.0/npcyll4 slurm openmpi/4.1.1\n");
+fprintf(fid,"module load cpu/0.15.4 slurm intel intel-mkl mvapich2\n");
+fprintf(fid,['export OMP_NUM_THREADS=' int2str(4) ...
+    '; export MV2_ENABLE_AFFINITY=0; export SRUN_CPUS_PER_TASK=${SLURM_CPUS_PER_TASK}\n']);
 
-fprintf(fid, "#SET the number of openmp threads\n");
-fprintf(fid,"export MV2_ENABLE_AFFINITY=0\n");
-
-fprintf(fid, opt.amica + " " + opt.param);
+fprintf(fid," srun --export=ALL --mpi=pmi2 " + opt.amica + " " + opt.param + "\n"); % " " + opt.outdir +
 fclose(fid);
 % end of the function
