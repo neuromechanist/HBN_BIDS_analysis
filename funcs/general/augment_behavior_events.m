@@ -39,8 +39,8 @@ if filename == "WISC_ProcSpeed.mat"  % symbol search task
         EEG.event(eeg_event_idx(i)).user_answer = num2str(subj_resp_vector(i));
         EEG.event(eeg_event_idx(i)).correct_answer = num2str(correct_resp_vector(i));
     end
-
-elseif filename == "vis_learn.mat"  % sequence learning task
+% Visual (Sequence) learning task
+elseif filename == "vis_learn.mat"
     correct_resp = beh_event.par.sequence;
     subj_resp = beh_event.par.resp_click;
     % find the code for the last dot turning off
@@ -55,7 +55,7 @@ elseif filename == "vis_learn.mat"  % sequence learning task
             EEG.event(i-1).correct_answer = num2str(correct_resp);
         end
     end
-
+% Surround suppresstion tasks
 elseif filename == "SurroundSupp_Block1.mat" || filename == "SurroundSupp_Block2.mat"  % surround supression task
     background_cont = beh_event.BGcon; % background or no background
     background_cont_string = zeros(size(background_cont));
@@ -78,8 +78,8 @@ elseif filename == "SurroundSupp_Block1.mat" || filename == "SurroundSupp_Block2
     else
         warning("legnth of the stimulation on in EEG.event mismatches the behavior file, skipping adding the events.")
     end
-
-elseif  filename == "SAIIT_2AFC_Block1.mat" || filename == "SAIIT_2AFC_Block2.mat" || filename == "SAIIT_2AFC_Block3.mat" % surround supression task.
+% contrast change detection tasks
+elseif  filename == "SAIIT_2AFC_Block1.mat" || filename == "SAIIT_2AFC_Block2.mat" || filename == "SAIIT_2AFC_Block3.mat" 
     for i = 1:length(EEG.event)
         if strcmp(EEG.event(i).type, 'right_buttonPress')
             if strcmp(EEG.event(i-1).type, 'right_target')
