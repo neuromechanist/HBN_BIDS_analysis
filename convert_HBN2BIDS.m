@@ -53,7 +53,7 @@ pfactor(~contains(pfactor{:,"EID"},string(plist{:,"participant_id"})),:) =[];
 plist(pfactor.EID, bifactors) = pfactor(:, bifactors);
 plist{~contains(plist.Row,string(pfactor{:,"EID"})), bifactors} = nan;
 
-remediedrepo = p2l.temp + "/taskBIDS_test2/";
+remediedrepo = p2l.temp + "/taskBIDS_test/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
 bids_export_path = p2l.yahya + "/cmi_bids_R3_20/";
