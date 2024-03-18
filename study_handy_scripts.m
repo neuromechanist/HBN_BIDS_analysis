@@ -1,17 +1,20 @@
-study_path = "C:\Users\syshirazi\GDrives\ucsd\My Drive\to share\HBN data\cmi_bids_R3_20\";
-out_path = study_path + "derivatives\eeglab_tetst\";
-
-[STUDY, ALLEEG] = pop_importbids(char(study_path), 'eventtype','value','bidsevent','on','bidschanloc','on',...
-    'outputdir',char(out_path),'bidstask','ThePresent');
 %% paths
 addpath('eeglab_dev')
 addpath(genpath('HBN_BIDS_analysis'))
-%% change the event type
+eeglab; close;
+study_path = "C:\Users\syshirazi\GDrives\ucsd\My Drive\to share\HBN data\cmi_bids_R3_20\";
+out_path = study_path + "derivatives\eeglab_tetst\";
+
+%% load the bids dataset
+[STUDY, ALLEEG] = pop_importbids(char(study_path), 'eventtype','value','bidsevent','on','bidschanloc','on',...
+    'outputdir',char(out_path),'bidstask','surroundSupp', 'bidsevent', 'on');
+%% change the event type  % not needed for the new datasets.
+EEG = ALLEEG;
 for e = 1:length(EEG)
     EEG(e) = replace_event_type(EEG(e));
 end
 
-%% can we expand in place?
+%% can we expand in place? % The case of the Present
 expand_table = "the_present_stimulus-LogLumRatio.tsv";
 for e = 1:length(EEG)
     EEG(e) = expand_events(EEG(e), expand_table, ["shot_number", "LLR"],'shots', 0, 1);
@@ -21,11 +24,11 @@ ALLEEG = EEG;
 %% update the components
 p2l = init_paths("linux", "expanse", "HBN", 1, false);
 fs = string(filesep)+string(filesep);
-mergedSetName = "videoEEG";
+mergedSetName = "everyEEG"; 
 subj_list = string({STUDY.datasetinfo.subject});
 subjs = squeeze(split(subj_list,"-")); subjs = subjs(:,2);
 
-%% first check if the ICA_STRUCT is there
+    %% first check if the ICA_STRUCT is there
 i = 1;
 unav_datasets = [];
 unav_datasets_idx = [];
@@ -41,7 +44,7 @@ for s = subjs'
      i = i+1;
 end
 
-%% remove datasets without ICA_STRUCT
+    %% remove datasets without ICA_STRUCT
 [STUDY, EEG] = std_editset(STUDY, EEG, 'commands', {{'remove' unav_datasets_idx}}, 'updatedat', 'off');
 ALLEEG = EEG;
 
