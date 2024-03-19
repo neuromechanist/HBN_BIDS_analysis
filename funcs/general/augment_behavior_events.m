@@ -50,15 +50,14 @@ elseif filename == "vis_learn.mat"
         return
     end
     for i = 1:length(EEG.event)
+        if length(correct_resp) == 10  % add target_count as a column
+            EEG.event(i).target_count = num2str(8);
+        else
+            EEG.event(i).target_count = num2str(6);
+        end
         if any(str2double(EEG.event(i).event_code) == type_toAdd_event)
             EEG.event(i-1).user_answer = num2str(subj_resp(str2double(EEG.event(i).event_code) == type_toAdd_event,:));
             EEG.event(i-1).correct_answer = num2str(correct_resp);
-        elseif str2double(EEG.event(i).event_code) == 91  % the sart of the seqlearn task
-            if length(correct_resp) == 10    
-                EEG.event(i).target_count = num2str(8);
-            else
-                EEG.event(i).target_count = num2str(6);
-            end
         end
     end
 % Surround suppresstion tasks
