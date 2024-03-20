@@ -101,16 +101,16 @@ end
 
 eInfo_desc = load("event_info_descriptions.mat");
 
-tInfo_basefields = ["InstitutionName", "InstitutionAddress", "Manufacturer", "ManufacturersModelName"];
-
-tInfo = struct;
-for t = tInfo_basefields
-    tmp = load("task_info.mat", t);
-    tInfo.(t) = tmp.(t);
-    if isstring(tInfo.(t))
-        tInfo.(t) = char(tInfo.(t));
-    end
-end
+% tInfo_basefields = ["InstitutionName", "InstitutionAddress", "Manufacturer", "ManufacturersModelName"];
+% 
+% tInfo = struct;
+% for t = tInfo_basefields
+%     tmp = load("task_info.mat", t);
+%     tInfo.(t) = tmp.(t);
+%     if isstring(tInfo.(t))
+%         tInfo.(t) = char(tInfo.(t));
+%     end
+% end
 
 % if length(unique(string(BIDS_task_name))) == 1  % eInfo can't be for more than ONE task
 %     temp = load("task_info.mat",unique(string(BIDS_task_name)));
