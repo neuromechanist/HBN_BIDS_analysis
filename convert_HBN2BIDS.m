@@ -56,7 +56,7 @@ plist{~contains(plist.Row,string(pfactor{:,"EID"})), bifactors} = nan;
 remediedrepo = p2l.temp + "/taskBIDS_test/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
-bids_export_path = p2l.yahya + "/cmi_bids_R3_20/";
+bids_export_path = p2l.yahya + "/cmi_bids_R3_20_Win/";
 no_subj_info_cols = 8; % 
 tnames = string(plist.Properties.VariableNames); % task names
 tnames = tnames(no_subj_info_cols+1:end);
@@ -86,7 +86,7 @@ max_allowed_missing_dataset = length(BIDS_set_name)-1; % effectively letting any
 base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno", bifactors];
 req_info = [base_info, target_tasks];
 
-%% define the pInfo descriptions, eInfo, and eInfo descriptions
+%% define the pInfo descriptions, eInfo, eInfo descriptions, and tInfo
 pInfo_desc = struct();
 for i = [lower(base_info), BIDS_set_name]
     temp = load("participant_info_descriptions.mat", i);
@@ -100,6 +100,28 @@ if length(unique(string(BIDS_task_name))) == 1  % eInfo can't be for more than O
 end
 
 eInfo_desc = load("event_info_descriptions.mat");
+
+tInfo_basefields = ["InstitutionName", "InstitutionAddress", "Manufacturer", "ManufacturersModelName"];
+
+tInfo = struct;
+for t = tInfo_basefields
+    tmp = load("task_info.mat", t);
+    tInfo.(t) = tmp.(t);
+    if isstring(tInfo.(t))
+        tInfo.(t) = char(tInfo.(t));
+    end
+end
+
+if length(unique(string(BIDS_task_name))) == 1  % eInfo can't be for more than ONE task
+    temp = load("task_info.mat",unique(string(BIDS_task_name)));
+    for m = string(fieldnames(temp.(unique(string(BIDS_task_name)))))'
+        tInfo.(m) = temp.(unique(string(BIDS_task_name))).(m);
+        if isstring(tInfo.(m))
+            tInfo.(m) = char(tInfo.(m));
+        end
+    end
+end
+tInfo.PowerLineFrequency = 60; % task info, it one per experiment.
 
 %% Create the structure as required by EEGLAB's bids export.
 % While the files are not remedied and are not on EEGLAB's format, it is good 
@@ -134,8 +156,6 @@ for r = 1: height(target_table)
     if num_subjects ~= -1, if r > num_subjects; break; end, end
 end
 data(1) = [];
-
-tInfo.PowerLineFrequency = 60; % task info, it one per experiment.
 
 %% Remedy the files
 % This step is similar to the import and remedy sections of step1.
