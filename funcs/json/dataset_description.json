@@ -1,0 +1,27 @@
+{
+  "Name": "Healthy Brain Network - Release 3",
+  "License": "CC BY-NC-SA 4.0 or CC-BY-SA 4.0 (See participants.tsv)",
+  "Authors": ["Seyed Yahya Shirazi", "...", "Alexandre Franco", "Arnaud Delorme", "Michael Milham", "Scott Makeig"], 
+  "ReferencesAndLinks": ["https://dx.doi.org/10.1038/sdata.2017.181",
+                          "https://dx.doi.org/10.1038/sdata.2017.40",
+                          "add_BIDS_sdata_DOI_here"],
+  "HowToAcknowledge": ["Please cite the following papers",
+                      "https://dx.doi.org/10.1038/sdata.2017.181",
+                      "https://dx.doi.org/10.1038/sdata.2017.40",
+                      "add_BIDS_sdata_DOI_here"],
+  "EthicsApprovals": ["This study was approved by the Chesapeake Institutional Review Board (https://www.chesapeakeirb.com/). Prior to conducting the research, written informed consent is obtained from participants ages 18 or older. For participants younger than 18, written consent is obtained from their legal guardians and written assent obtained from the participant."],
+  "BIDSVersion": "1.8.0",
+  "HEDVersion": "8.3.0",
+  "SourceDatesets": [
+    {
+      "URL": "s3://fcp-indi/data/Projects/HBN"
+    }
+  ],
+  "DatasetType": "raw",
+  "Funding": ["See https://childmind.org/science/global-open-science/healthy-brain-network/#donors",
+              "NIH/NIMH R01MH125934 for BIDS data preparation"],
+  "GeneratedBy":[ {
+    "Name": "bids-matlab-tools",
+    "Version": "8.0"
+  }]
+}
