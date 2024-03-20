@@ -24,7 +24,7 @@ if ~exist("write_qtable","var") || isempty(write_qtable), write_qtable = 0; end
 if write_qtable, writePInfoOnly = 'on'; else, writePInfoOnly = 'off'; end
 
 target_release = ["R3"]; %#ok<NBRAK2> 
-num_subjects = 5; % if -1, all subjects in the release will be added.
+num_subjects = -1; % if -1, all subjects in the release will be added.
 
 p2l = init_paths("linux", "expanse", "HBN", 1, 1);
 addpath(genpath(p2l.codebase))
@@ -53,10 +53,10 @@ pfactor(~contains(pfactor{:,"EID"},string(plist{:,"participant_id"})),:) =[];
 plist(pfactor.EID, bifactors) = pfactor(:, bifactors);
 plist{~contains(plist.Row,string(pfactor{:,"EID"})), bifactors} = nan;
 
-remediedrepo = p2l.temp + "/taskBIDS_testWin/";
+remediedrepo = p2l.temp + "/taskBIDS_RC2/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
-bids_export_path = p2l.yahya + "/cmi_bids_R3_20_Win/";
+bids_export_path = p2l.yahya + "/cmi_bids_R3_RC2/";
 no_subj_info_cols = 8; % 
 tnames = string(plist.Properties.VariableNames); % task names
 tnames = tnames(no_subj_info_cols+1:end);
@@ -112,15 +112,15 @@ for t = tInfo_basefields
     end
 end
 
-if length(unique(string(BIDS_task_name))) == 1  % eInfo can't be for more than ONE task
-    temp = load("task_info.mat",unique(string(BIDS_task_name)));
-    for m = string(fieldnames(temp.(unique(string(BIDS_task_name)))))'
-        tInfo.(m) = temp.(unique(string(BIDS_task_name))).(m);
-        if isstring(tInfo.(m))
-            tInfo.(m) = char(tInfo.(m));
-        end
-    end
-end
+% if length(unique(string(BIDS_task_name))) == 1  % eInfo can't be for more than ONE task
+%     temp = load("task_info.mat",unique(string(BIDS_task_name)));
+%     for m = string(fieldnames(temp.(unique(string(BIDS_task_name)))))'
+%         tInfo.(m) = temp.(unique(string(BIDS_task_name))).(m);
+%         if isstring(tInfo.(m))
+%             tInfo.(m) = char(tInfo.(m));
+%         end
+%     end
+% end
 tInfo.PowerLineFrequency = 60; % task info, it one per experiment.
 
 %% Create the structure as required by EEGLAB's bids export.
