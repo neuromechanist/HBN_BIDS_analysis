@@ -6,10 +6,10 @@ study_path = "C:\Users\syshirazi\GDrives\ucsd\My Drive\to share\HBN data\cmi_bid
 out_path = study_path + "derivatives\eeglab_tetst\";
 
 %% load the bids dataset
-[STUDY, ALLEEG] = pop_importbids(char(study_path), 'eventtype','value','bidsevent','on','bidschanloc','on',...
-    'outputdir',char(out_path),'bidstask','surroundSupp', 'bidsevent', 'on');
+[STUDY, ALLEEG] = pop_importbids(char(study_path), 'eventtype','value','bidsevent','on','bidschanloc','off',...
+    'outputdir',char(out_path),'bidstask','surroundSupp', 'studyName','surroundSupp');
+CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 %% change the event type  % not needed for the new datasets.
-EEG = ALLEEG;
 for e = 1:length(EEG)
     EEG(e) = replace_event_type(EEG(e));
 end
@@ -24,7 +24,7 @@ ALLEEG = EEG;
 %% update the components
 p2l = init_paths("linux", "expanse", "HBN", 1, false);
 fs = string(filesep)+string(filesep);
-mergedSetName = "everyEEG"; 
+mergedSetName = "everyEEG";
 subj_list = string({STUDY.datasetinfo.subject});
 subjs = squeeze(split(subj_list,"-")); subjs = subjs(:,2);
 
@@ -40,6 +40,7 @@ for s = subjs'
      catch
          unav_datasets = [unav_datasets s];
          unav_datasets_idx = [unav_datasets_idx i];
+         warning("data is not present for subject " + s)
      end
      i = i+1;
 end
@@ -54,14 +55,28 @@ subjs = squeeze(split(subj_list,"-")); subjs = subjs(:,2);
 
 % The following for loop only works because there is one dataset per subj.
 f = waitbar(0,'Updating studies w/ ICLABEL comps','Name','please be very patient');
-for i = 1:length(subjs')
+for i = 1:length(subjs)
+    s = subjs(i);
     [STUDY, EEG] = std_editset(STUDY, EEG, 'commands', {{'index' i ...
         'comps' ICA_STRUCT.(s).incr_comps}});
+
     
     waitbar(i/length(subjs'),f)
 end
 close(f);
+% ALLEEG = EEG;
+
+%% update the EEG files with the ICA structure
+for i = 1:length(subjs)
+    s = subjs(i);
+    EEG(i) = update_EEG(EEG(i),ICA_STRUCT.(s));
+
+end
 ALLEEG = EEG;
+
+%% precompute
+[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on','ersp','on','spec','on','erspparams',{'cycles',[3 0.5],'alpha',0.05, 'padratio',2,'baseline',NaN,...
+    'freqs', [3 100]},'specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
 
 %% plot the components
 clustinfo = table;
