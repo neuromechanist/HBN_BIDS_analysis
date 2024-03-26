@@ -46,7 +46,7 @@ for s = subjs'
 end
 
     %% remove datasets without ICA_STRUCT
-[STUDY, EEG] = std_editset(STUDY, EEG, 'commands', {{'remove' unav_datasets_idx}}, 'updatedat', 'off');
+[STUDY, EEG] = std_editset(STUDY, EEG, 'commands', {{'remove' unav_datasets_idx}}, 'updatedat', 'on');
 ALLEEG = EEG;
 
 %% update the components
