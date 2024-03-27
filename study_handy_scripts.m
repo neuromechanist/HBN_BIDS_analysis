@@ -2,8 +2,8 @@
 addpath('eeglab_dev')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
-study_path = "C:\Users\syshirazi\GDrives\ucsd\My Drive\to share\HBN data\cmi_bids_R3_20\";
-out_path = study_path + "derivatives\eeglab_tetst\";
+study_path = "/home/sshirazi/yahya/cmi_bids_R3_RC2";
+out_path = study_path + "derivatives/eeglab_tetst/";
 
 %% load the bids dataset
 [STUDY, ALLEEG] = pop_importbids(char(study_path), 'eventtype','value','bidsevent','on','bidschanloc','off',...
@@ -27,6 +27,7 @@ fs = string(filesep)+string(filesep);
 mergedSetName = "everyEEG";
 subj_list = string({STUDY.datasetinfo.subject});
 subjs = squeeze(split(subj_list,"-")); subjs = subjs(:,2);
+% [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'retrieve',[1:291] ,'study',1); CURRENTSTUDY = 1;
 
     %% first check if the ICA_STRUCT is there
 i = 1;
@@ -49,10 +50,17 @@ end
 [STUDY, EEG] = std_editset(STUDY, EEG, 'commands', {{'remove' unav_datasets_idx}}, 'updatedat', 'on');
 ALLEEG = EEG;
 
-%% update the components
-subj_list = string({STUDY.datasetinfo.subject});
-subjs = squeeze(split(subj_list,"-")); subjs = subjs(:,2);
+%% update the EEG files with the ICA structure
+% subj_list = string({STUDY.datasetinfo.subject});
+% subjs = squeeze(split(subj_list,"-")); subjs = subjs(:,2);
+for i = 1:length(subjs)
+    s = subjs(i);
+    EEG(i) = update_EEG(EEG(i),ICA_STRUCT.(s));
 
+end
+ALLEEG = EEG;
+
+%% update the components
 % The following for loop only works because there is one dataset per subj.
 f = waitbar(0,'Updating studies w/ ICLABEL comps','Name','please be very patient');
 for i = 1:length(subjs)
@@ -66,15 +74,10 @@ end
 close(f);
 % ALLEEG = EEG;
 
-%% update the EEG files with the ICA structure
-for i = 1:length(subjs)
-    s = subjs(i);
-    EEG(i) = update_EEG(EEG(i),ICA_STRUCT.(s));
-
-end
-ALLEEG = EEG;
-
 %% precompute
+[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on','spec','on','specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
+
+%%
 [STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on','ersp','on','spec','on','erspparams',{'cycles',[3 0.5],'alpha',0.05, 'padratio',2,'baseline',NaN,...
     'freqs', [3 100]},'specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
 

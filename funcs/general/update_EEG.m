@@ -64,8 +64,8 @@ for i = 1:length(ica_fields)
                     if ischar(EEG.data)
                         %%%this is a set with no data just info
                         EEG.nbchan = length(ICA_STRUCT.good_chans);
-                        EEG.chanlocs = EEG.chanlocs(ICA_STRUCT.good_chans);
-                    else
+                        EEG.chanlocs = EEG.chanlocs(ismember([EEG.chanlocs.urchan], ICA_STRUCT.good_chans));
+                    else 
                         %%%this set has data
                         %new versions of eeglab seem to require channel names
                         %for channel rejection
