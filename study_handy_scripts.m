@@ -1,14 +1,26 @@
 %% paths
-addpath('eeglab_dev')
+addpath('eeglab')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
-study_path = "/home/sshirazi/yahya/cmi_bids_R3_RC2";
-out_path = study_path + "derivatives/eeglab_tetst/";
+study_path = "/home/sshirazi/yahya/cmi_bids_R3_RC2/";
+out_path = study_path + "derivatives/eeglab_test/";
 
 %% load the bids dataset
 [STUDY, ALLEEG] = pop_importbids(char(study_path), 'eventtype','value','bidsevent','on','bidschanloc','off',...
     'outputdir',char(out_path),'bidstask','surroundSupp', 'studyName','surroundSupp');
 CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
+
+%% Keep only the datasets with avaialble tag
+available_idx = lookup_dataset_info(STUDY, ["surroundSupp_1", "surroundSupp_2"], "available");
+
+% only keep subjects with both runs available
+avaialble_subjs = intersect(available_idx{1}, available_idx{2});
+
+%% clean channel data
+EEG = pop_clean_rawdata(EEG, 'FlatlineCriterion','off','ChannelCriterion',0.8,'LineNoiseCriterion',5,'Highpass','off','BurstCriterion','off','WindowCriterion','off','BurstRejection','off','Distance','Euclidian','fusechanrej',1);
+[ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, [1:291] ,'study',1); 
+STUDY = std_checkset(STUDY, ALLEEG);
+
 %% change the event type  % not needed for the new datasets.
 for e = 1:length(EEG)
     EEG(e) = replace_event_type(EEG(e));
@@ -22,7 +34,7 @@ end
 ALLEEG = EEG;
 
 %% update the components
-p2l = init_paths("linux", "expanse", "HBN", 1, false);
+p2l = init_paths("linux", "expanse", "HBN", 0, false);
 fs = string(filesep)+string(filesep);
 mergedSetName = "everyEEG";
 subj_list = string({STUDY.datasetinfo.subject});
@@ -51,8 +63,8 @@ end
 ALLEEG = EEG;
 
 %% update the EEG files with the ICA structure
-% subj_list = string({STUDY.datasetinfo.subject});
-% subjs = squeeze(split(subj_list,"-")); subjs = subjs(:,2);
+subj_list = string({STUDY.datasetinfo.subject});
+subjs = squeeze(split(subj_list,"-")); subjs = subjs(:,2);
 for i = 1:length(subjs)
     s = subjs(i);
     EEG(i) = update_EEG(EEG(i),ICA_STRUCT.(s));
