@@ -35,7 +35,7 @@ if project == "HBN"
        p2l.raw = prefix + "child-mind-uncompressed/";  % Original data from CMI
        p2l.yahya = prefix + "yahya/";
        p2l.eegRepo = p2l.yahya + "HBN/EEG/";  % EEG data repo
-       p2l.eeglab = p2l.yahya + "_git/eeglab_dev/";
+       p2l.eeglab = p2l.yahya + "_git/eeglab/";
        p2l.codebase = p2l.yahya + "_git/HBN_BIDS_analysis/";
        p2l.temp = p2l.yahya + "HBN/";
    elseif ispc
