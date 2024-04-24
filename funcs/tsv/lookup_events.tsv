@@ -37,8 +37,8 @@ code	description
 50	seqLearning_stop
 14.1	trialResponse
 20.1	newPage
-4	stim_ON
-8	stim_OFF
+4	fixpoint_ON
+8	stim_ON
 5	contrastTrial_start
 8.1	left_target
 9	right_target
