@@ -1,4 +1,4 @@
-function EEG = replace_event_type(EEG, lookup_table, remove_value_column)
+function EEG = replace_event_type(EEG, lookup_table, remove_value_column, remove_duration)
 %REPLACE_EVNET_TYPE substitute the event names (ie, types) using a lookup table
 %   It so happends that simple codes are being used as event types in
 %   EEG files. Such codes would be problamtic if proper descitiption is
@@ -18,6 +18,7 @@ function EEG = replace_event_type(EEG, lookup_table, remove_value_column)
 
 if ~exist('remove_value_column','var') || isempty(remove_value_column), remove_value_column = 0; end
 if ~exist('lookup_table','var') || isempty(lookup_table), lookup_table = 'lookup_events.tsv'; end
+if ~exist('remove_duration','var') || isempty(remove_duration), remove_duration = 0; end
 
 % Load the lookup_events table
 lookup_events = readtable(lookup_table, 'FileType', 'text', 'Delimiter', '\t');
@@ -26,6 +27,8 @@ duplicate_event_codes = ["8","12", "13", "14", "20"]; % these event codes are us
 
 % remove the value column, as it is inconsistent with the BIDS converter
 if remove_value_column, try EEG.event = rmfield(EEG.event, 'value'); catch, disp("no value column found"); end, end
+if remove_duration, try EEG.event = rmfield(EEG.event, 'duration'); catch, disp("no value column found"); end, end
+
 % Iterate through the events in EEG.event and replace the codes
 for i = 1:length(EEG.event)
     code = strtrim(EEG.event(i).type); % Remove any extra spaces
