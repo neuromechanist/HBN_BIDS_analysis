@@ -62,23 +62,21 @@ elseif filename == "vis_learn.mat"
     end
 % Surround suppresstion tasks
 elseif filename == "SurroundSupp_Block1.mat" || filename == "SurroundSupp_Block2.mat"  % surround supression task
-    background_cont = beh_event.BGcon; % background or no background
-    background_cont_string = zeros(size(background_cont));
-    background_cont_string(background_cont==1) = 1;
-    forground_cont = beh_event.CNTcon; % contrast  of the forground
+    background_cond = beh_event.BGcon; % background or no background
+    background_cont_string = zeros(size(background_cond));
+    background_cont_string(background_cond==1) = 1;
+    forground_cont = beh_event.CNTcon; % contrast  of the foreground
     stimulus_cond = beh_event.StimCond; % Stimulus condition
 
+    fixpoint_on = find(string({EEG.event(:).type})=="fixpoint_ON");
     stim_on = find(string({EEG.event(:).type})=="stim_ON");
-    stim_off = find(string({EEG.event(:).type})=="stim_OFF");
 
-    if length(stim_off) == length(stim_on) && length(stim_off) == length(background_cont)
+    if length(stim_on) == length(fixpoint_on) && length(stim_on) == length(background_cond)
         for i = stim_on
             EEG.event(i).background = num2str(background_cont_string(i==stim_on));
-            EEG.event(i+1).background = num2str(background_cont_string(i==stim_on));
             EEG.event(i).foreground_contrast = num2str(forground_cont(i==stim_on));
-            EEG.event(i+1).foreground_contrast = num2str(forground_cont(i==stim_on));
             EEG.event(i).stimulus_cond = num2str(stimulus_cond(i==stim_on));
-            EEG.event(i+1).stimulus_cond = num2str(stimulus_cond(i==stim_on));            
+            EEG.event(i).duration = 2.4*EEG.srate; % stimulation duration is hardcoded in the HBN experiment code as well.
         end
     else
         warning("legnth of the stimulation on in EEG.event mismatches the behavior file, skipping adding the events.")
