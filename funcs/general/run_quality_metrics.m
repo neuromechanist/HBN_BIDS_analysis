@@ -25,10 +25,10 @@ event_cnt = length(EEG.event);
 event_content = string({EEG.event(:).type});
 key_events_exist = all(contains(key_events.(task), event_content));
 
-% add quality metrics indicated in EEG.etc to tthe table
+% add quality metrics indicated in EEG.etc to the table
 etc_fields = fieldnames(EEG.etc)';
 if contains("quality_checks", etc_fields) && isstruct(EEG.etc.quality_checks)
-    quality_checks = string(fieldnames(EEG.etc.quality_checks))';  % the chekcs availblw within EEG.etc
+    quality_checks = string(fieldnames(EEG.etc.quality_checks))';
 else
     quality_checks = "n/a";
 end
