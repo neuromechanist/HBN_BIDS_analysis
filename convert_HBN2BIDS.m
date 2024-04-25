@@ -53,10 +53,10 @@ pfactor(~contains(pfactor{:,"EID"},string(plist{:,"participant_id"})),:) =[];
 plist(pfactor.EID, bifactors) = pfactor(:, bifactors);
 plist{~contains(plist.Row,string(pfactor{:,"EID"})), bifactors} = nan;
 
-remediedrepo = p2l.temp + "/taskBIDS_RC2/";
+remediedrepo = p2l.temp + "/taskBIDS_RC3/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
-bids_export_path = p2l.yahya + "/cmi_bids_R3_RC2/";
+bids_export_path = p2l.yahya + "/cmi_bids_R3_RC3/";
 no_subj_info_cols = 8; % 
 tnames = string(plist.Properties.VariableNames); % task names
 tnames = tnames(no_subj_info_cols+1:end);
@@ -174,7 +174,7 @@ end
 %% construct pInfo
 if write_qtable
     load(f2l.quality_table, "quality_table");
-    [pInfo, rm_id] = rawFile_quality_pInfo(pInfo,quality_table, 1);
+    [pInfo, rm_id] = rawFile_quality_pInfo(pInfo,quality_table, 1, p2l.BIDS_code);
     if ~isempty(rm_id), data(unique(rm_id)) = []; end
 end
 
