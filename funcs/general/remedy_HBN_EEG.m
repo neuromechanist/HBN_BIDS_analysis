@@ -33,7 +33,13 @@ for i = 1:length(data)
         EEG.(n) = augment_behavior_events(EEG.(n), data(i).raw_file(n==string(fieldnames(EEG))'), behavior_dir);
         EEG.(n) = eeg_checkset(EEG.(n), 'makeur');
         EEG.(n) = eeg_checkset(EEG.(n), 'chanlocs_homogeneous');
+
+        % quality check block
+        if EEG.(n).srate ~= 500,
+            EEG.(n).etc.quality_checks.samplingfreq = "abnormal sampling rate";
+        end
         quality_table = run_quality_metrics(EEG.(n), n, quality_table, key_events, 0);
+        
         % save the remedied EEG structure.
         pop_saveset(EEG.(n), 'filename', char(n), 'filepath', char(p2l.rawEEG_updated));
         disp("saved the remedied file for " + n)
