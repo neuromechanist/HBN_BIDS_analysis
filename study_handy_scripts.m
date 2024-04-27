@@ -2,7 +2,7 @@
 addpath('eeglab')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
-study_path = "/home/sshirazi/yahya/cmi_bids_R3_RC2/";
+study_path = "/home/sshirazi/yahya/cmi_bids_R3_RC3/";
 out_path = study_path + "derivatives/eeglab_test/";
 
 %% load the bids dataset
@@ -13,8 +13,14 @@ CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 %% Keep only the datasets with avaialble tag
 available_idx = lookup_dataset_info(STUDY, ["surroundSupp_1", "surroundSupp_2"], "available");
 
-% only keep subjects with both runs available
-avaialble_subjs = intersect(available_idx{1}, available_idx{2});
+% only keep dataset indices with both runs available
+available_idx = intersect(available_idx{1}, available_idx{2});
+
+% get the subject id
+available_subjs = unique({STUDY.datasetinfo(ismember([STUDY.datasetinfo(:).index],available_idx)).subject});
+
+% keep only available subjects
+[STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'keepvarvalues', {'subject', available_subjs});
 
 %% clean channel data
 EEG = pop_clean_rawdata(EEG, 'FlatlineCriterion','off','ChannelCriterion',0.8,'LineNoiseCriterion',5,'Highpass','off','BurstCriterion','off','WindowCriterion','off','BurstRejection','off','Distance','Euclidian','fusechanrej',1);
