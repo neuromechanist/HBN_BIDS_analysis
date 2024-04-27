@@ -14,7 +14,7 @@ CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 available_idx = lookup_dataset_info(STUDY, ["surroundSupp_1", "surroundSupp_2"], "available");
 
 % only keep dataset indices with both runs available
-available_idx = intersect(available_idx{1}, available_idx{2});
+available_idx = intersect(cell2mat(available_idx{1}), cell2mat(available_idx{2}));
 
 % get the subject id
 available_subjs = unique({STUDY.datasetinfo(ismember([STUDY.datasetinfo(:).index],available_idx)).subject});
