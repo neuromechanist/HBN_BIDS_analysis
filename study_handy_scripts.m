@@ -37,9 +37,19 @@ CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 parfor (s = 1:length(available_subjs), 24)
     [~, temp_EEG] = std_rmdat(STUDY, ALLEEG, 'keepvarvalues', {'subject', cellstr(available_subjs(s))});
     temp_mergedEEG = pop_mergeset(temp_EEG, 1:length(temp_EEG));
-    
+
     runamica17_nsg(temp_mergedEEG, 'outdir', char(ica_path+available_subjs(s)),...
         'do_reject', 1, 'numrej', 5, 'rejsig', 4);
+end
+
+%% load the ICA weights
+% find the EEG data for each subject and update the weights.
+EEG_subjs = string({EEG(:).subject});
+for s = available_subjs
+    idx = find(EEG_subjs==s);
+    for i = idx
+        EEG(i) = eeg_loadamica(EEG(i), char(ica_path + s), 1);
+    end
 end
 
 %% precompute
