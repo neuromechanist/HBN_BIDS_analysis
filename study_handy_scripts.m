@@ -52,6 +52,28 @@ for s = available_subjs
     end
 end
 
+%% Perform dipfit
+elocs = "GSN_HydroCel_129_AdjustedLabels.sfp";
+HDM = "eeglab/plugins/dipfit5.4/standard_BEM/standard_vol.mat";
+MRI = "eeglab/plugins/dipfit5.4/standard_BEM/standard_mri.mat";
+chan = "eeglab/plugins/dipfit5.4/standard_BEM/elec/standard_1005.elc";
+
+for e = 1:length(EEG)
+    EEG(e) = pop_dipfit_settings(EEG(e), 'hdmfile', char(HDM), 'mrifile', char(MRI),...
+        'chanfile', char(chan), 'coordformat', 'MNI', 'chansel', 1:EEG(e).nbchan);
+    [~,EEG(e).dipfit.coord_transform] = coregister(EEG(e).chanlocs,EEG(e).dipfit.chanfile,...
+        'chaninfo1', EEG(e).chaninfo,'mesh',EEG(e).dipfit.hdmfile, 'manual', 'off');
+
+    EEG(e) = pop_multifit(EEG(e), [] , 'threshold',100, 'plotopt',{'normlen', 'on'});
+end
+[ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
+
+%% run ICLABEL
+EEG = pop_iclabel(EEG, 'default');
+[ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
+
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'savemode','resavegui','resavedatasets','on');
+
 %% precompute
 [STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on','spec','on','specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
 
