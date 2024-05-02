@@ -74,6 +74,14 @@ EEG = pop_iclabel(EEG, 'default');
 
 [STUDY EEG] = pop_savestudy( STUDY, EEG, 'savemode','resavegui','resavedatasets','on');
 
+
+%% Epoch
+EEG = pop_epoch( EEG,{'fixpoint_ON','stim_ON'},[-1 3.5] ,'epochinfo','yes');
+[ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, [1:264] ,'study',1); 
+STUDY = std_checkset(STUDY, ALLEEG);
+
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename','surroundSupp_epoched.study','filepath','/expanse/projects/nemar/yahya/cmi_bids_R3_RC3/derivatives/eeglab_test/');
+CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 %% precompute
 [STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on','spec','on','specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
 
