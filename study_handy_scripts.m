@@ -22,6 +22,7 @@ available_subjs = intersect(string(available_idx{1}), string(available_idx{2}));
 EEG = ALLEEG;
 
 %% save study
+[STUDY ALLEEG] = std_editset( STUDY, ALLEEG, 'name','Surround Suppression');
 [STUDY EEG] = pop_savestudy( STUDY, EEG, 'savemode','resavegui','resavedatasets','on');
 CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 
@@ -30,7 +31,7 @@ EEG = pop_clean_rawdata(EEG, 'FlatlineCriterion','off','ChannelCriterion',0.8,'L
 [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, [1:length(EEG)] ,'study',1); 
 STUDY = std_checkset(STUDY, ALLEEG);
 
-[STUDY EEG] = pop_savestudy( STUDY, EEG, 'savemode','resavegui');
+[STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui');
 CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 
 %% concatenate same-subject/task runs and run AMICA
@@ -51,6 +52,10 @@ for s = available_subjs
         EEG(i) = eeg_loadamica(EEG(i), char(ica_path + s), 1);
     end
 end
+
+[ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
+[STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui');
+CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 
 %% Perform dipfit
 elocs = "GSN_HydroCel_129_AdjustedLabels.sfp";
@@ -82,6 +87,7 @@ STUDY = std_checkset(STUDY, ALLEEG);
 
 [STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename','surroundSupp_epoched.study','filepath','/expanse/projects/nemar/yahya/cmi_bids_R3_RC3/derivatives/eeglab_test/');
 CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
+
 %% precompute
 [STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on','spec','on','specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
 
