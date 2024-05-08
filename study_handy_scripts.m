@@ -107,13 +107,31 @@ STUDY = std_checkset(STUDY, ALLEEG);
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% precompute
-
+pop_editoptions('option_parallel', 0);
 [STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on','spec','on','specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
 
 %%
+% pop_editoptions( 'option_parallel', 1);
 [STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','ersp','on','erspparams',{'cycles',[3 0.5],'alpha',0.05, 'padratio',2,'baseline',NaN,...
-    'freqs', [3 100]},'specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
+    'freqs', [3 100]},'recompute','on');
 
+%% remove ICs with RV > 15% and outside the brain
+[STUDY ALLEEG] = std_editset( STUDY, ALLEEG, 'commands',{{'inbrain','on','dipselect',0.15}},'updatedat','on','rmclust','on' );
+[STUDY ALLEEG] = std_checkset(STUDY, ALLEEG);
+CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
+
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'savemode','resavegui');
+
+%% ICLABEL rejection
+EEG = pop_icflag(EEG, [0 0.59;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
+[ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
+
+% Let's see how many components will remain
+kept_comps = [];
+for i = 1:length(EEG)
+    kept_comps = [kept_comps length(find(EEG(i).reject.gcompreject==0))];
+   
+end
 %% plot the components
 clustinfo = table;
 clustinfo(1,:) = {3, "VR", rgb('Orange')}; % VR
