@@ -3,12 +3,12 @@ addpath('eeglab')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
 study_path = "/home/sshirazi/yahya/cmi_bids_R3_RC3/";
-out_path = study_path + "derivatives/eeglab_test/";
+out_path = study_path + "derivatives/eeglab_test_redo/";
 ica_path = out_path + "amica_tmp/";
 mkdir(ica_path)
 %% load the bids dataset
 [STUDY, ALLEEG] = pop_importbids(char(study_path), 'eventtype','value','bidsevent','on','bidschanloc','off',...
-    'outputdir',char(out_path),'bidstask','surroundSupp', 'studyName','surroundSupp');
+    'outputdir',char(out_path),'bidstask',{'surroundSupp', 'RestingState'}, 'studyName','surroundSupp');
 CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 
 %% Keep only the datasets with avaialble tag
@@ -22,9 +22,9 @@ available_subjs = intersect(string(available_idx{1}), string(available_idx{2}));
 EEG = ALLEEG;
 
 %% save study
-[STUDY ALLEEG] = std_editset( STUDY, ALLEEG, 'name','Surround Suppression');
-[STUDY EEG] = pop_savestudy( STUDY, EEG, 'savemode','resavegui','resavedatasets','on');
-CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
+[STUDY ALLEEG] = std_editset(STUDY, ALLEEG, 'name','Surround Suppression');
+[STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui','resavedatasets','on');
+CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% clean channel data
 EEG = pop_eegfiltnew(EEG,'locutoff',0.5,'plotfreqz',0);
@@ -33,7 +33,7 @@ EEG = pop_clean_rawdata(EEG, 'FlatlineCriterion','off','ChannelCriterion',0.8,'L
 STUDY = std_checkset(STUDY, ALLEEG);
 
 [STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui');
-CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
+CURRENTSTUDY = 1; ALLEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% concatenate same-subject/task runs and run AMICA
 parfor (s = 1:length(available_subjs), 12)
