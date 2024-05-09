@@ -23,7 +23,7 @@ end
 if ~exist("write_qtable","var") || isempty(write_qtable), write_qtable = 0; end
 if write_qtable, writePInfoOnly = 'on'; else, writePInfoOnly = 'off'; end
 
-target_release = ["R3"]; %#ok<NBRAK2> 
+target_release = "R1";  % Can be also a string vector, but change the export path.
 num_subjects = -1; % if -1, all subjects in the release will be added.
 
 p2l = init_paths("linux", "expanse", "HBN", 1, 1);
@@ -53,10 +53,10 @@ pfactor(~contains(pfactor{:,"EID"},string(plist{:,"participant_id"})),:) =[];
 plist(pfactor.EID, bifactors) = pfactor(:, bifactors);
 plist{~contains(plist.Row,string(pfactor{:,"EID"})), bifactors} = nan;
 
-remediedrepo = p2l.temp + "/taskBIDS_RC3/";
+remediedrepo = p2l.temp + target_release + "_taskBIDS_RC/";
 dpath = "/EEG/raw/mat_format/"; % downstream path after the subject
 fnames = readtable("funcs/tsv/filenames.tsv", "FileType","text"); % file names, this table is compatible with `tnames`
-bids_export_path = p2l.yahya + "/cmi_bids_R3_RC3/";
+bids_export_path = p2l.yahya + "/cmi_bids_" + target_release + "_RC/";
 no_subj_info_cols = 8; % 
 tnames = string(plist.Properties.VariableNames); % task names
 tnames = tnames(no_subj_info_cols+1:end);
