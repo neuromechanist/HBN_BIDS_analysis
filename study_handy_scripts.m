@@ -3,12 +3,12 @@ addpath('eeglab')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
 study_path = "/home/sshirazi/yahya/cmi_bids_R3_RC3/";
-out_path = study_path + "derivatives/eeglab_test_redo/";
+out_path = study_path + "derivatives/eeglab_test_redo2/";
 ica_path = out_path + "amica_tmp/";
 mkdir(ica_path)
 %% load the bids dataset
-[STUDY, ALLEEG] = pop_importbids(char(study_path), 'eventtype','value','bidsevent','on','bidschanloc','off',...
-    'outputdir',char(out_path),'bidstask',{'surroundSupp', 'RestingState'}, 'studyName','surroundSupp');
+[STUDY, ALLEEG] = pop_importbids(char(study_path), 'eventtype','value','bidsevent','on','bidschanloc','off', 'outputdir',char(out_path),...
+    'bidstask',{'surroundSupp', 'RestingState', 'DespicableMe', 'ThePresent', 'FunwithFractals', 'DiaryOfAWimpyKid'}, 'studyName','surroundSupp');
 CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 
 %% Keep only the datasets with avaialble tag
@@ -27,7 +27,7 @@ EEG = ALLEEG;
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% clean channel data
-EEG = pop_eegfiltnew(EEG,'locutoff',0.5,'plotfreqz',0);
+EEG = pop_eegfiltnew(EEG, 1, 0); % Highpass at 1 Hz, and Lowpass 0 Hz.
 EEG = pop_clean_rawdata(EEG, 'FlatlineCriterion','off','ChannelCriterion',0.8,'LineNoiseCriterion',5,'Highpass','off','BurstCriterion','off','WindowCriterion','off','BurstRejection','off','Distance','Euclidian','fusechanrej',1);
 [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, [1:length(EEG)] ,'study',1); 
 STUDY = std_checkset(STUDY, ALLEEG);
