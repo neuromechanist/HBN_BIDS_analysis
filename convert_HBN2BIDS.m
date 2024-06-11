@@ -23,7 +23,7 @@ end
 if ~exist("write_qtable","var") || isempty(write_qtable), write_qtable = 0; end
 if write_qtable, writePInfoOnly = 'on'; else, writePInfoOnly = 'off'; end
 
-target_release = "R1";  % Can be also a string vector, but change the export path.
+target_release = "R11";  % Can be also a string vector, but change the export path.
 num_subjects = -1; % if -1, all subjects in the release will be added.
 
 p2l = init_paths("linux", "expanse", "HBN", 1, 1);
@@ -41,7 +41,7 @@ duplicate_ids = ["NDARDZ322ZFC","NDARNZ792HBN"]; % the ids were found by shell-c
 for i = duplicate_ids, dup_idx = find(strcmp(plist{:,"participant_id"},i)); plist(dup_idx(end),:) =[]; end
 plist.Properties.RowNames = plist.participant_id;
 
-bifactor_table = readtable("HBN_cbcl_bifactor_2023.tsv", "FileType", "text");
+bifactor_table = readtable("HBN_cbcl_bifactor_scores_2024.tsv", "FileType", "text");
 bifactors = ["P_factor", "Attention", "Internalizing", "Externalizing"];
 pfactor = bifactor_table(:,["EID", bifactors]);
 
