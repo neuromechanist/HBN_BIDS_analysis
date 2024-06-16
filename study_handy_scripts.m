@@ -2,7 +2,7 @@
 addpath('eeglab')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
-study_path = "/home/sshirazi/yahya/cmi_bids_R3_RC3/";
+study_path = "/home/sshirazi/yahya/cmi_bids_R3_RC/";
 out_path = study_path + "derivatives/eeglab_test_redo2/";
 ica_path = out_path + "amica_tmp/";
 mkdir(ica_path)
@@ -36,7 +36,7 @@ STUDY = std_checkset(STUDY, ALLEEG);
 CURRENTSTUDY = 1; ALLEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% concatenate same-subject/task runs and run AMICA
-parfor (s = 1:length(available_subjs), 12)
+parfor (s = 1:length(available_subjs), 24)
     [~, temp_EEG] = std_rmdat(STUDY, ALLEEG, 'keepvarvalues', {'subject', cellstr(available_subjs(s))});
     temp_mergedEEG = pop_mergeset(temp_EEG, 1:length(temp_EEG));
 
@@ -46,17 +46,22 @@ end
 
 %% load the ICA weights
 % find the EEG data for each subject and update the weights.
+unav_amica = [];
 EEG_subjs = string({EEG(:).subject});
 for s = available_subjs
-    idx = find(EEG_subjs==s);
-    for i = idx
-        EEG(i) = eeg_loadamica(EEG(i), char(ica_path + s), 1);
+    try
+        idx = find(EEG_subjs==s);
+        for i = idx
+            EEG(i) = eeg_loadamica(EEG(i), char(ica_path + s), 1);
+        end
+    catch
+        unav_amica = [unav_amica s]; %#ok<AGROW> 
     end
 end
 
 [ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
 [STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui');
-CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
+CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% Perform dipfit
 elocs = "GSN_HydroCel_129_AdjustedLabels.sfp";
@@ -98,7 +103,7 @@ CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 [STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename','surroundSupp_epoched.study','filepath','/expanse/projects/nemar/yahya/cmi_bids_R3_RC3/derivatives/eeglab_test/');
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
-EEG = pop_epoch( EEG,{'fixpoint_ON','stim_ON'},[-1 3] ,'epochinfo','yes');
+EEG = pop_epoch( EEG,{'fixpoint_ON','stim_ON'},[-1 2] ,'epochinfo','yes');
 [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, [1:264] ,'study',1); 
 STUDY = std_checkset(STUDY, ALLEEG);
 

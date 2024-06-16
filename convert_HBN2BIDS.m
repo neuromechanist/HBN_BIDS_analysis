@@ -23,7 +23,7 @@ end
 if ~exist("write_qtable","var") || isempty(write_qtable), write_qtable = 0; end
 if write_qtable, writePInfoOnly = 'on'; else, writePInfoOnly = 'off'; end
 
-target_release = "R11";  % Can be also a string vector, but change the export path.
+target_release = "R10";  % Can be also a string vector, but change the export path.
 num_subjects = -1; % if -1, all subjects in the release will be added.
 
 p2l = init_paths("linux", "expanse", "HBN", 1, 1);
