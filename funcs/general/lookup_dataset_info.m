@@ -30,11 +30,11 @@ end
 %% main
 
 % map column name to sessions ans runs
-    for s = 1:length(session)
-        for r = 1:length(run)
-            mapped{(s-1)+r} = [session(s),run(r)];
-        end
+for s = 1:length(session)
+    for r = 1:length(run)
+        mapped{(s-1)+r} = [session(s),run(r)];
     end
+end
 for c = 1:length(col_name)
     session_rows = [STUDY.datasetinfo(:).session] == mapped{c}(1);
     run_rows = [STUDY.datasetinfo(session_rows).run] == mapped{c}(2);
