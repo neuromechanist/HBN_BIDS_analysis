@@ -3,13 +3,24 @@ addpath('eeglab')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
 study_path = "/home/sshirazi/yahya/cmi_bids_R3_RC/";
-out_path = study_path + "derivatives/eeglab_test_redo2/";
+out_path = study_path + "derivatives/eeglab_test_redo3/";
 ica_path = out_path + "amica_tmp/";
 mkdir(ica_path)
+
+new_study = 0; % set it to 1 to load the data  from scratch
+% ion order to have a more robust ICA, tasks groups can concatenate the data, but later, only the target task will be analyzed.
+task_group = ["surroundSupp"    "RestingState"    "DespicableMe"    "ThePresent"    "FunwithFractals"    "DiaryOfAWimpyKid"];
+target_task = "surroundSupp";
 %% load the bids dataset
-[STUDY, ALLEEG] = pop_importbids(char(study_path), 'eventtype','value','bidsevent','on','bidschanloc','off', 'outputdir',char(out_path),...
-    'bidstask',{'surroundSupp', 'RestingState', 'DespicableMe', 'ThePresent', 'FunwithFractals', 'DiaryOfAWimpyKid'}, 'studyName','surroundSupp');
-CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
+if new_study
+    [STUDY, ALLEEG] = pop_importbids(char(study_path), 'eventtype','value','bidsevent','on','bidschanloc','off', 'outputdir',char(out_path),...
+        'bidstask', cellstr(task_group), 'studyName','surroundSupp');
+    CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
+else
+% or alternatively load the study
+    [STUDY ALLEEG] = pop_loadstudy('filename', 'surroundSupp.study', 'filepath', '/expanse/projects/nemar/yahya/cmi_bids_R3_RC/derivatives/eeglab_test_redo3');
+    CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
+end
 
 %% Keep only the datasets with avaialble tag
 available_idx = lookup_dataset_info(STUDY, 1, [1, 2], ["surroundSupp_1", "surroundSupp_2"], "available", "subject");
@@ -17,7 +28,7 @@ available_idx = lookup_dataset_info(STUDY, 1, [1, 2], ["surroundSupp_1", "surrou
 % only keep dataset indices with both runs available
 available_subjs = intersect(string(available_idx{1}), string(available_idx{2}));
 
-% keep only available subjects
+%% keep only available subjects
 [STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'keepvarvalues', {'subject', cellstr(available_subjs)});
 EEG = ALLEEG;
 
@@ -100,15 +111,16 @@ EEG = pop_iclabel(EEG, 'default');
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% Epoch
-[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename','surroundSupp_epoched.study','filepath','/expanse/projects/nemar/yahya/cmi_bids_R3_RC3/derivatives/eeglab_test/');
+% First identify target_task index
+
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename','surroundSupp_epoched.study','filepath',char(out_path), 'resavedatasets', 'on');
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 EEG = pop_epoch( EEG,{'fixpoint_ON','stim_ON'},[-1 2] ,'epochinfo','yes');
-[ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, [1:264] ,'study',1); 
-STUDY = std_checkset(STUDY, ALLEEG);
+
 
 [ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
-[STUDY EEG] = pop_savestudy( STUDY, EEG, 'savemode','resavegui');
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'resavedatasets', 'on');
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% precompute
@@ -116,7 +128,7 @@ pop_editoptions('option_parallel', 0);
 [STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on','spec','on','specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
 
 %%
-% pop_editoptions( 'option_parallel', 1);
+pop_editoptions( 'option_parallel', 1);
 [STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','ersp','on','erspparams',{'cycles',[3 0.5],'alpha',0.05, 'padratio',2,'baseline',NaN,...
     'freqs', [3 100]},'recompute','on');
 
