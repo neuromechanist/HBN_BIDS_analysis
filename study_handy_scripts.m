@@ -38,7 +38,16 @@ EEG = ALLEEG;
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% clean channel data
+pop_editoptions('option_parallel', 1);
 EEG = pop_eegfiltnew(EEG, 1, 0); % Highpass at 1 Hz, and Lowpass 0 Hz.
+
+EEG = pop_cleanline(EEG, 'bandwidth',2,'chanlist',1:128,...
+        'computepower',1,'linefreqs',[60 120 180] ,'normSpectrum',0,'p',0.05,'pad',2,'plotfigures',0,...
+        'scanforlines',1,'sigtype','Channels','tau',100,'verb',1,'winsize',4,'winstep',1, 'newversion', true);
+EEG = pop_cleanline(EEG, 'bandwidth',2,'chanlist',1:128,...
+        'computepower',1,'linefreqs',[60 120 180] ,'normSpectrum',0,'p',0.05,'pad',2,'plotfigures',0,...
+        'scanforlines',1,'sigtype','Channels','tau',100,'verb',1,'winsize',4,'winstep',1, 'newversion', true);
+
 EEG = pop_clean_rawdata(EEG, 'FlatlineCriterion','off','ChannelCriterion',0.8,'LineNoiseCriterion',5,'Highpass','off','BurstCriterion','off','WindowCriterion','off','BurstRejection','off','Distance','Euclidian','fusechanrej',1);
 [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, [1:length(EEG)] ,'study',1); 
 STUDY = std_checkset(STUDY, ALLEEG);
