@@ -83,11 +83,26 @@ end
 [STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui');
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
+%% Create a new study if task_group and target_task are not the same
+surround_idx = lookup_dataset_info(STUDY, 1 , [1, 2], ["task", "task"], "surroundSupp");
+surround_idx = union(cell2mat(surround_idx{1}), cell2mat(surround_idx{2}));
+all_idx = [STUDY.datasetinfo(:).index];
+
+rmv_idx = all_idx(~ismember(all_idx, surround_idx));
+
+[STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'datinds', rmv_idx);
+EEG = ALLEEG;
+STUDY = std_checkset(STUDY, ALLEEG);
+
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename','surroundSupp_summarized.study','filepath',char(out_path), 'resavedatasets', 'on');
+CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
+
 %% Perform dipfit
 elocs = "GSN_HydroCel_129_AdjustedLabels.sfp";
 HDM = "eeglab/plugins/dipfit5.4/standard_BEM/standard_vol.mat";
 MRI = "eeglab/plugins/dipfit5.4/standard_BEM/standard_mri.mat";
 chan = "eeglab/plugins/dipfit5.4/standard_BEM/elec/standard_1005.elc";
+EEG_subjs = string({EEG(:).subject});
 
 for s = available_subjs
     idx = find(EEG_subjs==s);
