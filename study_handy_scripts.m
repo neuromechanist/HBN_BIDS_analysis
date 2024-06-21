@@ -161,9 +161,11 @@ pop_editoptions( 'option_parallel', 1);
 [STUDY ALLEEG] = std_checkset(STUDY, ALLEEG);
 CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 
-[STUDY EEG] = pop_savestudy( STUDY, EEG, 'savemode','resavegui');
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'resavedatasets', 'on');
+CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% ICLABEL rejection
+pop_editoptions( 'option_parallel', 0);
 EEG = pop_icflag(EEG, [0 0.59;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
 [ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
 
@@ -171,8 +173,13 @@ EEG = pop_icflag(EEG, [0 0.59;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
 kept_comps = [];
 for i = 1:length(EEG)
     kept_comps = [kept_comps length(find(EEG(i).reject.gcompreject==0))];
-   
 end
+
+% create preclutering array
+[STUDY ALLEEG] = std_preclust(STUDY, ALLEEG, 1,...
+    {'spec','npca',3,'weight',1,'freqrange',[3 25] },...
+    {'scalpLaplac','npca',3,'weight',1,'abso',1},...
+    {'dipoles','weight',10});
 %% plot the components
 clustinfo = table;
 clustinfo(1,:) = {3, "VR", rgb('Orange')}; % VR
