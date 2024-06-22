@@ -64,6 +64,20 @@ parfor (s = 1:length(available_subjs), 24)
         'do_reject', 1, 'numrej', 5, 'rejsig', 4);
 end
 
+%% Check if the subjectss and run AMICA
+% Current AMICA may freeze in 5 to 10% of the cases. Therefore, we need to
+% ensure that were completed.
+for s = 1:length(available_subjs)
+    if ~exist(ica_path+available_subjs(s), "dir") || ~exist(ica_path+available_subjs(s)+"/W", "file")
+        warning("AMICA did not run for subject "+available_subjs(s)+", trying to rerun AMICA!")
+        [~, temp_EEG] = std_rmdat(STUDY, ALLEEG, 'keepvarvalues', {'subject', cellstr(available_subjs(s))});
+        temp_mergedEEG = pop_mergeset(temp_EEG, 1:length(temp_EEG));
+
+        runamica17_nsg(temp_mergedEEG, 'outdir', char(ica_path+available_subjs(s)),...
+            'do_reject', 1, 'numrej', 5, 'rejsig', 4);
+    end
+end
+
 %% load the ICA weights
 % find the EEG data for each subject and update the weights.
 unav_amica = [];
