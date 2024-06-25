@@ -64,7 +64,7 @@ parfor (s = 1:length(available_subjs), 24)
         'do_reject', 1, 'numrej', 5, 'rejsig', 4);
 end
 
-%% Check if the subjectss and run AMICA
+%% Check if AMICA redsults exists and re-run AMICA
 % Current AMICA may freeze in 5 to 10% of the cases. Therefore, we need to
 % ensure that were completed.
 for s = 1:length(available_subjs)
@@ -139,49 +139,48 @@ for s = available_subjs
 end
 [ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
 [STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui');
-CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
+[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(EEG, 1:length(EEG));
 
 %% run ICLABEL
+pop_editoptions('option_parallel', 0);
 EEG = pop_iclabel(EEG, 'default');
-[ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
 
 [STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui');
-CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
-
-%% Epoch
-% First identify target_task index
-
-[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename','surroundSupp_epoched.study','filepath',char(out_path), 'resavedatasets', 'on');
-CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
-
-EEG = pop_epoch( EEG,{'fixpoint_ON','stim_ON'},[-1 2] ,'epochinfo','yes');
-
-
-[ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
-[STUDY EEG] = pop_savestudy( STUDY, EEG, 'resavedatasets', 'on');
-CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
-
-%% precompute
-pop_editoptions('option_parallel', 0);
-[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on','spec','on','specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
-
-%%
-pop_editoptions( 'option_parallel', 1);
-[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','ersp','on','erspparams',{'cycles',[3 0.5],'alpha',0.05, 'padratio',2,'baseline',NaN,...
-    'freqs', [3 100]},'recompute','on');
+[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(EEG, 1:length(EEG));
 
 %% remove ICs with RV > 15% and outside the brain
 [STUDY ALLEEG] = std_editset( STUDY, ALLEEG, 'commands',{{'inbrain','on','dipselect',0.15}},'updatedat','on','rmclust','on' );
 [STUDY ALLEEG] = std_checkset(STUDY, ALLEEG);
-CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
+[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(ALLEEG, 1:length(EEG));
 
 [STUDY EEG] = pop_savestudy( STUDY, EEG, 'resavedatasets', 'on');
-CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% ICLABEL rejection
 pop_editoptions( 'option_parallel', 0);
 EEG = pop_icflag(EEG, [0 0.59;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
 [ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
+% Check if there is a subject with all comps rejected, then we shoul remove
+% that subject
+EEG_subjs = string({EEG(:).subject});
+nobrain_subjs = [];
+for s = EEG_subjs
+        idx = find(EEG_subjs==s);
+    for i = idx
+        STUDY.datasetinfo(i).comps = 1:length()
+        if i == idx(1) % compre number of rejected comps
+            if isempty(find(EEG(i).reject.gcompreject == 0))
+                warning("subject " + s + " does not have any Brain comps according to ICLABEL, removing the subjs from STUDY")
+                nobrain_subjs = [nobrain_subjs, s];
+            end
+        end
+    end
+end
+[STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'rmvarvalues', {'subject', cellstr(nobrain_subjs)});
+[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(ALEEG, 1:length(EEG));
+
+% Now remove ICs
+EEG = pop_subcomp( EEG,'',0,0); % [] or ' means removing components flagged for rejection
+[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(EEG, 1:length(EEG));
 
 % Let's see how many components will remain
 kept_comps = [];
