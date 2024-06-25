@@ -188,7 +188,29 @@ for i = 1:length(EEG)
     kept_comps = [kept_comps length(find(EEG(i).reject.gcompreject==0))];
 end
 
-% create preclutering array
+%% Epoch
+% First identify target_task index
+
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename','surroundSupp_epoched.study','filepath',char(out_path), 'resavedatasets', 'on');
+[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(EEG, 1:length(EEG));
+
+EEG = pop_epoch( EEG,{'fixpoint_ON','stim_ON'},[-1 2] ,'epochinfo','yes');
+
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'resavedatasets', 'on');
+[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(EEG, 1:length(EEG));
+
+%% precompute
+pop_editoptions('option_parallel', 0);
+[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','spec','on','specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
+
+%% 
+[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on', 'recompute','on');
+%%
+pop_editoptions( 'option_parallel', 1);
+[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','ersp','on','erspparams',{'cycles',[3 0.5],'alpha',0.05, 'padratio',2,'baseline',NaN,...
+    'freqs', [3 100]},'recompute','on');
+
+%% create preclutering array
 [STUDY ALLEEG] = std_preclust(STUDY, ALLEEG, 1,...
     {'spec','npca',3,'weight',1,'freqrange',[3 25] },...
     {'scalpLaplac','npca',3,'weight',1,'abso',1},...
