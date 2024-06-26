@@ -157,37 +157,34 @@ EEG = pop_iclabel(EEG, 'default');
 
 %% ICLABEL rejection
 pop_editoptions( 'option_parallel', 0);
-EEG = pop_icflag(EEG, [0 0.59;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
+EEG = pop_icflag(EEG, [0 0.59;0 NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
 [ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
 % Check if there is a subject with all comps rejected, then we shoul remove
 % that subject
-EEG_subjs = string({EEG(:).subject});
+
+EEG_subjs = unique(string({EEG(:).subject}));
 nobrain_subjs = [];
 for s = EEG_subjs
-        idx = find(EEG_subjs==s);
+    idx = find(string({EEG(:).subject})==s);
     for i = idx
-        STUDY.datasetinfo(i).comps = 1:length()
-        if i == idx(1) % compre number of rejected comps
-            if isempty(find(EEG(i).reject.gcompreject == 0))
-                warning("subject " + s + " does not have any Brain comps according to ICLABEL, removing the subjs from STUDY")
-                nobrain_subjs = [nobrain_subjs, s];
-            end
+        if isempty(find(EEG(i).reject.gcompreject == 0))
+            warning("subject " + s + " does not have any Brain comps according to ICLABEL, removing the subjs from STUDY")
+            nobrain_subjs = [nobrain_subjs, s];
+            break;
         end
-    end
+        STUDY.datasetinfo(i).comps = find(EEG(i).reject.gcompreject == 0)';
+    end    
 end
 [STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'rmvarvalues', {'subject', cellstr(nobrain_subjs)});
-[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(ALEEG, 1:length(EEG));
-
-% Now remove ICs
-EEG = pop_subcomp( EEG,'',0,0); % [] or ' means removing components flagged for rejection
-[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(EEG, 1:length(EEG));
+[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(ALLEEG, 1:length(ALLEEG));
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'resavedatasets', 'on');
 
 % Let's see how many components will remain
 kept_comps = [];
 for i = 1:length(EEG)
     kept_comps = [kept_comps length(find(EEG(i).reject.gcompreject==0))];
 end
-
+disp("mean +/- std of the lept components are " + string(mean(kept_comps)) +" +/- "+ string(std(kept_comps)));
 %% Epoch
 % First identify target_task index
 
