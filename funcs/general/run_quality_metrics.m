@@ -48,7 +48,7 @@ for q = quality_checks
         qcheck_string = "n/a";
         break;
     else
-        qcheck_string = [qcheck_string; EEG.etc.quality_checks.(q)];
+        qcheck_string = [qcheck_string; EEG.etc.quality_checks.(q).description];
     end
 end
 temp_table{subj, "quality_checks"} = qcheck_string;

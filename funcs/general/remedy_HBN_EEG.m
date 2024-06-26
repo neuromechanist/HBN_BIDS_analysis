@@ -35,8 +35,11 @@ for i = 1:length(data)
         EEG.(n) = eeg_checkset(EEG.(n), 'chanlocs_homogeneous');
 
         % quality check block
-        if EEG.(n).srate ~= 500,
-            EEG.(n).etc.quality_checks.samplingfreq = "abnormal sampling rate";
+        if EEG.(n).srate ~= 500
+            EEG.(n).etc.quality_checks.samplingfreq.description = "Abnormal sampling rate of " + ...
+                string(EEG.(n).srate) + " Hz. Data is resampled to 500Hz.";
+            EEG.(n).etc.quality_checks.samplingfreq.severity = "caution";
+            EEG.(n) = pop_resample(EEG.(n), 500);
         end
         quality_table = run_quality_metrics(EEG.(n), n, quality_table, key_events, 0);
         
