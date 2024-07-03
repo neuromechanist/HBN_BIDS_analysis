@@ -10,7 +10,7 @@ To get started, clone this repository to your local machine. The pipeline is des
 
 There is also a separate script for helping export the raw HBN data to the BIDS format.
 
-We have also included a script to load the BIDS data into EEGLAB. This script is not part of the main pipeline, but can be useful for loading the data into EEGLAB and perform some preliminary analysis.
+We have also included a script to load the BIDS data into EEGLAB. This script is not part of the main pipeline but can be useful for loading the data into EEGLAB and performing some preliminary analysis.
 
 ## BIDS Conversion
 
@@ -26,7 +26,7 @@ graph TD
     D[Augment Behavioral Events] -->|full event files| E
     E[Augment Behavior Events] -->|Augmented Event data| F
     F[Add HED annotation and sidecar] --> G
-    G[Quality Check:\n 1. Sampling frequncy, \n 2. data length, \n 3. Event counts and presence] -->|quality details saved for reference| H
+    G[Quality Check:\n 1. Confirm (and correct) sampling frequency, \n 2. data length, \n 3. Event counts and presence] -->|quality details saved for reference| H
     H[Add availability flag based on data qality] -->I
     I[Create BIDS datasets]
     CC[Build Participant Information] --> DD
