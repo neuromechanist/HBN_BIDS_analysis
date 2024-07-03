@@ -26,7 +26,7 @@ graph TD
     D[Augment Behavioral Events] -->|full event files| E
     E[Augment Behavior Events] -->|Augmented Event data| F
     F[Add HED annotation and sidecar] --> G
-    G[Quality Check:\n 1. Confirm (and correct) sampling frequency, \n 2. data length, \n 3. Event counts and presence] -->|quality details saved for reference| H
+    G[Quality Check:\n 1. "Confirm (and correct) sampling frequency", \n 2. data length, \n 3. Event counts and presence] -->|quality details saved for reference| H
     H[Add availability flag based on data qality] -->I
     I[Create BIDS datasets]
     CC[Build Participant Information] --> DD
