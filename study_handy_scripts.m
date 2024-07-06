@@ -2,8 +2,8 @@
 addpath('eeglab')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
-study_path = "/home/sshirazi/yahya/cmi_bids_R3_RC/";
-out_path = study_path + "derivatives/eeglab_test_redo3/";
+study_path = "/home/sshirazi/yahya/cmi_bids_R3_RC2/";
+out_path = study_path + "derivatives/eeglab_test_redo/";
 ica_path = out_path + "amica_tmp/";
 mkdir(ica_path)
 
@@ -18,14 +18,13 @@ if new_study
     CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 else
 % or alternatively load the study
-    [STUDY ALLEEG] = pop_loadstudy('filename', 'surroundSupp.study', 'filepath', '/expanse/projects/nemar/yahya/cmi_bids_R3_RC/derivatives/eeglab_test_redo3');
+    [STUDY ALLEEG] = pop_loadstudy('filename', 'surroundSupp.study', 'filepath', char(out_path));
     CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 end
 
-%% Keep only the datasets with avaialble tag
+% Identify datasets with avaialble tag
 available_idx = lookup_dataset_info(STUDY, 1, [1, 2], ["surroundSupp_1", "surroundSupp_2"], "available", "subject");
 
-% only keep dataset indices with both runs available
 available_subjs = intersect(string(available_idx{1}), string(available_idx{2}));
 
 %% keep only available subjects
@@ -157,7 +156,7 @@ EEG = pop_iclabel(EEG, 'default');
 
 %% ICLABEL rejection
 pop_editoptions( 'option_parallel', 0);
-EEG = pop_icflag(EEG, [0 0.59;0 NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
+EEG = pop_icflag(EEG, [0 0.69;0 NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
 [ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
 % Check if there is a subject with all comps rejected, then we shoul remove
 % that subject
@@ -197,13 +196,13 @@ EEG = pop_epoch( EEG,{'fixpoint_ON','stim_ON'},[-1 2] ,'epochinfo','yes');
 [EEG, ALLEEG, CURRENTSET] = eeg_retrieve(EEG, 1:length(EEG));
 
 %% precompute
-pop_editoptions('option_parallel', 0);
+pop_editoptions('option_parallel', 1);
 [STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','spec','on','specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
 
 %% 
 [STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on', 'recompute','on');
 %%
-pop_editoptions( 'option_parallel', 1);
+pop_editoptions('option_parallel', 1);
 [STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','ersp','on','erspparams',{'cycles',[3 0.5],'alpha',0.05, 'padratio',2,'baseline',NaN,...
     'freqs', [3 100]},'recompute','on');
 
