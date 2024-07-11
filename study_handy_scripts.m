@@ -96,20 +96,6 @@ end
 [STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui');
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
-%% Create a new study if task_group and target_task are not the same
-surround_idx = lookup_dataset_info(STUDY, 1 , [1, 2], ["task", "task"], "surroundSupp");
-surround_idx = union(cell2mat(surround_idx{1}), cell2mat(surround_idx{2}));
-all_idx = [STUDY.datasetinfo(:).index];
-
-rmv_idx = all_idx(~ismember(all_idx, surround_idx));
-
-[STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'datinds', rmv_idx);
-EEG = ALLEEG;
-STUDY = std_checkset(STUDY, ALLEEG);
-
-[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename','surroundSupp_summarized.study','filepath',char(out_path), 'resavedatasets', 'on');
-CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
-
 %% Perform dipfit
 elocs = "GSN_HydroCel_129_AdjustedLabels.sfp";
 HDM = "eeglab/plugins/dipfit5.4/standard_BEM/standard_vol.mat";
@@ -147,13 +133,6 @@ EEG = pop_iclabel(EEG, 'default');
 [STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui');
 [EEG, ALLEEG, CURRENTSET] = eeg_retrieve(EEG, 1:length(EEG));
 
-%% remove ICs with RV > 15% and outside the brain
-[STUDY ALLEEG] = std_editset( STUDY, ALLEEG, 'commands',{{'inbrain','on','dipselect',0.15}},'updatedat','on','rmclust','on' );
-[STUDY ALLEEG] = std_checkset(STUDY, ALLEEG);
-[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(ALLEEG, 1:length(EEG));
-
-[STUDY EEG] = pop_savestudy( STUDY, EEG, 'resavedatasets', 'on');
-
 %% ICLABEL rejection
 pop_editoptions( 'option_parallel', 0);
 EEG = pop_icflag(EEG, [0 0.69;0 NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
@@ -184,6 +163,21 @@ for i = 1:length(EEG)
     kept_comps = [kept_comps length(find(EEG(i).reject.gcompreject==0))];
 end
 disp("mean +/- std of the lept components are " + string(mean(kept_comps)) +" +/- "+ string(std(kept_comps)));
+
+%% Create a new study if task_group and target_task are not the same
+surround_idx = lookup_dataset_info(STUDY, 1 , [1, 2], ["task", "task"], "surroundSupp");
+surround_idx = union(cell2mat(surround_idx{1}), cell2mat(surround_idx{2}));
+all_idx = [STUDY.datasetinfo(:).index];
+
+rmv_idx = all_idx(~ismember(all_idx, surround_idx));
+
+[STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'datinds', rmv_idx);
+EEG = ALLEEG;
+STUDY = std_checkset(STUDY, ALLEEG);
+
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename','surroundSupp_summarized.study','filepath',char(out_path), 'resavedatasets', 'on');
+CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
+
 %% Epoch
 % First identify target_task index
 
