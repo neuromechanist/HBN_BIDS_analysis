@@ -135,7 +135,7 @@ EEG = pop_iclabel(EEG, 'default');
 
 %% ICLABEL rejection
 pop_editoptions( 'option_parallel', 0);
-EEG = pop_icflag(EEG, [0 0.69;0 NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
+EEG = pop_icflag(EEG, [0 0.59;0 NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
 [ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
 % Check if there is a subject with all comps rejected, then we shoul remove
 % that subject
@@ -153,16 +153,26 @@ for s = EEG_subjs
         STUDY.datasetinfo(i).comps = find(EEG(i).reject.gcompreject == 0)';
     end    
 end
-[STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'rmvarvalues', {'subject', cellstr(nobrain_subjs)});
+if ~isempty(nobrain_subjs)
+    [STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'rmvarvalues', {'subject', cellstr(nobrain_subjs)});
+end
 [EEG, ALLEEG, CURRENTSET] = eeg_retrieve(ALLEEG, 1:length(ALLEEG));
-[STUDY EEG] = pop_savestudy( STUDY, EEG, 'resavedatasets', 'on');
+[STUDY EEG] = pop_savestudy(STUDY, EEG, 'resavedatasets', 'on');
 
 % Let's see how many components will remain
+% this checks EEG.reject structure
 kept_comps = [];
 for i = 1:length(EEG)
     kept_comps = [kept_comps length(find(EEG(i).reject.gcompreject==0))];
 end
-disp("mean +/- std of the lept components are " + string(mean(kept_comps)) +" +/- "+ string(std(kept_comps)));
+disp("total kept comps in EEG.reject:" + sum(kept_comps)/length(STUDY.run) + ", mean:" + string(mean(kept_comps)) +", std:"+ string(std(kept_comps)));
+
+% this checks datasetinfo
+kept_comps = [];
+for i = 1:length(EEG)
+    kept_comps = [kept_comps length(STUDY.datasetinfo(i).comps)];
+end
+disp("total kept comps in datasetinfo:" + sum(kept_comps)/length(STUDY.run) + ", mean:" + string(mean(kept_comps)) +", std:"+ string(std(kept_comps)));
 
 %% Create a new study if task_group and target_task are not the same
 surround_idx = lookup_dataset_info(STUDY, 1 , [1, 2], ["task", "task"], "surroundSupp");
@@ -191,38 +201,34 @@ EEG = pop_epoch( EEG,{'fixpoint_ON','stim_ON'},[-1 2] ,'epochinfo','yes');
 
 %% precompute
 pop_editoptions('option_parallel', 1);
-[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','spec','on','specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
+[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','spec','on','allcomps', 'on', 'specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
 
 %% 
-[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on', 'recompute','on');
+[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on', 'allcomps', 'on', 'recompute','on');
 %%
 pop_editoptions('option_parallel', 1);
-[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','ersp','on','erspparams',{'cycles',[3 0.5],'alpha',0.05, 'padratio',2,'baseline',NaN,...
+[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','ersp','on','allcomps', 'on', 'erspparams',{'cycles',[3 0.5],'alpha',0.05, 'padratio',2,'baseline',NaN,...
     'freqs', [3 100]},'recompute','on');
 
 %% create preclutering array
+STUDY = std_createclust(STUDY, ALLEEG, 'parentcluster', 'on');  % Update the parent cluster array, especially required if componenets have been changed.
 [STUDY ALLEEG] = std_preclust(STUDY, ALLEEG, 1,...
-    {'spec','npca',3,'weight',1,'freqrange',[3 25] },...
-    {'scalpLaplac','npca',3,'weight',1,'abso',1},...
-    {'dipoles','weight',10});
+    {'spec','npca',3,'weight',1,'freqrange',[3 70] },...
+    {'scalpLaplac','npca',3,'weight',1,'abso',0},...
+    {'dipoles','weight',10},'parentclust');
 %% plot the components
 clustinfo = table;
-clustinfo(1,:) = {3, "VR", rgb('Orange')}; % VR
-clustinfo(2,:) = {4, "eye", rgb('Purple')}; % eye
-clustinfo(3,:) = {6, "FR", rgb('Cyan')}; % FR
-clustinfo(4,:) = {7, "MR", rgb('Lime')}; %MR
-clustinfo(5,:) = {8, "VC", rgb('Red')}; %VC
-clustinfo(6,:) = {9, "FC", rgb('Blue')}; % FC , SMA
-clustinfo(7,:) = {11, "ML", rgb('Teal')}; %ML
-clustinfo(8,:) = {13, "VR2", rgb('OrangeRed')}; %VR
-% clustinfo(9,:) = {14, "", rgb('Orange')};
-clustinfo(9,:) = {16, "FL", rgb('DeepSkyBlue')}; %FL
-clustinfo(10,:) = {17, "MC", rgb('Green')}; %MC
-clustinfo(11,:) = {18, "VL", rgb('DeepPink')}; %VL
+clustinfo(1,:) = {6, "C1", rgb('Brown')}; % VR
+clustinfo(2,:) = {9, "C2", rgb('Purple')}; % eye
+clustinfo(3,:) = {11, "C3", rgb('Cyan')}; % FR
+clustinfo(4,:) = {12, "C4", rgb('Lime')}; %MR
+clustinfo(5,:) = {16, "C5", rgb('Red')}; %VC
+clustinfo(6,:) = {18, "C6", rgb('Blue')}; % FC , SMA
+clustinfo(7,:) = {23, "C7", rgb('Teal')}; %ML
 
 clustinfo.Properties.VariableNames = ["num","BA","color"];
 
 %% now really plot
 
 fig = diplotfig(STUDY, ALLEEG,transpose([clustinfo.num]),...
-        num2cell(clustinfo.color,2) ,1,'view',[1 -1 1],'gui','off','newfig','on'); 
+        num2cell(clustinfo.color,2) ,1,'view',[1 -1 1],'gui','off'); 
