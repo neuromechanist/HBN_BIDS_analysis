@@ -56,6 +56,7 @@ for i=1:length(clusters_to_plot)
         'coordformat',ALLEEG(1).dipfit.coordformat,'color',colors1cls};
     if ~isempty(varargin), dipOptions = [dipOptions varargin]; end
     if centProjLine, projLine = [zeros(1,length(cluster_dip_models(1,:))) 1]; dipOptions = [dipOptions {'projlines',projLine}]; end
+    figure();
     dipplot([cluster_dip_models(1,:), computecentroid(cluster_dip_models)],dipOptions{:});
     set(findobj('facealpha',0.6),'facelighting','phong');
 %     drawnow;
