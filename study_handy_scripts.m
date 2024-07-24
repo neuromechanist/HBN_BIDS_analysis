@@ -218,13 +218,13 @@ STUDY = std_createclust(STUDY, ALLEEG, 'parentcluster', 'on');  % Update the par
     {'dipoles','weight',10},'parentclust');
 %% plot the components
 clustinfo = table;
-clustinfo(1,:) = {6, "C1", rgb('Brown')}; % VR
-clustinfo(2,:) = {9, "C2", rgb('Purple')}; % eye
-clustinfo(3,:) = {11, "C3", rgb('Cyan')}; % FR
-clustinfo(4,:) = {12, "C4", rgb('Lime')}; %MR
-clustinfo(5,:) = {16, "C5", rgb('Red')}; %VC
-clustinfo(6,:) = {18, "C6", rgb('Blue')}; % FC , SMA
-clustinfo(7,:) = {23, "C7", rgb('Teal')}; %ML
+clustinfo(1,:) = {6, "BA4", rgb('Brown')}; % VR
+clustinfo(2,:) = {9, "BA6", rgb('Purple')}; % eye
+clustinfo(3,:) = {11, "BA6-L Lateral", rgb('Cyan')}; % FR
+clustinfo(4,:) = {12, "BA4 Lateral", rgb('Lime')}; %MR
+clustinfo(5,:) = {16, "BA10", rgb('Red')}; %VC
+clustinfo(6,:) = {18, "BA6-L", rgb('Blue')}; % FC , SMA
+clustinfo(7,:) = {23, "BA6-R", rgb('Teal')}; %ML
 
 clustinfo.Properties.VariableNames = ["num","BA","color"];
 
