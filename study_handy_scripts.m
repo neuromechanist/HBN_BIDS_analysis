@@ -216,6 +216,9 @@ STUDY = std_createclust(STUDY, ALLEEG, 'parentcluster', 'on');  % Update the par
     {'spec','npca',3,'weight',1,'freqrange',[3 70] },...
     {'scalpLaplac','npca',3,'weight',1,'abso',0},...
     {'dipoles','weight',10},'parentclust');
+
+%% run optimal k-means using GUI or with 29 clusters and 3std oultiers below
+
 %% plot the components
 clustinfo = table;
 clustinfo(1,:) = {6, "BA4", rgb('Brown')}; % VR
@@ -228,7 +231,27 @@ clustinfo(7,:) = {23, "BA6-R", rgb('Teal')}; %ML
 
 clustinfo.Properties.VariableNames = ["num","BA","color"];
 
-%% now really plot
+% Determine the BA distribution
+if isfield(STUDY.cluster,"BA")
+    STUDY.cluster = clusterBAdist(STUDY.cluster, 3:29); % change the range according to your own results
+end
 
-fig = diplotfig(STUDY, ALLEEG,transpose([clustinfo.num]),...
-        num2cell(clustinfo.color,2) ,1,'view',[1 -1 1],'gui','off'); 
+%% now really plot
+studyName = string(STUDY.task);
+% first let's go for the cluster locations
+clustView.axial = [0 0 1]; clustView.sagittal = [1 0 0];
+clustView.coronal = [0 -1 0]; clustView.perspective = [1 -1 1];
+fig = struct();
+
+for p = transpose(string(fieldnames(clustView)))
+    if isequal(p, "perspective"), centProjLine = 1; else, centProjLine = 0; end
+    fig.(p) = diplotfig(STUDY, ALLEEG,transpose([clustinfo.num]),...
+        num2cell(clustinfo.color,2) ,centProjLine,'view',clustView.(p),'gui','off'); 
+end
+
+for p = transpose(string(fieldnames(clustView)))
+    for v = transpose(string(fieldnames(fig.(p))))
+        print(fig.(p).(v), v+"_"+p+"_"+studyName+".pdf","-dpdf","-r300");
+        print(fig.(p).(v), v+"_"+p+"_"+studyName+".png","-dpng","-r300");
+    end
+end
