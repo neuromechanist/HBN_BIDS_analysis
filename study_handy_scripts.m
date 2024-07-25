@@ -236,7 +236,7 @@ if isfield(STUDY.cluster,"BA")
     STUDY.cluster = clusterBAdist(STUDY.cluster, 3:29); % change the range according to your own results
 end
 
-%% now really plot
+%% Plot the 3D dipole locations
 studyName = string(STUDY.task);
 % first let's go for the cluster locations
 clustView.axial = [0 0 1]; clustView.sagittal = [1 0 0];
@@ -254,4 +254,17 @@ for p = transpose(string(fieldnames(clustView)))
         print(fig.(p).(v), v+"_"+p+"_"+studyName+".pdf","-dpdf","-r300");
         print(fig.(p).(v), v+"_"+p+"_"+studyName+".png","-dpng","-r300");
     end
+end
+
+%% Plot the maps
+studyName = string(STUDY.task);
+for i = 1:height(clustinfo)
+   std_topoplot(STUDY, ALLEEG, 'clusters', clustinfo.num(i));
+   fig.("c"+string(i)+"_topo") = get(groot,'CurrentFigure');
+end
+
+for i = 1:height(clustinfo)
+    fN = "c"+string(i)+"_topo"; % fieldNames
+    print(fig.(fN), fN + "_" + studyName + ".pdf","-dpdf","-r300");
+    print(fig.(fN), fN + "_" + studyName + ".png","-dpng","-r300");
 end
