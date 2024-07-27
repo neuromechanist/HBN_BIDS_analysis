@@ -108,9 +108,10 @@ for s = available_subjs
     for i = idx
         if i == idx(1) % run dipfit
             EEG(i) = pop_dipfit_settings(EEG(i), 'hdmfile', char(HDM), 'mrifile', char(MRI),...
-                'chanfile', char(chan), 'coordformat', 'MNI', 'chansel', 1:EEG(i).nbchan);
-            [~,EEG(i).dipfit.coord_transform] = coregister(EEG(i).chanlocs,EEG(i).dipfit.chanfile,...
-                'chaninfo1', EEG(i).chaninfo,'mesh',EEG(i).dipfit.hdmfile, 'manual', 'off');
+                'chanfile', char(chan), 'coordformat', 'MNI', 'chansel', 1:EEG(i).nbchan, ...
+                'coord_transform',[0.054411 -17.3649 -8.1316 0.075498 0.0031872 -1.5696 11.7145 12.7934 12.213]);
+            % The cooridnation transform comes from once doing the
+            % registration and warping manually with Cz, Nz, LPA, and RPA.
         
             EEG(i) = pop_multifit(EEG(i), [] , 'threshold',100, 'plotopt',{'normlen', 'on'});
         else
@@ -123,7 +124,7 @@ for s = available_subjs
     end
 end
 [ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
-[STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui');
+[STUDY EEG] = pop_savestudy(STUDY, EEG, 'resavedatasets', 'on');
 [EEG, ALLEEG, CURRENTSET] = eeg_retrieve(EEG, 1:length(EEG));
 
 %% run ICLABEL
