@@ -78,7 +78,7 @@ if ~isempty(varargin), dipOptions = [dipOptions varargin]; end
 if centProjLine, projLine = [zeros(1,length(compsall)) ones(1,length(centsall))]; dipOptions = [dipOptions {'projlines',projLine}]; end
 dipplot([compsall centsall],dipOptions{:});
 set(findobj('tag','img'), 'facealpha', 0.6);
-set(findobj('facealpha',1),'facelighting','phong');
+% set(findobj('facealpha',1, 'facelighting','phong'));
 % drawnow;
 fig.dipsNcents = get(groot,'CurrentFigure');
 
