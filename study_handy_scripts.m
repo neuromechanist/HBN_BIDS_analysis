@@ -136,7 +136,7 @@ EEG = pop_iclabel(EEG, 'default');
 
 %% ICLABEL rejection
 pop_editoptions( 'option_parallel', 0);
-EEG = pop_icflag(EEG, [0 0.59;0 NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
+EEG = pop_icflag(EEG, [0 0.69;0 NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
 [ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
 % Check if there is a subject with all comps rejected, then we shoul remove
 % that subject
@@ -174,6 +174,10 @@ for i = 1:length(EEG)
     kept_comps = [kept_comps length(STUDY.datasetinfo(i).comps)];
 end
 disp("total kept comps in datasetinfo:" + sum(kept_comps)/length(STUDY.run) + ", mean:" + string(mean(kept_comps)) +", std:"+ string(std(kept_comps)));
+
+% recreate parent cluster
+STUDY.cluster = [];
+STUDY = std_createclust(STUDY, ALLEEG, 'parentcluster', 'on');
 
 %% Create a new study if task_group and target_task are not the same
 surround_idx = lookup_dataset_info(STUDY, 1 , [1, 2], ["task", "task"], "surroundSupp");
@@ -222,19 +226,17 @@ STUDY = std_createclust(STUDY, ALLEEG, 'parentcluster', 'on');  % Update the par
 
 %% plot the components
 clustinfo = table;
-clustinfo(1,:) = {6, "BA4", rgb('Brown')}; % VR
-clustinfo(2,:) = {9, "BA6", rgb('Purple')}; % eye
-clustinfo(3,:) = {11, "BA6-L Lateral", rgb('Cyan')}; % FR
-clustinfo(4,:) = {12, "BA4 Lateral", rgb('Lime')}; %MR
-clustinfo(5,:) = {16, "BA10", rgb('Red')}; %VC
-clustinfo(6,:) = {18, "BA6-L", rgb('Blue')}; % FC , SMA
-clustinfo(7,:) = {23, "BA6-R", rgb('Teal')}; %ML
+clustinfo(1,:) = {3, "BA7", rgb('Brown')}; % VR
+clustinfo(2,:) = {9, "BA19R", rgb('Purple')}; % eye
+clustinfo(3,:) = {20, "BA4R", rgb('Cyan')}; % FR
+clustinfo(4,:) = {25, "BA6", rgb('Lime')}; %MR
+clustinfo(5,:) = {27, "BA4", rgb('Teal')}; %VC
 
 clustinfo.Properties.VariableNames = ["num","BA","color"];
 
 % Determine the BA distribution
 if isfield(STUDY.cluster,"BA")
-    STUDY.cluster = clusterBAdist(STUDY.cluster, 3:29); % change the range according to your own results
+    STUDY.cluster = clusterBAdist(STUDY.cluster, 3:33); % change the range according to your own results
 end
 
 %% Plot the 3D dipole locations
