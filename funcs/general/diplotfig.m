@@ -58,50 +58,51 @@ for i=1:length(clusters_to_plot)
     if centProjLine, projLine = [zeros(1,length(cluster_dip_models(1,:))) 1]; dipOptions = [dipOptions {'projlines',projLine}]; end
     figure();
     dipplot([cluster_dip_models(1,:), computecentroid(cluster_dip_models)],dipOptions{:});
+    set(findobj('tag','img'), 'facealpha', 0.6);
     set(findobj('facealpha',0.6),'facelighting','phong');
 %     drawnow;
     fig.("c"+string(i)+"_dipLoc") = get(groot,'CurrentFigure');
     clear cluster_dip_models colors1cls
 end
 
-%% plot "togther" plots
-% colors2use
-for i=1:length(clusters_to_plot)
-    colorsall{ct-1+i} = colors2use{i};
-end
-
-% clusters and centroids together.
-dipOptions = {'spheres','on','dipolelength',0,'dipolesize',[20*ones(size(compsall)) 40*ones(size(centsall))],...
-    'mri',ALLEEG(1).dipfit.mrifile,'meshdata',ALLEEG(1).dipfit.hdmfile,'coordformat',ALLEEG(1).dipfit.coordformat,...
-    'color',colorsall};
-if ~isempty(varargin), dipOptions = [dipOptions varargin]; end
-if centProjLine, projLine = [zeros(1,length(compsall)) ones(1,length(centsall))]; dipOptions = [dipOptions {'projlines',projLine}]; end
-dipplot([compsall centsall],dipOptions{:});
-set(findobj('tag','img'), 'facealpha', 0.6);
-% set(findobj('facealpha',1, 'facelighting','phong'));
-% drawnow;
-fig.dipsNcents = get(groot,'CurrentFigure');
-
-% clusters together
-dipOptions = {'spheres','on','dipolelength',0,'dipolesize',20,'mri',ALLEEG(1).dipfit.mrifile,...
-    'meshdata',ALLEEG(1).dipfit.hdmfile,'coordformat',ALLEEG(1).dipfit.coordformat,'color',colorsc_1};
-if ~isempty(varargin), dipOptions = [dipOptions varargin]; end
-dipplot(compsall, dipOptions{:});
-set(findobj('tag','img'), 'facealpha', 0.6);
-set(findobj('facealpha',1),'facelighting','phong');
-% drawnow;
-fig.dips = get(groot,'CurrentFigure');
-
-% centroids together
-dipOptions = {'spheres','on','dipolelength',0,'dipolesize',40,'mri',ALLEEG(1).dipfit.mrifile,...
-    'meshdata',ALLEEG(1).dipfit.hdmfile,'coordformat',ALLEEG(1).dipfit.coordformat,'color',colors2use, 'projwidth', 2, 'projimg', 'on'};
-if ~isempty(varargin), dipOptions = [dipOptions varargin]; end
-if centProjLine, dipOptions = [dipOptions {'projlines','on'}]; end
-dipplot(centsall,dipOptions{:});
-set(findobj('tag','img'), 'facealpha', 0.6);
-set(findobj('facealpha',1),'facelighting','phong');
-% drawnow;
-fig.cents = get(groot,'CurrentFigure');
+%% plot "together" plots
+% % colors2use
+% for i=1:length(clusters_to_plot)
+%     colorsall{ct-1+i} = colors2use{i};
+% end
+% 
+% % clusters and centroids together.
+% dipOptions = {'spheres','on','dipolelength',0,'dipolesize',[20*ones(size(compsall)) 40*ones(size(centsall))],...
+%     'mri',ALLEEG(1).dipfit.mrifile,'meshdata',ALLEEG(1).dipfit.hdmfile,'coordformat',ALLEEG(1).dipfit.coordformat,...
+%     'color',colorsall};
+% if ~isempty(varargin), dipOptions = [dipOptions varargin]; end
+% if centProjLine, projLine = [zeros(1,length(compsall)) ones(1,length(centsall))]; dipOptions = [dipOptions {'projlines',projLine}]; end
+% dipplot([compsall centsall],dipOptions{:});
+% set(findobj('tag','img'), 'facealpha', 0.6);
+% % set(findobj('facealpha',1, 'facelighting','phong'));
+% % drawnow;
+% fig.dipsNcents = get(groot,'CurrentFigure');
+% 
+% % clusters together
+% dipOptions = {'spheres','on','dipolelength',0,'dipolesize',20,'mri',ALLEEG(1).dipfit.mrifile,...
+%     'meshdata',ALLEEG(1).dipfit.hdmfile,'coordformat',ALLEEG(1).dipfit.coordformat,'color',colorsc_1};
+% if ~isempty(varargin), dipOptions = [dipOptions varargin]; end
+% dipplot(compsall, dipOptions{:});
+% set(findobj('tag','img'), 'facealpha', 0.6);
+% set(findobj('facealpha',1),'facelighting','phong');
+% % drawnow;
+% fig.dips = get(groot,'CurrentFigure');
+% 
+% % centroids together
+% dipOptions = {'spheres','on','dipolelength',0,'dipolesize',40,'mri',ALLEEG(1).dipfit.mrifile,...
+%     'meshdata',ALLEEG(1).dipfit.hdmfile,'coordformat',ALLEEG(1).dipfit.coordformat,'color',colors2use, 'projwidth', 2, 'projimg', 'on'};
+% if ~isempty(varargin), dipOptions = [dipOptions varargin]; end
+% if centProjLine, dipOptions = [dipOptions {'projlines','on'}]; end
+% dipplot(centsall,dipOptions{:});
+% set(findobj('tag','img'), 'facealpha', 0.6);
+% set(findobj('facealpha',1),'facelighting','phong');
+% % drawnow;
+% fig.cents = get(groot,'CurrentFigure');
 
 end % end of the main function
 

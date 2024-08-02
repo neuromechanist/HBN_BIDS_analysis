@@ -2,7 +2,7 @@
 addpath('eeglab')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
-study_path = "/home/sshirazi/yahya/cmi_bids_R3_RC2/";
+study_path = "/expanse/projects/nemar/yahya/cmi_bids_R3_RC2/derivatives/eeglab_test_redo/";
 out_path = study_path + "derivatives/eeglab_test_redo/";
 ica_path = out_path + "amica_tmp/";
 mkdir(ica_path)
@@ -18,7 +18,7 @@ if new_study
     CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 else
 % or alternatively load the study
-    [STUDY ALLEEG] = pop_loadstudy('filename', 'surroundSupp.study', 'filepath', char(out_path));
+    [STUDY ALLEEG] = pop_loadstudy('filename', 'surroundSupp_epoched.study', 'filepath', char(out_path));
     CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 end
 
