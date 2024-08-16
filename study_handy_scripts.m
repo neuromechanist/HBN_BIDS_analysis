@@ -2,7 +2,7 @@
 addpath('eeglab')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
-study_path = "/expanse/projects/nemar/yahya/cmi_bids_R3_RC2/derivatives/eeglab_test_redo/";
+study_path = "/expanse/projects/nemar/yahya/cmi_bids_R3_RC2/";
 out_path = study_path + "derivatives/eeglab_test_redo/";
 ica_path = out_path + "amica_tmp/";
 mkdir(ica_path)
