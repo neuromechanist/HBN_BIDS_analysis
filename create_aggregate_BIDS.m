@@ -21,7 +21,7 @@ convert_HBN2BIDS([],1);
 
 
 %% seperating seqLearning
-target_tasks = ["vis_learn8t"];
+target_tasks = ["vis_learn6t", "vis_learn8t"];
 for t = target_tasks
     convert_HBN2BIDS(t);
 end
