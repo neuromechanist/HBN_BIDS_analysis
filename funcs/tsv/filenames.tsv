@@ -15,3 +15,5 @@ Video3	Video3.mat	Video3.set
 Video4	Video4.mat	Video4.set
 WISC_ProcSpeed	WISC_ProcSpeed.mat	symbolSearch.set
 vis_learn	vis_learn.mat	seqLearning.set
+vis_learn6t	vis_learn6t.mat	seqLearning6target.set
+vis_learn8t	vis_learn8t.mat	seqLearning8target.set

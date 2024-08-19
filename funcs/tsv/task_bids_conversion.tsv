@@ -1,13 +1,15 @@
-init_name,BIDS_name,run_num
-RestingState,RestingState,NaN
-Video_DM,DespicableMe,NaN
-Video_FF,FunwithFractals,NaN
-Video_TP,ThePresent,NaN
-Video_WK,DiaryOfAWimpyKid,NaN
-SAIIT_2AFC_Block1,contrastChangeDetection,1
-SAIIT_2AFC_Block2,contrastChangeDetection,2
-SAIIT_2AFC_Block3,contrastChangeDetection,3
-SurroundSupp_Block1,surroundSupp,1
-SurroundSupp_Block2,surroundSupp,2
-vis_learn,seqLearning,NaN
-WISC_ProcSpeed,symbolSearch,NaN
+init_name	BIDS_name	run_num
+RestingState	RestingState	NaN
+Video_DM	DespicableMe	NaN
+Video_FF	FunwithFractals	NaN
+Video_TP	ThePresent	NaN
+Video_WK	DiaryOfAWimpyKid	NaN
+SAIIT_2AFC_Block1	contrastChangeDetection	1
+SAIIT_2AFC_Block2	contrastChangeDetection	2
+SAIIT_2AFC_Block3	contrastChangeDetection	3
+SurroundSupp_Block1	surroundSupp	1
+SurroundSupp_Block2	surroundSupp	2
+vis_learn	seqLearning	NaN
+WISC_ProcSpeed	symbolSearch	NaN
+vis_learn6t	seqLearning6target	NaN
+vis_learn8t	seqLearning8target	NaN
