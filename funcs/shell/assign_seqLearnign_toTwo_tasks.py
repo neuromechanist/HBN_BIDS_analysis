@@ -13,10 +13,10 @@ df = pd.read_csv(args.input, sep='\t')
 
 # Iterate through the DataFrame and update the 6_target and 8_target columns
 for index, row in df.iterrows():
-    if row['6_target'] == True:
+    if row['6_target'] is True:
         df.at[index, '6_target'] = row['seqLearning']
         df.at[index, '8_target'] = 'unavailable'
-    elif row['8_target'] == True:
+    elif row['8_target'] is True:
         df.at[index, '8_target'] = row['seqLearning']
         df.at[index, '6_target'] = 'unavailable'
 
