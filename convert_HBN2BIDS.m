@@ -17,13 +17,13 @@ clearvars -except target_tasks write_qtable
 if ~exist("target_tasks","var") || isempty(target_tasks)
     target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", ...
     "SAIIT_2AFC_Block1", "SAIIT_2AFC_Block2", "SAIIT_2AFC_Block3",...
-    "SurroundSupp_Block1", "SurroundSupp_Block2", "vis_learn", "WISC_ProcSpeed"];
+    "SurroundSupp_Block1", "SurroundSupp_Block2", "vis_learn6t", "vis_learn8t", "WISC_ProcSpeed"];
 end
 
 if ~exist("write_qtable","var") || isempty(write_qtable), write_qtable = 0; end
 if write_qtable, writePInfoOnly = 'on'; else, writePInfoOnly = 'off'; end
 
-target_release = "R9";  % Can be also a string vector, but change the export path.
+target_release = "R3";  % Can be also a string vector, but change the export path.
 num_subjects = -1; % if -1, all subjects in the release will be added.
 
 p2l = init_paths("linux", "expanse", "HBN", 1, 1);
