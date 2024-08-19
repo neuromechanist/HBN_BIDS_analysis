@@ -30,7 +30,7 @@ p2l = init_paths("linux", "expanse", "HBN", 1, 1);
 addpath(genpath(p2l.codebase))
 f2l.elocs = p2l.eegRepo + "GSN_HydroCel_129.sfp";  % f2l = file to load
 
-plist = readtable("participants_augmented_filesize.csv", "FileType", "text");
+plist = readtable("participants_augmented_filesize_twoSeqLearning.csv", "FileType", "text");
 plist.Full_Pheno = string(plist{:,"Full_Pheno"}); % to change the variable type to string
 plist.Commercial_Use = string(plist{:,"Commercial_Use"});
 plist.Sex = string(plist{:,"Sex"});
