@@ -5,11 +5,11 @@
     "Units": "seconds"
   },
   "duration": {
-    "Description": "Duration of the event. In this dataset, most of the duration values are arbitrarily set to 1.",
+    "Description": "Duration of the event, set typically to n/a. Instead, the duration of the event is determined by the onset/offset flags or the next event.",
     "Units": "seconds"
   },
   "sample": {
-    "Description": "Position (latency) of event marker relative to the start, in data frames."
+    "Description": "Temporal position (latency) of event marker relative to the start, in data frames."
   },
   "value": {
     "Description": "The event marker value (type).",
@@ -24,13 +24,13 @@
         "left_buttonPress": "The left mouse button was pressed"
     },
     "HED": {
-      "contrastChangeB1_start": "(Def/contrastChange-start, Onset)",
-      "contrastChangeB2_start": "(Def/contrastChange-start, Onset)",
-      "contrastChangeB3_start": "(Def/contrastChange-start, Onset)",
-      "right_target": "(Def/right-target), (Delay/2400 ms, {feedback}, Duration/400 ms)",
-      "left_target": "(Def/left-target, (Delay/2400 ms, {feedback}, Duration/400 ms)",
-      "right_buttonPress": "(Agent-Action, (Press, (Right, Mouse-button), (Right, Index-finger))",
-      "left_buttonPress": "(Agent-Action, (Press, (Left, Mouse-button), (Left, Index-finger))"
+      "contrastChangeB1_start": "(Def/contrastChange, Onset)",
+      "contrastChangeB2_start": "(Def/contrastChange, Onset)",
+      "contrastChangeB3_start": "(Def/contrastChange, Onset)",
+      "right_target": "((Def/right-target), Duration/1600 ms), (Delay/1600 ms, (Def/right-comeback), Duration/800 ms), (Delay/2400 ms, ({feedback}), Duration/400 ms)",
+      "left_target": "((Def/left-target), Duration/1600 ms), (Delay/1600 ms, (Def/left-comeback), Duration/800 ms), (Delay/2400 ms, ({feedback}), Duration/400 ms)",
+      "right_buttonPress": "(Agent-Action, (Press, (Right, Mouse-button), (Right, Index-finger)))",
+      "left_buttonPress": "(Agent-Action, (Press, (Left, Mouse-button), (Left, Index-finger)))"
     }
   },
   "event_code": {
@@ -53,17 +53,18 @@
       "sad_face": "A red sad face would show at the middle of the screen for 400 ms"
     },
     "HED":{
-      "smiley_face": "(Visual-presentation, (Feedback, True, (Forground-view, (Center-of, Computer-screen), (Circle, Green), Label/Smiley-face)))",
-      "sad_face": "(Visual-presentation, (Feedback, False, (Forground-view, (Center-of, Computer-screen), (Circle, Red), Label/Sad-face)))"
+      "smiley_face": "(Visual-presentation, (Feedback, True), (Foreground-view, (Center-of, Computer-screen), (Circle, Green)), Label/Smiley-face)",
+      "sad_face": "(Visual-presentation, (Feedback, False), (Foreground-view, (Center-of, Computer-screen), (Circle, Red)), Label/Sad-face)"
     }
   },
   "hed_defs":{
     "Description": "Metadata dictionary for defining the stimulus",
     "HED":{
-      "contrastChange-start_def": "(Definition/contrastChange-start,(Visual-presentation, (Background-view, Gray), (Foreground-view, (Dots, Item-count/1, White, (Center-of, Computer-screen)))), Recording)",
-      "right-target": "(Definition/right-target, (Visual-presentation, (Background-view, Gray), (Foreground-view, ((Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Rightward, Label/Grating), (Increasing, Luminance-Contrast)), (Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Leftward, Label/Grating), (Decreasing, Luminance-Contrast)),  Duration/1600 ms),(Delay/1600 ms, (Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Rightward, Label/Grating), (Decreasing, Luminance-Contrast)), (Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Leftward, Label/Grating), (Increasing, Luminance-Contrast)), Duration/800 ms))))",
-      "left-target": "(Definition/left-target, (Visual-presentation,  (Background-view, Gray),  (Foreground-view, ((Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Leftward, Label/Grating), (Increasing, Luminance-Contrast)), (Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Rigthward, Label/Grating), (Decreasing, Luminance-Contrast)), Duration/1600 ms), (Delay/1600 ms, (Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Leftward, Label/Grating), (Decreasing, Luminance-Contrast)), (Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Rightward, Label/Grating), (Increasing, Luminance-Contrast)), Duration/800 ms))))"
-
+      "contrastChange": "(Definition/contrastChange,((Visual-presentation, (Background-view, Gray), (Foreground-view, (Dots, Item-count/1, White, (Center-of, Computer-screen)))), Recording))",
+      "right-target": "(Definition/right-target, (Visual-presentation, (Background-view, Gray), (Foreground-view, ((Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Rightward, Label/Grating), (Increasing, Luminance-Contrast)), (Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Leftward, Label/Grating), (Decreasing, Luminance-Contrast))))))",
+      "right-comeback": "(Definition/right-comeback, (Visual-presentation, (Background-view, Gray), (Foreground-view, ((Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Rightward, Label/Grating), (Decreasing, Luminance-Contrast)), (Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Leftward, Label/Grating), (Increasing, Luminance-Contrast))))))",
+      "left-target": "(Definition/left-target, (Visual-presentation, (Background-view, Gray), (Foreground-view, ((Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Leftward, Label/Grating), (Increasing, Luminance-Contrast)), (Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Rightward, Label/Grating), (Decreasing, Luminance-Contrast))))))",
+      "left-comeback": "(Definition/left-comeback, (Visual-presentation, (Background-view, Gray), (Foreground-view, ((Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Leftward, Label/Grating), (Decreasing, Luminance-Contrast)), (Circle, (Center-of, Computer-screen), (Radius, Angle/6 degree), (Pattern, Rightward, Label/Grating), (Increasing, Luminance-Contrast))))))"
     }
   }
 }

@@ -1,5 +1,5 @@
 ## Overview
-This is **Release 3** of the EEG and Eye-Tracking Section of the Child Mind Network Healthy Brain Network (HBN) Project, curated into the Brain Imaging Data Structure (BIDS) format. This dataset is part of a larger initiative to advance the understanding of child and adolescent mental health through collecting and analyzing neuroimaging, behavioral, and genetic data (Alexander et al., Sci Data 2017).
+This is **Release 3** of HBN-EEG, the EEG and (soon-released) Eye-Tracking Section of the Child Mind Network Healthy Brain Network (HBN) Project, curated into the Brain Imaging Data Structure (BIDS) format. This dataset is part of a larger initiative to advance the understanding of child and adolescent mental health through collecting and analyzing neuroimaging, behavioral, and genetic data (Alexander et al., Sci Data 2017).
 ## Data Description
 This dataset comprises electroencephalogram (EEG) data and behavioral responses collected during EEG experiments from participants involved in the HBN project.
 ### Contents

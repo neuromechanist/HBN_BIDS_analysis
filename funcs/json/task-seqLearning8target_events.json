@@ -5,11 +5,11 @@
     "Units": "seconds"
   },
   "duration": {
-    "Description": "Duration of the event. In this dataset, most of the duration values are arbitrarily set to 1.",
+    "Description": "Duration of the event, set typically to n/a. Instead, the duration of the event is determined by the onset/offset flags or the next event.",
     "Units": "seconds"
   },
   "sample": {
-    "Description": "Position (latency) of event marker relative to the start, in data frames."
+    "Description": "Temporal position (latency) of event marker relative to the start, in data frames."
   },
   "value": {
     "Description": "The event marker value (type).",
@@ -39,12 +39,12 @@
         "dot_no8_OFF": "Dot number 8 turned white"
     },
     "HED":{
-      "seqLearning_start": "(Def/seqLearning-start, Onset)",
-      "learningBlock_1": "(Def/learningBlock/1, Onset)",
-      "learningBlock_2": "(Def/learningBlock/2, Onset)",
-      "learningBlock_3": "(Def/learningBlock/3, Onset)",
-      "learningBlock_4": "(Def/learningBlock/4, Onset)",
-      "learningBlock_5": "(Def/learningBlock/5, Onset)",
+      "seqLearning_start": "(Duration/1 s, (Visual-presentation, (Background-view, Gray), (Foreground-view, (White, (Sentence, Label/THE-TASK-STARTS-NOW))))), (Visual-presentation, (Background-view, Gray), (Foreground-view, (White, (Sentence, Label/THE-TASK-STARTS-NOW)))), Recording",
+      "learningBlock_1": "(Def/learningBlock, Onset), (Delay/2 s, ((White, Pattern,  Circle), {target_count}))",
+      "learningBlock_2": "(Def/learningBlock, Onset), (Delay/2 s, ((White, Pattern,  Circle), {target_count}))",
+      "learningBlock_3": "(Def/learningBlock, Onset), (Delay/2 s, ((White, Pattern,  Circle), {target_count}))",
+      "learningBlock_4": "(Def/learningBlock, Onset), (Delay/2 s, ((White, Pattern,  Circle), {target_count}))",
+      "learningBlock_5": "(Def/learningBlock, Onset), (Delay/2 s, ((White, Pattern,  Circle), {target_count}))",
       "dot_no1_ON": "(Def/dot-no-1, Onset)",
       "dot_no1_OFF": "(Def/dot-no-1, Offset)",
       "dot_no2_ON": "(Def/dot-no-1, Onset)",
@@ -99,19 +99,30 @@
     "Description": "The correct sequence (correct sequence is the same for all blocks)",
     "HED": "Label/#"
   },
+  "target_count":{
+    "Description": "The number of target circles in the sequence",
+    "Levels": {
+      "6": "The sequence has 6 targets",
+      "8": "The sequence has 8 targets"
+    },
+    "HED": {
+      "6": "(Item-count/6)",
+      "8": "(Item-count/8)"
+    }
+  },
   "hed_defs":{
     "Description": "Metadata dictionary for defining the stimulus",
     "HED":{
-      "seqLearning_start_def": "(Definition/seqLearning_start,(Visual-presentation, (Background-view, Gray), (Foreground-view, (White, (Sentence, Label/THE TASK STARTS NOW!)))), Recording)",
-      "learningBlock_def": "(Definition/learningBlock/#, (Visual-presentation, (Background-view, Gray), (Foreground-view, (Timed, Duration/2 s, (White, (Sentence, Label/ROUND 1))), (Timed, Delay/2 s, ((White, Pattern,  Circle), Item-count/8)))))",
-      "dot-no-1_def": "(Definition/dot-no-1, (Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/0 degree), Label/Filled)))",
-      "dot-no-2_def": "(Definition/dot-no-1, (Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/(-1/{target_count})*360 degree), Label/Filled)))",
-      "dot-no-3_def": "(Definition/dot-no-1, (Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/(-2/{target_count}), Label/Filled)))",
-      "dot-no-4_def": "(Definition/dot-no-1, (Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/(-3/{target_count}), Label/Filled)))",
-      "dot-no-5_def": "(Definition/dot-no-1, (Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/(-4/{target_count}), Label/Filled)))",
-      "dot-no-6_def": "(Definition/dot-no-1, (Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/(-5/{target_count}), Label/Filled)))",
-      "dot-no-7_def": "(Definition/dot-no-1, (Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/(-6/{target_count}), Label/Filled)))",
-      "dot-no-8_def": "(Definition/dot-no-1, (Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/(-7/{target_count}), Label/Filled)))"
+      "learningBlock": "(Definition/learningBlock, (Visual-presentation, (Background-view, Gray)))",
+      "dot-no-1_def": "(Definition/dot-no-1, ((Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/0 degree), Label/Filled))))",
+      "dot-no-2_def": "(Definition/dot-no-2, ((Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/-45 degree), Label/Filled))))",
+      "dot-no-3_def": "(Definition/dot-no-3, ((Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/-90 degree), Label/Filled))))",
+      "dot-no-4_def": "(Definition/dot-no-4, ((Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/-135 degree), Label/Filled))))",
+      "dot-no-5_def": "(Definition/dot-no-5, ((Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/-180 degree), Label/Filled))))",
+      "dot-no-6_def": "(Definition/dot-no-6, ((Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/-225 degree), Label/Filled))))",
+      "dot-no-7_def": "(Definition/dot-no-7, ((Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/-270 degree), Label/Filled))))",
+      "dot-no-8_def": "(Definition/dot-no-8, ((Visual-presentation, (White, Circle, (Horizontally-oriented, Angle/-315 degree), Label/Filled))))"
+
     }
   }
 }

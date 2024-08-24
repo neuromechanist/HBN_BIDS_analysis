@@ -5,11 +5,11 @@
     "Units": "seconds"
   },
   "duration": {
-    "Description": "Duration of the event. In this dataset, most of the duration values are arbitrarily set to 1.",
+    "Description": "Duration of the event, set typically to n/a. Instead, the duration of the event is determined by the onset/offset flags or the next event.",
     "Units": "seconds"
   },
   "sample": {
-    "Description": "Position (latency) of event marker relative to the start, in data frames."
+    "Description": "Temporal position (latency) of event marker relative to the start, in data frames."
   },
   "value": {
     "Description": "The event marker value (type).",
@@ -19,9 +19,9 @@
       "resting_start": "Recording of Resting State task started"
     },
     "HED": {
-      "instructed_toOpenEyes": "Sensory-event, Instructional, Cue, (Auditory-presentation, Loudspeaker, ((Human-agent, Female), (Speak, (Sentence, Label/now open your eyes))))",
-      "instructed_toCloseEyes": "Sensory-event, Instructional, Cue, (Auditory-presentation, Loudspeaker, ((Human-agent, Female), (Speak, (Sentence, Label/now close your eyes))))",
-      "resting_start": "Def/resting-start, Onset"
+      "instructed_toOpenEyes": "Sensory-event, Instructional, Cue, (Auditory-presentation, Loudspeaker, ((Human-agent, Female), (Speak, (Sentence, Label/now-open-your-eyes))))",
+      "instructed_toCloseEyes": "Sensory-event, Instructional, Cue, (Auditory-presentation, Loudspeaker, ((Human-agent, Female), (Speak, (Sentence, Label/now-close-your-eyes))))",
+      "resting_start": "(Def/resting-start, Onset)"
     }
   },
   "event_code": {
@@ -35,7 +35,7 @@
   "hed_definitions": {
     "Description": "",
     "HED": {
-      "resting_state_def": "(Definition/resting-start, (Visual-presentation, (Foreground-view, (Black, Cross), (Center-of, Computer-screen)), (Background-view, White)), Recording)"
+      "resting_state_def": "(Definition/resting-start, ((Visual-presentation, (Foreground-view, (Black, Cross), (Center-of, Computer-screen)), (Background-view, White)), Recording))"
   }
   }
 }

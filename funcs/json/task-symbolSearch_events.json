@@ -5,11 +5,11 @@
     "Units": "seconds"
   },
   "duration": {
-    "Description": "Duration of the event. In this dataset, most of the duration values are arbitrarily set to 1.",
+    "Description": "Duration of the event, set typically to n/a. Instead, the duration of the event is determined by the onset/offset flags or the next event.",
     "Units": "seconds"
   },
   "sample": {
-    "Description": "Position (latency) of event marker relative to the start, in data frames."
+    "Description": "Temporal position (latency) of event marker relative to the start, in data frames."
   },
   "value": {
     "Description": "The event marker value (type).",
@@ -39,8 +39,8 @@
       "1": "True, symbol was found"
     },
     "HED": {
-      "0": "(Label/Response value, False)",
-      "1": "(Label/Response value, True)"
+      "0": "(Label/response-value, False)",
+      "1": "(Label/response-value, True)"
     }
   },
   "correct_answer":{
@@ -50,14 +50,14 @@
       "1": "Symbol was present in the search query"
     },
     "HED": {
-      "0": "(Label/Correct value, False)",
-      "1": "(Label/Correct value, True)"
+      "0": "(Label/correct-value, False)",
+      "1": "(Label/correct-value, True)"
     }
   },
   "hed_defs":{
     "Description": "Metadata dictionary for defining the stimulus",
     "HED":{
-      "symbolSearch-start_def": "(Definition/symbolSearch-start,(Visual-presentation, (Background-view, White)), Recording)",
+      "symbolSearch-start_def": "(Definition/symbolSearch-start,((Visual-presentation, (Background-view, White)), Recording))",
       "new-page_def": "(Definition/new-page, (Visual-presentation, (Questionnaire, (Label/Symbol, Item-count/7), Item-count/15)))"
     }
   }}

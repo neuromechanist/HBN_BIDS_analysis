@@ -5,11 +5,11 @@
     "Units": "seconds"
   },
   "duration": {
-    "Description": "Duration of the event. In this dataset, most of the duration values are arbitrarily set to 1.",
+    "Description": "Duration of the event, set typically to n/a. Instead, the duration of the event is determined by the onset/offset flags or the next event.",
     "Units": "seconds"
   },
   "sample": {
-    "Description": "Position (latency) of event marker relative to the start, in data frames."
+    "Description": "Temporal position (latency) of event marker relative to the start, in data frames."
   },
   "value": {
     "Description": "The event marker value (type).",
@@ -32,7 +32,7 @@
   "hed_defs":{
     "Description": "Metadata dictionary for defining the stimulus",
     "HED":{
-      "play-video_def" : "(Definition/play-video,(Visual-presentation, Computer-screen, (Movie, Temporal-rate/24 Hz)), (Auditory-presentation, Loudspeaker))"
+      "play-video_def" : "(Definition/play-video,((Visual-presentation, Computer-screen, (Movie, Temporal-rate/24 Hz)), (Auditory-presentation, Loudspeaker)))"
     }
   }
 }
