@@ -5,11 +5,9 @@
   "ReferencesAndLinks": ["https://dx.doi.org/10.1038/sdata.2017.181",
                           "https://dx.doi.org/10.1038/sdata.2017.40",
                           "add_BIDS_sdata_DOI_here"],
-  "HowToAcknowledge": ["Please cite the following papers",
-                      "https://dx.doi.org/10.1038/sdata.2017.181",
-                      "https://dx.doi.org/10.1038/sdata.2017.40",
-                      "add_BIDS_sdata_DOI_here"],
-  "EthicsApprovals": ["This study was approved by the Chesapeake Institutional Review Board (https://www.chesapeakeirb.com/). Prior to conducting the research, written informed consent is obtained from participants ages 18 or older. For participants younger than 18, written consent is obtained from their legal guardians and written assent obtained from the participant."],
+  "HowToAcknowledge": "Please cite the following papers when using this dataset: https://dx.doi.org/10.1038/sdata.2017.181, https://dx.doi.org/10.1038/sdata.2017.40",
+
+  "EthicsApprovals": "This study was approved by the Chesapeake Institutional Review Board (https://www.chesapeakeirb.com/). Prior to conducting the research, written informed consent is obtained from participants ages 18 or older. For participants younger than 18, written consent is obtained from their legal guardians and written assent obtained from the participant.",
   "BIDSVersion": "1.9.0",
   "HEDVersion": "8.3.0",
   "SourceDatesets": [
