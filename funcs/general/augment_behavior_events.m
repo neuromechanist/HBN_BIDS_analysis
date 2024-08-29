@@ -15,7 +15,8 @@ function EEG = augment_behavior_events(EEG,filename, beh_path)
 % (c) Seyed Yahya Shirazi, 09/2023 SCCN, INC, UCSD
 
 %% initialize
-target_files = ["WISC_ProcSpeed.mat","vis_learn.mat","SurroundSupp_Block1.mat", "SurroundSupp_Block2.mat",...
+target_files = ["WISC_ProcSpeed.mat","vis_learn.mat", "vis_learn6t.mat", "vis_learn8t.mat", ...
+    "SurroundSupp_Block1.mat", "SurroundSupp_Block2.mat",...
     "SAIIT_2AFC_Block1.mat", "SAIIT_2AFC_Block2.mat", "SAIIT_2AFC_Block3.mat"];
 if ~contains(filename, target_files), return, end
 subject = string(EEG.subject);
@@ -40,7 +41,7 @@ if filename == "WISC_ProcSpeed.mat"  % symbol search task
         EEG.event(eeg_event_idx(i)).correct_answer = num2str(correct_resp_vector(i));
     end
 % Visual (Sequence) learning task
-elseif filename == "vis_learn.mat"
+elseif filename == "vis_learn.mat" || filename == "vis_learn6t.mat" || filename == "vis_learn8t.mat"
     correct_resp = beh_event.par.sequence;
     subj_resp = beh_event.par.resp_click;
     % find the code for the last dot turning off

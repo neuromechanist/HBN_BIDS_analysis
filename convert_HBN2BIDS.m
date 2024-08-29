@@ -17,20 +17,20 @@ clearvars -except target_tasks write_qtable
 if ~exist("target_tasks","var") || isempty(target_tasks)
     target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", ...
     "SAIIT_2AFC_Block1", "SAIIT_2AFC_Block2", "SAIIT_2AFC_Block3",...
-    "SurroundSupp_Block1", "SurroundSupp_Block2", "vis_learn", "WISC_ProcSpeed"];
+    "SurroundSupp_Block1", "SurroundSupp_Block2", "vis_learn6t", "vis_learn8t", "WISC_ProcSpeed"];
 end
 
 if ~exist("write_qtable","var") || isempty(write_qtable), write_qtable = 0; end
 if write_qtable, writePInfoOnly = 'on'; else, writePInfoOnly = 'off'; end
 
-target_release = "R9";  % Can be also a string vector, but change the export path.
+target_release = "R3";  % Can be also a string vector, but change the export path.
 num_subjects = -1; % if -1, all subjects in the release will be added.
 
 p2l = init_paths("linux", "expanse", "HBN", 1, 1);
 addpath(genpath(p2l.codebase))
 f2l.elocs = p2l.eegRepo + "GSN_HydroCel_129.sfp";  % f2l = file to load
 
-plist = readtable("participants_augmented_filesize.tsv", "FileType", "text");
+plist = readtable("participants_augmented_filesize_twoSeqLearning.csv", "FileType", "text");
 plist.Full_Pheno = string(plist{:,"Full_Pheno"}); % to change the variable type to string
 plist.Commercial_Use = string(plist{:,"Commercial_Use"});
 plist.Sex = string(plist{:,"Sex"});
@@ -70,8 +70,11 @@ f2l.error_summary = remediedrepo + "unav_dataset-summary.mat";
 %% Define tasks
 % Define the BIDS-name couterpart and run numbers
 bids_table = readtable("task_bids_conversion.tsv","FileType","text");
-BIDS_task_name = bids_table{logical(sum(target_tasks == bids_table{:,"init_name"},2)),"BIDS_name"}';
-BIDS_run_seq = bids_table{logical(sum(target_tasks == bids_table{:,"init_name"},2)),"run_num"}';
+BIDS_task_name = {}; BIDS_run_seq = [];
+for t = target_tasks
+    BIDS_task_name{end+1} = bids_table{bids_table{:, "init_name"}==t, "BIDS_name"}{:};
+    BIDS_run_seq(end+1) = bids_table{bids_table{:, "init_name"}==t, "run_num"};
+end
 
 for i = 1:length(BIDS_task_name)
     if isnan(BIDS_run_seq(i))

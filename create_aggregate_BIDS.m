@@ -16,5 +16,12 @@ for t = target_tasks
     convert_HBN2BIDS(t);
 end
 
-% create the nice participant.tsv file
+%% create the nice participant.tsv file
 convert_HBN2BIDS([],1);
+
+
+%% seperating seqLearning
+target_tasks = ["vis_learn6t", "vis_learn8t"];
+for t = target_tasks
+    convert_HBN2BIDS(t);
+end

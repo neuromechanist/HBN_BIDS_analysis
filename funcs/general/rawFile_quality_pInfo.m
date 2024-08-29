@@ -32,7 +32,7 @@ pInfo_subjs = string(pInfo(2:end,1))';
 pInfo_cols = string(pInfo(1,:));
 qchecks = ["data_pnts", "event_cnt", "key_event_exist", "quality_checks"];
 rm_id = [];
-
+quality_table(:,"seqLearning") = [];  % remove sequence learning, as it is broken up to two tasks.
 % This should not happed, but we need to first check if there is any
 % heterogenity inthe two subject lists
 unique_subjs = setxor(qt_subjs, pInfo_subjs);
@@ -64,6 +64,12 @@ for t = tasks
     outlier_indices = [];
     qtable = quality_table.(t);
     qtable.Properties.RowNames = quality_table.Properties.RowNames;
+    % treat any missing values as n/a in quality_checks
+    qtable{ismissing(qtable(:, "quality_checks")), "quality_checks"} = "n/a";
+    % treat zeros in numeric columns as NaN
+    col_names = string(qtable.Properties.VariableNames);
+    col_names(col_names=="quality_checks") =[]; col_names(col_names=="key_events_exist") =[];
+    for c = col_names, qtable{qtable{:, c}==0, c} = NaN; end
     % write the table
     if exist("save_path","var")
         writetable(qtable, save_path + t + "_quality_table.tsv", "FileType", "text", "WriteRowNames",true)
