@@ -21,7 +21,7 @@
   "Funding": ["See https://childmind.org/science/global-open-science/healthy-brain-network/#donors",
               "NIH/NIMH R01MH125934 for BIDS data preparation"],
   "GeneratedBy":[ {
-    "Name": "bids-matlab-tools",
+    "Name": "EEG-BIDS",
     "Version": "8.0"
   }]
 }

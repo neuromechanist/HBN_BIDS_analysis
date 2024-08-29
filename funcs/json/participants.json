@@ -32,7 +32,7 @@
     "Description": "Does the participant have a full phenotypic file?"
   },
   "p_factor": {
-    "Description": "Single latent score indicatve of comorbid features of psychiatric disorders"
+    "Description": "Single latent score indicatve of comorbid features of psychiatric disorders"
   },
   "attention": {
     "Description": "Focuses on attentional capacities or deficits, crucial in conditions like ADHD, affecting focus and concentration."
