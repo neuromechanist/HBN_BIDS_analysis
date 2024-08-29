@@ -72,7 +72,7 @@ f2l.error_summary = remediedrepo + "unav_dataset-summary.mat";
 bids_table = readtable("task_bids_conversion.tsv","FileType","text");
 BIDS_task_name = {}; BIDS_run_seq = [];
 for t = target_tasks
-    BIDS_task_name{end+1} = bids_table{bids_table{:, "init_name"}==t, "BIDS_name"};
+    BIDS_task_name{end+1} = bids_table{bids_table{:, "init_name"}==t, "BIDS_name"}{:};
     BIDS_run_seq(end+1) = bids_table{bids_table{:, "init_name"}==t, "run_num"};
 end
 
