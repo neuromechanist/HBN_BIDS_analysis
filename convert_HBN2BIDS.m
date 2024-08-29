@@ -70,8 +70,11 @@ f2l.error_summary = remediedrepo + "unav_dataset-summary.mat";
 %% Define tasks
 % Define the BIDS-name couterpart and run numbers
 bids_table = readtable("task_bids_conversion.tsv","FileType","text");
-BIDS_task_name = bids_table{logical(sum(target_tasks == bids_table{:,"init_name"},2)),"BIDS_name"}';
-BIDS_run_seq = bids_table{logical(sum(target_tasks == bids_table{:,"init_name"},2)),"run_num"}';
+BIDS_task_name = {}; BIDS_run_seq = [];
+for t = target_tasks
+    BIDS_task_name{end+1} = bids_table{bids_table{:, "init_name"}==t, "BIDS_name"};
+    BIDS_run_seq(end+1) = bids_table{bids_table{:, "init_name"}==t, "run_num"};
+end
 
 for i = 1:length(BIDS_task_name)
     if isnan(BIDS_run_seq(i))
