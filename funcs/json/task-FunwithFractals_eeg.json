@@ -1,4 +1,10 @@
 {
+  "TaskName": "FunwithFractals",
+  "SamplingFrequency": 500,
+  "PowerLineFrequency": 60,
+  "EEGReference": "Cz",
+  "RecordingType": "continuous",
+  "SoftwareFilters": "n/a",
   "InstitutionName": "Child Mind Institute",
   "InstitutionAddress": "101 E 56th St, New York, NY 10022",
   "Manufacturer": "Magtism EGI",
