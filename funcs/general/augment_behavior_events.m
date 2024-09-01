@@ -37,7 +37,11 @@ if filename == "WISC_ProcSpeed.mat"  % symbol search task
         error("Behavior event count is different from the EEG.event counts. Please check!")
     end
     for i = 1:num_beh_resp
-        EEG.event(eeg_event_idx(i)).user_answer = num2str(subj_resp_vector(i));
+        if subj_resp_vector(i) == 2
+            EEG.event(eeg_event_idx(i)).user_answer = 'n/a';  % 2 does not have a meaning in this test
+        else
+            EEG.event(eeg_event_idx(i)).user_answer = num2str(subj_resp_vector(i));
+        end
         EEG.event(eeg_event_idx(i)).correct_answer = num2str(correct_resp_vector(i));
     end
 % Visual (Sequence) learning task
@@ -57,8 +61,10 @@ elseif filename == "vis_learn.mat" || filename == "vis_learn6t.mat" || filename 
             EEG.event(i).target_count = num2str(6);
         end
         if any(str2double(EEG.event(i).event_code) == type_toAdd_event)
-            EEG.event(i-1).user_answer = num2str(subj_resp(str2double(EEG.event(i).event_code) == type_toAdd_event,:));
-            EEG.event(i-1).correct_answer = num2str(correct_resp);
+            % subj response
+            subj_response = regexprep(num2str(subj_resp(str2double(EEG.event(i).event_code) == type_toAdd_event,:)), '\s+', '-');
+            EEG.event(i-1).user_answer = subj_response;
+            EEG.event(i-1).correct_answer = regexprep(num2str(correct_resp), '\s+', '-');
         end
     end
 % Surround suppresstion tasks
