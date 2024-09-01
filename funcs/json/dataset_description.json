@@ -1,7 +1,7 @@
 {
   "Name": "Healthy Brain Network - Release 3",
   "License": "CC BY-NC-SA 4.0 or CC-BY-SA 4.0 (See participants.tsv)",
-  "Authors": ["Seyed Yahya Shirazi", "...", "Alexandre Franco", "Arnaud Delorme", "Michael Milham", "Scott Makeig"], 
+  "Authors": ["Seyed Yahya Shirazi", "Alexandre Franco", "Maurício Scopel Hoffmann", "Nathalia B. Esper", "Dung Truong", "Arnaud Delorme", "Michael Milham", "Scott Makeig"], 
   "ReferencesAndLinks": ["https://dx.doi.org/10.1038/sdata.2017.181",
                           "https://dx.doi.org/10.1038/sdata.2017.40",
                           "add_BIDS_sdata_DOI_here"],
@@ -17,8 +17,9 @@
   "DatasetType": "raw",
   "Funding": ["See https://childmind.org/science/global-open-science/healthy-brain-network/#donors",
               "NIH/NIMH R01MH125934 for BIDS data preparation"],
+  "Acknowledgements": "We thank the participants and their families for their time and effort. We also thank the NeuroScience Gateway team for providing computational resources.",
   "GeneratedBy":[ {
-    "Name": "EEG-BIDS",
-    "Version": "8.0"
+    "Name": "bids-matlab-tools",
+    "Version": "9.1"
   }]
 }
