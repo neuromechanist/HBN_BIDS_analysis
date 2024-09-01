@@ -89,7 +89,7 @@
   },
   "user_answer":{
     "Description": "The sequence that subject responded when asked to repeat the shown sequence",
-    "HED": "Label/#" 
+    "HED": "Agent-action, Participant-response, Label/#" 
   },
   "correct_answer":{
     "Description": "The correct sequence (correct sequence is the same for all blocks)",
