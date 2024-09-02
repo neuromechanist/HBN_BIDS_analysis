@@ -51,7 +51,7 @@ elseif filename == "vis_learn.mat" || filename == "vis_learn6t.mat" || filename 
     % find the code for the last dot turning off
     type_toAdd_event = [32,33,34,35,50]; % the response should be added just before these events
     if beh_event.par.numrepet ~= size(beh_event.par.resp_click,1) % failsafe.
-        warning("EEG response count mismatches number of behavior reps in the sequence learning task, skipping adding the events")
+        error("EEG response count mismatches number of behavior reps in the sequence learning task, skipping adding the events")
         return
     end
     for i = 1:length(EEG.event)
@@ -86,7 +86,7 @@ elseif filename == "SurroundSupp_Block1.mat" || filename == "SurroundSupp_Block2
             EEG.event(i).duration = 2.4*EEG.srate; % stimulation duration is hardcoded in the HBN experiment code as well.
         end
     else
-        warning("legnth of the stimulation on in EEG.event mismatches the behavior file, skipping adding the events.")
+        error("length of the stimulation on in EEG.event mismatches the behavior file, skipping adding the events.")
     end
 % contrast change detection tasks
 elseif  filename == "SAIIT_2AFC_Block1.mat" || filename == "SAIIT_2AFC_Block2.mat" || filename == "SAIIT_2AFC_Block3.mat" 
