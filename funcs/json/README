@@ -1,14 +1,16 @@
-## Overview
+# The HBN-EEG Dataset
 This is **Release 3** of HBN-EEG, the EEG and (soon-released) Eye-Tracking Section of the Child Mind Network Healthy Brain Network (HBN) Project, curated into the Brain Imaging Data Structure (BIDS) format. This dataset is part of a larger initiative to advance the understanding of child and adolescent mental health through collecting and analyzing neuroimaging, behavioral, and genetic data (Alexander et al., Sci Data 2017).
+
 ## Data Description
 This dataset comprises electroencephalogram (EEG) data and behavioral responses collected during EEG experiments from participants involved in the HBN project.
+
 ### Contents
 * **EEG Data:** High-resolution EEG recordings capture a wide range of neural activity during various tasks.
-* **Behavioral Responses:** Participant responses during EEG tasks, including reaction times and accuracy. This data was originally recorded within the behavior directory of the HBN data. This data is now included with the EEG data within the_events. tsv` files.
+* **Behavioral Responses:** Participant responses during EEG tasks, including reaction times and accuracy. This data was originally recorded within the behavior directory of the HBN data. The data is now included with the EEG data within the `_events.tsv` files.
 
 ### Special Features
 * **Hierarchical Event Descriptors (HED):** Events, including the original EEG events and the included behavioral events, have clear explanations, including proper HED annotation suitable for systematic meta and mega analysis of the data.
-* **P-Factor, Internalization and Externalization:** Derived from behavioral questionnaires, these factors provide valuable insights into the internalizing and externalizing behaviors of participants, adding a rich layer of psychological interpretation to the EEG and behavioral data.
+* **P-Factor, Attention, Internalization and Externalization:** Derived from the CBCL questionnaire, these factors provide valuable insights into the psychopathology of the participants, adding a rich layer of interpretation to the EEG and behavioral data.
 * **Data quality and availability:** We performed minimal quality control to ensure that the data was not corrupted, each task had its necessary events, and was ready for preprocessing. The results of this quality control are available in the `participants.tsv` file.
 * **Future Releases:** We are committed to enhancing this dataset with additional, valuable features in its next stages, including:
   * **Personalized EEG Electrode Locations:** To offer more detailed insights into individual neural activity patterns.
@@ -16,7 +18,7 @@ This dataset comprises electroencephalogram (EEG) data and behavioral responses 
   * **Eye-Tracking Data:** Providing a window into the visual attention and processing mechanisms during EEG experiments.
 
 ## Copyright and License
-This dataset is licensed under the Creative Commons Attribution 4.0 International License (CC BY SA 4.0) or the non-commercial version of the license (CC BY NC SA 4.0) based on the participant's consent. Look for the `commercial_use` field in the `participants.tsv` file to determine the license for each participant. If the field is set to `0`, the data is licensed under the non-commercial version of the license. If the field is set to `1`, the data is licensed under the commercial version of the license. Please cite the original publication as well as the dataset paper (when available).
+This dataset is licensed under the Creative Commons Attribution 4.0 International License (CC BY SA 4.0). Please cite the original HBN publication (https://dx.doi.org/10.1038/sdata.2017.181) as well as the dataset paper (https://doi.org/10.1101/2024.10.03.615261).
 
 ## Acknowledgments
 We would like to express our gratitude to all participants and their families, whose contributions have made this project possible. We also thank our dedicated team of researchers and clinicians for their efforts in collecting, processing, and curating this data.
