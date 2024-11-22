@@ -4,8 +4,8 @@ function [ALLEEG, STUDY] = expand_ica_toAll(ALLEEG, STUDY)
 addpath('C:\_git\eeglab_fork')
 addpath(genpath('C:\_git\HBN_BIDS_analysis\'))
 
-input_dir = 'D:\lcoal_projects\ds005505_processed';
-out_dir = 'D:\lcoal_projects\ds005505_processed/derivatives/eeglab';
+input_dir = 'D:\local_projects\ds005505_processed';
+out_dir = 'D:\local_projects\ds005505_processed/derivatives/eeglab';
 
 eeglab; close;
 %% load the data
@@ -17,10 +17,15 @@ subj_list = string({STUDY.datasetinfo.subject});
 subj_list = unique(subj_list);
 for s = subj_list
     % find the indices of the files for this subject
-    idx = find(contains({STUDY.datasetinfo.subject}, s));
+    idx = find(contains(string({STUDY.datasetinfo.subject}), s));
     % find the index of the file that has the ICA values
-    idx_ica = find(contains({STUDY.datasetinfo(idx).task}, 'combined'));
+    idx_ica = idx(find(contains({STUDY.datasetinfo(idx).task}, 'combined')));
     for i = idx
+        % check if the subject is the same as the current subject
+        if ~strcmp(STUDY.datasetinfo(i).subject, s)
+            break
+        end
+        % skip the file that has the ICA values
         if i == idx_ica
             continue
         end
@@ -37,5 +42,5 @@ for s = subj_list
         
     end
 end
-[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(EEG, 1:length(EEG));
+[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(ALLEEG, 1:length(EEG));
 
