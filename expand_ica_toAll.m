@@ -4,12 +4,12 @@ function [ALLEEG, STUDY] = expand_ica_toAll(ALLEEG, STUDY)
 addpath('C:\_git\eeglab_fork')
 addpath(genpath('C:\_git\HBN_BIDS_analysis\'))
 
-input_dir = 'D:\local_projects\ds005505_processed';
+input_dir = 'D:\local_projects\ds005505_processed/';
 out_dir = 'D:\local_projects\ds005505_processed/derivatives/eeglab';
 
 eeglab; close;
 %% load the data
-[STUDY, ALLEEG] = pop_importbids(input_dir, 'bidsevent','off','bidschanloc','on','outputdir',out_dir);
+[STUDY, ALLEEG] = pop_importbids(input_dir, 'bidsevent','off','bidschanloc','on','bidsevent', 'on', 'outputdir',out_dir);
 CURRENTSTUDY = 1; EEG = 1;
 
 %% for each subject, only one file (undert taskname combined has te ICA values adn cleaned channels, so we need to expand it to all the files)
@@ -44,3 +44,5 @@ for s = subj_list
 end
 [EEG, ALLEEG, CURRENTSET] = eeg_retrieve(ALLEEG, 1:length(EEG));
 
+%% reexport
+bids_reexport(ALLEEG, 'targetdir', [input_dir 'derivatives/testReExport/'], 'checkderivative', 'D:\local_projects\ds005505/')
