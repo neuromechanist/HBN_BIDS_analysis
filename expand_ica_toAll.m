@@ -44,5 +44,12 @@ for s = subj_list
 end
 [EEG, ALLEEG, CURRENTSET] = eeg_retrieve(ALLEEG, 1:length(EEG));
 
+%% small correction for older dataets
+if isfield(ALLEEG(1).BIDS.pInfoDesc, 'seqLearning')
+    ALLEEG(1).BIDS.pInfoDesc.seqLearning6target = ALLEEG(1).BIDS.pInfoDesc.seqLearning;
+    ALLEEG(1).BIDS.pInfoDesc.seqLearning8target = ALLEEG(1).BIDS.pInfoDesc.seqLearning;
+    ALLEEG(1).BIDS.pInfoDesc = rmfield(ALLEEG(1).BIDS.pInfoDesc, 'seqLearning');
+end
+
 %% reexport
 bids_reexport(ALLEEG, 'targetdir', [input_dir 'derivatives/testReExport/'], 'checkderivative', 'D:\local_projects\ds005505/')
