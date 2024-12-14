@@ -1,11 +1,11 @@
 function [ALLEEG, STUDY] = expand_ica_toAll(ALLEEG, STUDY)
 
 %% initialize
-addpath('C:\_git\eeglab_fork')
-addpath(genpath('C:\_git\HBN_BIDS_analysis\'))
+addpath('~\_git\eeglab_pulls')
+addpath(genpath('~\_git\HBN_BIDS_analysis\'))
 
-input_dir = 'D:\local_projects\ds005505_processed/';
-out_dir = 'D:\local_projects\ds005505_processed/derivatives/eeglab';
+input_dir = '~/yahya/hbn_derivatives/ds005505_processed/';
+out_dir = [input_dir 'derivatives/nemar'];
 
 eeglab; close;
 %% load the data
