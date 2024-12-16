@@ -51,7 +51,7 @@ EEG = pop_clean_rawdata(EEG, 'FlatlineCriterion','off','ChannelCriterion',0.8,'L
 [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, [1:length(EEG)] ,'study',1); 
 STUDY = std_checkset(STUDY, ALLEEG);
 
-[STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui');
+[STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resave');
 CURRENTSTUDY = 1; ALLEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% concatenate same-subject/task runs and run AMICA

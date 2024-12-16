@@ -1,8 +1,8 @@
 function [ALLEEG, STUDY] = expand_ica_toAll(ALLEEG, STUDY)
 
 %% initialize
-addpath('~\_git\eeglab_pulls')
-addpath(genpath('~\_git\HBN_BIDS_analysis\'))
+addpath('~/_git/eeglab_pulls')
+addpath(genpath('~/_git/HBN_BIDS_analysis/'))
 
 input_dir = '~/yahya/hbn_derivatives/ds005505_processed/';
 out_dir = [input_dir 'derivatives/nemar'];
@@ -36,13 +36,17 @@ for s = subj_list
         EEG.icasphere = ALLEEG(idx_ica).icasphere;
         EEG.icawinv = ALLEEG(idx_ica).icawinv;
         EEG.icachansind = ALLEEG(idx_ica).icachansind;
-
         % save the updated dataset
         [ALLEEG, EEG, i] = eeg_store(ALLEEG, EEG, i);
         
     end
+    [STUDY ALLEEG] = pop_savestudy(STUDY, ALLEEG, 'savemode','resave', 'resavedatasets', 'on' );
+    for i = idx
+        ALLEEG(i).data = 'in set file';
+        ALLEEG(i).icaact = [];
+    end
 end
-[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(ALLEEG, 1:length(EEG));
+[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(ALLEEG, 1);
 
 %% small correction for older dataets
 if isfield(ALLEEG(1).BIDS.pInfoDesc, 'seqLearning')
