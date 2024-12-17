@@ -2,38 +2,46 @@
 addpath('eeglab')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
-study_path = "/expanse/projects/nemar/yahya/cmi_bids_R3_RC2/";
-out_path = study_path + "derivatives/eeglab_test_redo/";
+study_path = "/expanse/projects/nemar/yahya/hbn_bids_R3/";
+out_path = "/expanse/projects/nemar/yahya/R3_derivatives/thepresent/";
 ica_path = out_path + "amica_tmp/";
 mkdir(ica_path)
 
-new_study = 0; % set it to 1 to load the data  from scratch
+new_study = 1; % set it to 1 to load the data  from scratch
+study_stage_toLoad  = "_epcoched";  % Choices are ["", "_summarized", "_epcohed"]
 % ion order to have a more robust ICA, tasks groups can concatenate the data, but later, only the target task will be analyzed.
 task_group = ["surroundSupp"    "RestingState"    "DespicableMe"    "ThePresent"    "FunwithFractals"    "DiaryOfAWimpyKid"];
-target_task = "surroundSupp";
+target_task = "ThePresent"; target_run = [1];
+if length(target_run) > 1
+    for i = target_run
+        taskRun = target_task + "_" + string(i);
+    end
+else
+    taskRun = target_task;
+end
 %% load the bids dataset
 if new_study
     [STUDY, ALLEEG] = pop_importbids(char(study_path), 'eventtype','value','bidsevent','on','bidschanloc','off', 'outputdir',char(out_path),...
-        'bidstask', cellstr(task_group), 'studyName','surroundSupp');
+        'bidstask', cellstr(task_group), 'studyName',char(target_task));
     CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 else
 % or alternatively load the study
-    [STUDY ALLEEG] = pop_loadstudy('filename', 'surroundSupp_epoched.study', 'filepath', char(out_path));
+    [STUDY ALLEEG] = pop_loadstudy('filename', char(target_task+study_stage_toLoad+".study"), 'filepath', char(out_path));
     CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 end
 
-% Identify datasets with avaialble tag
-available_idx = lookup_dataset_info(STUDY, 1, [1, 2], ["surroundSupp_1", "surroundSupp_2"], "available", "subject");
+%% Identify datasets with avaialble tag
+available_idx = lookup_dataset_info(STUDY, 1, 1:length(taskRun), taskRun, "available", "subject");
 
-available_subjs = intersect(string(available_idx{1}), string(available_idx{2}));
+available_subjs = unique(intersect_multiple(available_idx));
 
 %% keep only available subjects
 [STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'keepvarvalues', {'subject', cellstr(available_subjs)});
 EEG = ALLEEG;
 
 %% save study
-[STUDY ALLEEG] = std_editset(STUDY, ALLEEG, 'name','Surround Suppression');
-[STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui','resavedatasets','on');
+[STUDY ALLEEG] = std_editset(STUDY, ALLEEG, 'name',char(target_task));
+[STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resave','resavedatasets','on');
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% clean channel data
@@ -270,4 +278,30 @@ for i = 1:height(clustinfo)
     fN = "c"+string(i)+"_topo"; % fieldNames
     print(fig.(fN), fN + "_" + studyName + ".pdf","-dpdf","-r300");
     print(fig.(fN), fN + "_" + studyName + ".png","-dpng","-r300");
+end
+
+
+%% helper funcs
+function result = intersect_multiple(cellArray)
+    % Check if the input is a cell array
+    if ~iscell(cellArray)
+        error('Input must be a cell array.');
+    end
+
+    % Check if the cell array is empty
+    if isempty(cellArray)
+        result = []; % Return an empty array if there's nothing to intersect
+        return;
+    end
+
+    % Initialize the result with the first vector in the cell array
+    result = cellArray{1};
+
+    % Iterate through the remaining vectors in the cell array and find the intersection
+    for k = 2:length(cellArray)
+        result = intersect(result, cellArray{k});
+    end
+    
+    % Convert the result to an array if it is not already
+    result = result(:);
 end

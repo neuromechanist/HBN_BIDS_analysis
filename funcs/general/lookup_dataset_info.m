@@ -29,7 +29,7 @@ end
 
 %% main
 
-% map column name to sessions ans runs
+% map column name to sessions and runs
 for s = 1:length(session)
     for r = 1:length(run)
         mapped{(s-1)+r} = [session(s),run(r)];
