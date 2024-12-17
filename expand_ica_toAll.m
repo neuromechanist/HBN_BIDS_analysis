@@ -56,4 +56,4 @@ if isfield(ALLEEG(1).BIDS.pInfoDesc, 'seqLearning')
 end
 
 %% reexport
-bids_reexport(ALLEEG, 'targetdir', [input_dir 'derivatives/testReExport/'], 'checkderivative', 'D:\local_projects\ds005505/')
+bids_reexport(ALLEEG, 'targetdir', [input_dir 'derivatives/testReExport/'], 'checkderivative', '/expanse/projects/nemar/yahya/hbn_bids_R1/')
