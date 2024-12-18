@@ -7,9 +7,11 @@ out_path = "/expanse/projects/nemar/yahya/R3_derivatives/thepresent/";
 ica_path = out_path + "amica_tmp/";
 mkdir(ica_path)
 
-new_study = 1; % set it to 1 to load the data  from scratch
-study_stage_toLoad  = "_epcoched";  % Choices are ["", "_summarized", "_epcohed"]
-% ion order to have a more robust ICA, tasks groups can concatenate the data, but later, only the target task will be analyzed.
+new_study = 0; % set it to 1 to load the data  from scratch
+study_stage_toLoad  = "";  % Choices are ["", "_summarized", "_epcohed"]
+
+run_fresh_AMICA = 0; % There might be old wieghts to use, if set to one, it will re-run for all, if set to zero, will only do for those not available.
+% In order to have a more robust ICA, tasks groups can concatenate the data, but later, only the target task will be analyzed.
 task_group = ["surroundSupp"    "RestingState"    "DespicableMe"    "ThePresent"    "FunwithFractals"    "DiaryOfAWimpyKid"];
 target_task = "ThePresent"; target_run = [1];
 if length(target_run) > 1
@@ -34,6 +36,8 @@ end
 available_idx = lookup_dataset_info(STUDY, 1, 1:length(taskRun), taskRun, "available", "subject");
 
 available_subjs = unique(intersect_multiple(available_idx));
+% ensure that available_subjs is a row vector
+available_subjs = available_subjs(:)';
 
 %% keep only available subjects
 [STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'keepvarvalues', {'subject', cellstr(available_subjs)});
@@ -41,7 +45,7 @@ EEG = ALLEEG;
 
 %% save study
 [STUDY ALLEEG] = std_editset(STUDY, ALLEEG, 'name',char(target_task));
-[STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resave','resavedatasets','on');
+[STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resave:','resavedatasets','on');
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% clean channel data
@@ -63,12 +67,14 @@ STUDY = std_checkset(STUDY, ALLEEG);
 CURRENTSTUDY = 1; ALLEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% concatenate same-subject/task runs and run AMICA
-parfor (s = 1:length(available_subjs), 24)
-    [~, temp_EEG] = std_rmdat(STUDY, ALLEEG, 'keepvarvalues', {'subject', cellstr(available_subjs(s))});
-    temp_mergedEEG = pop_mergeset(temp_EEG, 1:length(temp_EEG));
+if run_fresh_AMICA
+    parfor (s = 1:length(available_subjs), 24)
+        [~, temp_EEG] = std_rmdat(STUDY, ALLEEG, 'keepvarvalues', {'subject', cellstr(available_subjs(s))});
+        temp_mergedEEG = pop_mergeset(temp_EEG, 1:length(temp_EEG));
 
-    runamica17_nsg(temp_mergedEEG, 'outdir', char(ica_path+available_subjs(s)),...
-        'do_reject', 1, 'numrej', 5, 'rejsig', 4);
+        runamica17_nsg(temp_mergedEEG, 'outdir', char(ica_path+available_subjs(s)),...
+            'do_reject', 1, 'numrej', 5, 'rejsig', 4);
+    end
 end
 
 %% Check if AMICA redsults exists and re-run AMICA
@@ -103,6 +109,19 @@ end
 [ALLEEG, EEG, CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET);
 [STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resavegui');
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
+
+%% save new study with the subjs that have AMICA wieghts
+[STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'rmvarvalues', {'subject', cellstr(unav_amica)});
+EEG = ALLEEG;
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename',char(target_task+"_amica"+".study"),'filepath',char(out_path), 'resavedatasets', 'on');
+CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
+
+% update available subjects
+available_idx = lookup_dataset_info(STUDY, 1, 1:length(taskRun), taskRun, "available", "subject");
+
+available_subjs = unique(intersect_multiple(available_idx));
+% ensure that available_subjs is a row vector
+available_subjs = available_subjs(:)';
 
 %% Perform dipfit
 elocs = "GSN_HydroCel_129_AdjustedLabels.sfp";
