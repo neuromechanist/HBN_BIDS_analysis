@@ -3,7 +3,7 @@ addpath('eeglab')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
 study_path = "/expanse/projects/nemar/yahya/hbn_bids_R3/";
-out_path = "/expanse/projects/nemar/yahya/R3_derivatives/thepresent/";
+out_path = "/expanse/projects/nemar/yahya/R3_derivatives/eeglab_test_redo/";
 ica_path = out_path + "amica_tmp/";
 mkdir(ica_path)
 
@@ -206,18 +206,22 @@ disp("total kept comps in datasetinfo:" + sum(kept_comps)/length(STUDY.run) + ",
 STUDY.cluster = [];
 STUDY = std_createclust(STUDY, ALLEEG, 'parentcluster', 'on');
 
+
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename',char(target_task+"_iclabel"+".study"),'filepath',char(out_path), 'resavedatasets', 'on');
+CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 %% Create a new study if task_group and target_task are not the same
-surround_idx = lookup_dataset_info(STUDY, 1 , [1, 2], ["task", "task"], "surroundSupp");
-surround_idx = union(cell2mat(surround_idx{1}), cell2mat(surround_idx{2}));
+task_idx = lookup_dataset_info(STUDY, 1 , 1:length(taskRun), repmat("task",1,length(taskRun)), target_task);
+task_idx = union_multiple(task_idx); task_idx = task_idx(:)';
+%%
 all_idx = [STUDY.datasetinfo(:).index];
 
-rmv_idx = all_idx(~ismember(all_idx, surround_idx));
+rmv_idx = all_idx(~ismember(all_idx, task_idx));
 
 [STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'datinds', rmv_idx);
 EEG = ALLEEG;
 STUDY = std_checkset(STUDY, ALLEEG);
 
-[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename','surroundSupp_summarized.study','filepath',char(out_path), 'resavedatasets', 'on');
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename',char(target_task+"_summarized"+".study"),'filepath',char(out_path), 'resavedatasets', 'on');
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% Epoch
@@ -319,6 +323,30 @@ function result = intersect_multiple(cellArray)
     % Iterate through the remaining vectors in the cell array and find the intersection
     for k = 2:length(cellArray)
         result = intersect(result, cellArray{k});
+    end
+    
+    % Convert the result to an array if it is not already
+    result = result(:);
+end
+
+function result = union_multiple(cellArray)
+    % Check if the input is a cell array
+    if ~iscell(cellArray)
+        error('Input must be a cell array.');
+    end
+
+    % Check if the cell array is empty
+    if isempty(cellArray)
+        result = []; % Return an empty array if there's nothing to union
+        return;
+    end
+
+    % Initialize the result as an empty vector
+    result = [];
+
+    % Iterate through each vector in the cell array and find the union
+    for k = 1:length(cellArray)
+        result = union(result, cell2mat(cellArray{k}));
     end
     
     % Convert the result to an array if it is not already
