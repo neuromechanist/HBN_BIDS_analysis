@@ -13,7 +13,7 @@ study_stage_toLoad  = "";  % Choices are ["", "_summarized", "_epcohed"]
 run_fresh_AMICA = 0; % There might be old wieghts to use, if set to one, it will re-run for all, if set to zero, will only do for those not available.
 % In order to have a more robust ICA, tasks groups can concatenate the data, but later, only the target task will be analyzed.
 task_group = ["surroundSupp"    "RestingState"    "DespicableMe"    "ThePresent"    "FunwithFractals"    "DiaryOfAWimpyKid"];
-target_task = "ThePresent"; target_run = [1];
+target_task = "ThePresent"; target_run = [1]; epochs_of_interest = {'shots'};
 if length(target_run) > 1
     for i = target_run
         taskRun = target_task + "_" + string(i);
@@ -212,7 +212,7 @@ CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 %% Create a new study if task_group and target_task are not the same
 task_idx = lookup_dataset_info(STUDY, 1 , 1:length(taskRun), repmat("task",1,length(taskRun)), target_task);
 task_idx = union_multiple(task_idx); task_idx = task_idx(:)';
-%%
+
 all_idx = [STUDY.datasetinfo(:).index];
 
 rmv_idx = all_idx(~ismember(all_idx, task_idx));
@@ -224,15 +224,30 @@ STUDY = std_checkset(STUDY, ALLEEG);
 [STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename',char(target_task+"_summarized"+".study"),'filepath',char(out_path), 'resavedatasets', 'on');
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
+%% Insert the events if needed
+expand_table = "the_present_stimulus-LogLumRatio.tsv";
+unav_expansion = [];
+for e = 1:length(EEG)
+    try
+        EEG(e) = expand_events(EEG(e), expand_table, ["shot_number", "LLR"],'shots', 0, 1);
+    catch
+        unav_expansion = [unav_expansion e];
+    end
+end
+ALLEEG = EEG;
+
+[STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'datinds', unav_expansion);
+EEG = ALLEEG;
+STUDY = std_checkset(STUDY, ALLEEG);
+
 %% Epoch
 % First identify target_task index
-
-[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename','surroundSupp_epoched.study','filepath',char(out_path), 'resavedatasets', 'on');
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename',char(target_task+"_epoched"+".study"),'filepath',char(out_path), 'resavedatasets', 'on');
 [EEG, ALLEEG, CURRENTSET] = eeg_retrieve(EEG, 1:length(EEG));
 
-EEG = pop_epoch( EEG,{'fixpoint_ON','stim_ON'},[-1 2] ,'epochinfo','yes');
+EEG = pop_epoch( EEG, epochs_of_interest, [-0.6 0.6] ,'epochinfo','yes');
 
-[STUDY EEG] = pop_savestudy( STUDY, EEG, 'resavedatasets', 'on');
+[STUDY EEG] = pop_savestudy(STUDY, EEG, 'resavedatasets', 'on');
 [EEG, ALLEEG, CURRENTSET] = eeg_retrieve(EEG, 1:length(EEG));
 
 %% precompute
