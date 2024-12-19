@@ -272,17 +272,18 @@ STUDY = std_createclust(STUDY, ALLEEG, 'parentcluster', 'on');  % Update the par
 
 %% plot the components
 clustinfo = table;
-clustinfo(1,:) = {3, "BA7", rgb('Brown')}; % VR
-clustinfo(2,:) = {9, "BA19R", rgb('Purple')}; % eye
-clustinfo(3,:) = {20, "BA4R", rgb('Cyan')}; % FR
-clustinfo(4,:) = {25, "BA6", rgb('Lime')}; %MR
-clustinfo(5,:) = {27, "BA4", rgb('Teal')}; %VC
+clustinfo(1,:) = {7, "BA7", rgb('RoyalBlue')}; % VR
+clustinfo(2,:) = {10, "BA19R", rgb('SkyBlue')}; % eye
+clustinfo(3,:) = {11, "BA4R", rgb('Cyan')}; % FR
+clustinfo(4,:) = {14, "BA6", rgb('Lime')}; %MR
+clustinfo(5,:) = {18, "BA4", rgb('Teal')}; %VC
+clustinfo(6,:) = {25, "BA5", rgb('Green')}; %VC
 
 clustinfo.Properties.VariableNames = ["num","BA","color"];
 
 % Determine the BA distribution
 if isfield(STUDY.cluster,"BA")
-    STUDY.cluster = clusterBAdist(STUDY.cluster, 3:33); % change the range according to your own results
+    STUDY.cluster = clusterBAdist(STUDY.cluster, 3:25); % change the range according to your own results
 end
 
 %% Plot the 3D dipole locations
