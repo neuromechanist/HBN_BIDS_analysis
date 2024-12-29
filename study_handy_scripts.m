@@ -14,6 +14,7 @@ run_fresh_AMICA = 0; % There might be old wieghts to use, if set to one, it will
 % In order to have a more robust ICA, tasks groups can concatenate the data, but later, only the target task will be analyzed.
 task_group = ["surroundSupp"    "RestingState"    "DespicableMe"    "ThePresent"    "FunwithFractals"    "DiaryOfAWimpyKid"];
 target_task = "ThePresent"; target_run = [1]; epochs_of_interest = {'shots'};
+
 if length(target_run) > 1
     for i = target_run
         taskRun = target_task + "_" + string(i);
@@ -205,7 +206,6 @@ disp("total kept comps in datasetinfo:" + sum(kept_comps)/length(STUDY.run) + ",
 % recreate parent cluster
 STUDY.cluster = [];
 STUDY = std_createclust(STUDY, ALLEEG, 'parentcluster', 'on');
-
 
 [STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename',char(target_task+"_iclabel"+".study"),'filepath',char(out_path), 'resavedatasets', 'on');
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
