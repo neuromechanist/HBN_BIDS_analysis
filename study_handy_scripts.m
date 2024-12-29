@@ -3,12 +3,12 @@ addpath('eeglab')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
 study_path = "/expanse/projects/nemar/yahya/hbn_bids_R3/";
-out_path = "/expanse/projects/nemar/yahya/R3_derivatives/eeglab_test_redo/";
+out_path = "/expanse/projects/nemar/yahya/R3_derivatives/thepresent/";  % thepresent or eeglab_test_redo
 ica_path = out_path + "amica_tmp/";
 mkdir(ica_path)
 
 new_study = 0; % set it to 1 to load the data  from scratch
-study_stage_toLoad  = "";  % Choices are ["", "_summarized", "_epcohed"]
+study_stage_toLoad  = "_epoched";  % Choices are ["", "_amica", "_iclabel", "_summarized", "_epcohed"]
 
 run_fresh_AMICA = 0; % There might be old wieghts to use, if set to one, it will re-run for all, if set to zero, will only do for those not available.
 % In order to have a more robust ICA, tasks groups can concatenate the data, but later, only the target task will be analyzed.
@@ -43,9 +43,9 @@ available_subjs = available_subjs(:)';
 [STUDY, ALLEEG] = std_rmdat(STUDY, ALLEEG, 'keepvarvalues', {'subject', cellstr(available_subjs)});
 EEG = ALLEEG;
 
-%% save study
+% save study
 [STUDY ALLEEG] = std_editset(STUDY, ALLEEG, 'name',char(target_task));
-[STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resave:','resavedatasets','on');
+[STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resave');
 CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% clean channel data
@@ -64,7 +64,7 @@ EEG = pop_clean_rawdata(EEG, 'FlatlineCriterion','off','ChannelCriterion',0.8,'L
 STUDY = std_checkset(STUDY, ALLEEG);
 
 [STUDY EEG] = pop_savestudy(STUDY, EEG, 'savemode','resave');
-CURRENTSTUDY = 1; ALLEG = EEG; CURRENTSET = [1:length(EEG)];
+CURRENTSTUDY = 1; ALLEEG = EEG; CURRENTSET = [1:length(EEG)];
 
 %% concatenate same-subject/task runs and run AMICA
 if run_fresh_AMICA
@@ -252,16 +252,17 @@ EEG = pop_epoch( EEG, epochs_of_interest, [-0.6 0.6] ,'epochinfo','yes');
 
 %% precompute
 pop_editoptions('option_parallel', 1);
-[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','spec','on','allcomps', 'on', 'specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','on');
+[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','spec','on','allcomps', 'on', ...
+    'specparams', {'specmode', 'psd', 'logtrials', 'off', 'freqrange',[3 80]},'recompute','off');
 
 %% 
-[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on', 'allcomps', 'on', 'recompute','on');
+[STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','scalp','on', 'allcomps', 'on', 'recompute','off');
 %%
 pop_editoptions('option_parallel', 1);
 [STUDY, ALLEEG] = std_precomp(STUDY, ALLEEG, 'components','ersp','on','allcomps', 'on', 'erspparams',{'cycles',[3 0.5],'alpha',0.05, 'padratio',2,'baseline',NaN,...
-    'freqs', [3 100]},'recompute','on');
+    'freqs', [3 100]},'recompute','off');
 
-%% create preclutering array
+%% create preclustering array
 STUDY = std_createclust(STUDY, ALLEEG, 'parentcluster', 'on');  % Update the parent cluster array, especially required if componenets have been changed.
 [STUDY ALLEEG] = std_preclust(STUDY, ALLEEG, 1,...
     {'spec','npca',3,'weight',1,'freqrange',[3 70] },...
