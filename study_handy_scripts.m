@@ -3,12 +3,12 @@ addpath('eeglab')
 addpath(genpath('HBN_BIDS_analysis'))
 eeglab; close;
 study_path = "/expanse/projects/nemar/yahya/hbn_bids_R3/";
-out_path = "/expanse/projects/nemar/yahya/R3_derivatives/thepresent/";  % thepresent or eeglab_test_redo
+out_path = "/Volumes/S1/R3 derivatives/thepresent/"; %"/expanse/projects/nemar/yahya/R3_derivatives/thepresent/";  % thepresent or eeglab_test_redo
 ica_path = out_path + "amica_tmp/";
 mkdir(ica_path)
 
 new_study = 0; % set it to 1 to load the data  from scratch
-study_stage_toLoad  = "_epoched";  % Choices are ["", "_amica", "_iclabel", "_summarized", "_epcohed"]
+study_stage_toLoad  = "_clustered";  % Choices are ["", "_amica", "_iclabel", "_summarized", "_epcohed", "_clustered"]
 
 run_fresh_AMICA = 0; % There might be old wieghts to use, if set to one, it will re-run for all, if set to zero, will only do for those not available.
 % In order to have a more robust ICA, tasks groups can concatenate the data, but later, only the target task will be analyzed.
@@ -271,6 +271,9 @@ STUDY = std_createclust(STUDY, ALLEEG, 'parentcluster', 'on');  % Update the par
 
 %% run optimal k-means using GUI or with 29 clusters and 3std oultiers below
 
+
+%% plot the summary
+STUDY = std_dipplot(STUDY,ALLEEG,'clusters',2:length(STUDY.cluster), 'design', 1, 'compBA', 'off');
 %% plot the components
 clustinfo = table;
 clustinfo(1,:) = {7, "BA7", rgb('RoyalBlue')}; % VR
