@@ -6,6 +6,8 @@ study_path = "/expanse/projects/nemar/yahya/hbn_bids_R3/";
 out_path = "/Volumes/S1/R3 derivatives/thepresent/"; %"/expanse/projects/nemar/yahya/R3_derivatives/thepresent/";  % thepresent or eeglab_test_redo
 ica_path = out_path + "amica_tmp/";
 mkdir(ica_path)
+img_path = out_path + "img/";
+mkdir(img_path)
 
 new_study = 0; % set it to 1 to load the data  from scratch
 study_stage_toLoad  = "_clustered";  % Choices are ["", "_amica", "_iclabel", "_summarized", "_epcohed", "_clustered"]
@@ -273,21 +275,35 @@ STUDY = std_createclust(STUDY, ALLEEG, 'parentcluster', 'on');  % Update the par
 
 
 %% plot the summary
-STUDY = std_dipplot(STUDY,ALLEEG,'clusters',2:length(STUDY.cluster), 'design', 1, 'compBA', 'off');
-%% plot the components
-clustinfo = table;
-clustinfo(1,:) = {7, "BA7", rgb('RoyalBlue')}; % VR
-clustinfo(2,:) = {10, "BA19R", rgb('SkyBlue')}; % eye
-clustinfo(3,:) = {11, "BA4R", rgb('Cyan')}; % FR
-clustinfo(4,:) = {14, "BA6", rgb('Lime')}; %MR
-clustinfo(5,:) = {18, "BA4", rgb('Teal')}; %VC
-clustinfo(6,:) = {25, "BA5", rgb('Green')}; %VC
+STUDY = std_dipplot(STUDY,ALLEEG,'clusters',2:length(STUDY.cluster), 'design', 1, 'compBA', 'on');
 
-clustinfo.Properties.VariableNames = ["num","BA","color"];
+%% plot the components
+% Clusters with >50% subjects (>80 subjects)
+clustinfo_major = table;
+clustinfo_major(1,:) = {3, "BA31/visual", rgb('MediumSeaGreen')}; % 98 subjs
+clustinfo_major(2,:) = {10, "BA18/visual", rgb('SeaGreen')}; % 91 subjs
+clustinfo_major(3,:) = {13, "BA40R/temporal", rgb('RoyalBlue')}; % 84 subjs
+clustinfo_major(4,:) = {16, "BA6R-lateral/SMA", rgb('MediumPurple')}; % 81 subjs
+clustinfo_major(5,:) = {17, "BA6R-medial/SMA", rgb('BlueViolet')}; % 80 subjs
+clustinfo_major(6,:) = {18, "BA7L/temporal", rgb('CornflowerBlue')}; % 81 subjs
+clustinfo_major(7,:) = {19, "BA37R/visual", rgb('ForestGreen')}; % 85 subjs
+
+clustinfo_minor.Properties.VariableNames = ["num","BA","color"];
+
+% Clusters with 70-79 subjects (still interesting)
+clustinfo_minor = table;
+clustinfo_minor(1,:) = {4, "BA6-4/SMA", rgb('DarkOrchid')}; % 75 subjs
+clustinfo_minor(2,:) = {5, "BA32/ACC", rgb('Crimson')}; % 72 subjs
+clustinfo_minor(3,:) = {8, "BA6L-medial/SMA", rgb('MediumOrchid')}; % 75 subjs
+clustinfo_minor(4,:) = {20, "BA6L-anterior/SMA", rgb('Amethyst')}; % 70 subjs
+clustinfo_minor(5,:) = {22, "BA39L/temporal", rgb('SteelBlue')}; % 77 subjs
+clustinfo_minor(6,:) = {24, "BA31/ACC", rgb('FireBrick')}; % 77 subjs
+
+clustinfo_minor.Properties.VariableNames = ["num","BA","color"];
 
 % Determine the BA distribution
 if isfield(STUDY.cluster,"BA")
-    STUDY.cluster = clusterBAdist(STUDY.cluster, 3:25); % change the range according to your own results
+    STUDY.cluster = clusterBAdist(STUDY.cluster, 3:24); % change the range according to your own results
 end
 
 %% Plot the 3D dipole locations
@@ -299,28 +315,28 @@ fig = struct();
 
 for p = transpose(string(fieldnames(clustView)))
     if isequal(p, "perspective"), centProjLine = 1; else, centProjLine = 0; end
-    fig.(p) = diplotfig(STUDY, ALLEEG,transpose([clustinfo.num]),...
-        num2cell(clustinfo.color,2) ,centProjLine,'view',clustView.(p),'gui','off'); 
+    fig.(p) = diplotfig(STUDY, ALLEEG,transpose([clustinfo_minor.num]),...
+        num2cell(clustinfo_minor.color,2) ,centProjLine,'view',clustView.(p),'gui','off'); 
 end
 
 for p = transpose(string(fieldnames(clustView)))
     for v = transpose(string(fieldnames(fig.(p))))
-        print(fig.(p).(v), v+"_"+p+"_"+studyName+".pdf","-dpdf","-r300");
-        print(fig.(p).(v), v+"_"+p+"_"+studyName+".png","-dpng","-r300");
+        print(fig.(p).(v), img_path + v+"_"+p+"_"+studyName+".pdf","-dpdf","-r300");
+        print(fig.(p).(v), img_path + v+"_"+p+"_"+studyName+".png","-dpng","-r300");
     end
 end
 
 %% Plot the maps
 studyName = string(STUDY.task);
 for i = 1:height(clustinfo)
-   std_topoplot(STUDY, ALLEEG, 'clusters', clustinfo.num(i));
+   std_topoplot(STUDY, ALLEEG, 'clusters', clustinfo_minor.num(i));
    fig.("c"+string(i)+"_topo") = get(groot,'CurrentFigure');
 end
 
 for i = 1:height(clustinfo)
     fN = "c"+string(i)+"_topo"; % fieldNames
-    print(fig.(fN), fN + "_" + studyName + ".pdf","-dpdf","-r300");
-    print(fig.(fN), fN + "_" + studyName + ".png","-dpng","-r300");
+    print(fig.(fN), img_path + fN + "_" + studyName + ".pdf","-dpdf","-r300");
+    print(fig.(fN), img_path + fN + "_" + studyName + ".png","-dpng","-r300");
 end
 
 
