@@ -316,7 +316,7 @@ fig = struct();
 for p = transpose(string(fieldnames(clustView)))
     if isequal(p, "perspective"), centProjLine = 1; else, centProjLine = 0; end
     fig.(p) = diplotfig(STUDY, ALLEEG,transpose([clustinfo_minor.num]),...
-        num2cell(clustinfo_minor.color,2) ,centProjLine,'view',clustView.(p),'gui','off'); 
+        num2cell(clustinfo_minor.color,2) ,centProjLine,'view',clustView.(p),'gui','off', 'cornermri', 'on', 'drawedges', 'off'); 
 end
 
 for p = transpose(string(fieldnames(clustView)))
@@ -338,7 +338,6 @@ for i = 1:height(clustinfo)
     print(fig.(fN), img_path + fN + "_" + studyName + ".pdf","-dpdf","-r300");
     print(fig.(fN), img_path + fN + "_" + studyName + ".png","-dpng","-r300");
 end
-
 
 %% helper funcs
 function result = intersect_multiple(cellArray)

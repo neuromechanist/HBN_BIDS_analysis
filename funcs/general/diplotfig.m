@@ -58,9 +58,9 @@ for i=1:length(clusters_to_plot)
     if centProjLine, projLine = [zeros(1,length(cluster_dip_models(1,:))) 1]; dipOptions = [dipOptions {'projlines',projLine}]; end
     figure();
     dipplot([cluster_dip_models(1,:), computecentroid(cluster_dip_models)],dipOptions{:});
-    set(findobj('tag','img'), 'facealpha', 0.6);
-    set(findobj('facealpha',0.6),'facelighting','phong');
-%     drawnow;
+    % % set(findobj('tag','img'), 'facealpha', 0.9);
+    set(findobj('facealpha',0.9),'facelighting','phong');
+    drawnow;
     fig.("c"+string(i)+"_dipLoc") = get(groot,'CurrentFigure');
     clear cluster_dip_models colors1cls
 end
