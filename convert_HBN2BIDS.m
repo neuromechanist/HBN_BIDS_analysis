@@ -23,13 +23,14 @@ end
 if ~exist("write_qtable","var") || isempty(write_qtable), write_qtable = 0; end
 if write_qtable, writePInfoOnly = 'on'; else, writePInfoOnly = 'off'; end
 
-target_release = "R2";  % Can be also a string vector, but change the export path.
+target_release = "R10";  % Can be also a string vector, but change the export path.
 num_subjects = -1; % if -1, all subjects in the release will be added.
 
 p2l = init_paths("linux", "expanse", "HBN", 1, 1);
 addpath(genpath(p2l.codebase))
-f2l.elocs = p2l.eegRepo + "GSN_HydroCel_129.sfp";  % f2l = file to load
+f2l.elocs = p2l.codebase + "funcs/GSN_HydroCel_129.sfp";  % f2l = file to load
 
+    %% even more paths
 plist = readtable("participants_augmented_filesize_twoSeqLearning.csv", "FileType", "text");
 plist.Full_Pheno = string(plist{:,"Full_Pheno"}); % to change the variable type to string
 plist.Commercial_Use = string(plist{:,"Commercial_Use"});
