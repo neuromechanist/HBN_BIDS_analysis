@@ -32,8 +32,13 @@ pInfo_subjs = string(pInfo(2:end,1))';
 pInfo_cols = string(pInfo(1,:));
 qchecks = ["data_pnts", "event_cnt", "key_event_exist", "quality_checks"];
 rm_id = [];
-quality_table(:,"seqLearning") = [];  % remove sequence learning, as it is broken up to two tasks.
-% This should not happed, but we need to first check if there is any
+
+% check if seqlearning is a column
+if any(contains(quality_table.Properties.VariableNames, "seqLearning"))
+    quality_table(:,"seqLearning") = [];  % remove sequence learning, as it is broken up to two tasks.
+end
+
+% This should not happen, but we need to first check if there is any
 % heterogenity inthe two subject lists
 unique_subjs = setxor(qt_subjs, pInfo_subjs);
 
