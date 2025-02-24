@@ -161,6 +161,11 @@ for r = 1: height(target_table)
 end
 data(1) = [];
 
+if isempty(data)
+    warning("no subject is detected for " + string(BIDS_task_name) + ", aborting the conversion")
+    return
+end
+
 %% Remedy the files
 % This step is similar to the import and remedy sections of step1.
 if ~write_qtable
