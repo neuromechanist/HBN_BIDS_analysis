@@ -1,4 +1,4 @@
-function [pInfo, rm_id] = rawFile_quality_pInfo(pInfo, quality_table, override_pInfo, save_path)
+function [pInfo, rm_id] = rawFile_quality_pInfo(pInfo, quality_table, target_tasks, override_pInfo, save_path)
 %RAWFILE_QUALITY_PINFO Sumariuze quality metrics into a handful of flags.
 %   Based on the QUALITY_TABLE, we can prvide a seires of flags to guide
 %   the user about the data. This can be much simppler than the legnth of
@@ -32,8 +32,13 @@ pInfo_subjs = string(pInfo(2:end,1))';
 pInfo_cols = string(pInfo(1,:));
 qchecks = ["data_pnts", "event_cnt", "key_event_exist", "quality_checks"];
 rm_id = [];
-quality_table(:,"seqLearning") = [];  % remove sequence learning, as it is broken up to two tasks.
-% This should not happed, but we need to first check if there is any
+
+% check if seqlearning is a column
+if any(contains(quality_table.Properties.VariableNames, "seqLearning"))
+    quality_table(:,"seqLearning") = [];  % remove sequence learning, as it is broken up to two tasks.
+end
+
+% This should not happen, but we need to first check if there is any
 % heterogenity inthe two subject lists
 unique_subjs = setxor(qt_subjs, pInfo_subjs);
 
@@ -60,6 +65,10 @@ end
 
 tasks = string(quality_table.Properties.VariableNames);
 tasks(tasks == "participant_id") = [];  % this is not a task
+% check for the case that no subject had one of the tasks
+% for that, check if the all target_tasks are accounted for in tasks
+missing_tasks = target_tasks(~contains(target_tasks, tasks));
+
 for t = tasks
     outlier_indices = [];
     qtable = quality_table.(t);
@@ -106,6 +115,11 @@ for t = tasks
             pInfo{subj_id, task_id} = 'available';
         end
     end
+end
+
+% handle the missing data
+for m = missing_tasks
+    pInfo(2:end , m==pInfo_cols) = {'unavailable'}; 
 end
 
 function idx = find_outlier_by_percent(values, percentage)
