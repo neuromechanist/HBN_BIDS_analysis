@@ -23,7 +23,7 @@ end
 if ~exist("write_qtable","var") || isempty(write_qtable), write_qtable = 0; end
 if write_qtable, writePInfoOnly = 'on'; else, writePInfoOnly = 'off'; end
 
-target_release = "R10";  % Can be also a string vector, but change the export path.
+target_release = "R11";  % Can be also a string vector, but change the export path.
 num_subjects = -1; % if -1, all subjects in the release will be added.
 
 p2l = init_paths("linux", "expanse", "HBN", 1, 1);
@@ -183,7 +183,7 @@ end
 %% construct pInfo
 if write_qtable
     load(f2l.quality_table, "quality_table");
-    [pInfo, rm_id] = rawFile_quality_pInfo(pInfo,quality_table, 1, p2l.BIDS_code);
+    [pInfo, rm_id] = rawFile_quality_pInfo(pInfo, quality_table, BIDS_set_name, 1, p2l.BIDS_code);
     if ~isempty(rm_id), data(unique(rm_id)) = []; end
 end
 
