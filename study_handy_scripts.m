@@ -288,7 +288,7 @@ clustinfo_major(5,:) = {17, "BA6R-medial/SMA", rgb('BlueViolet')}; % 80 subjs
 clustinfo_major(6,:) = {18, "BA7L/temporal", rgb('CornflowerBlue')}; % 81 subjs
 clustinfo_major(7,:) = {19, "BA37R/visual", rgb('ForestGreen')}; % 85 subjs
 
-clustinfo_minor.Properties.VariableNames = ["num","BA","color"];
+clustinfo_major.Properties.VariableNames = ["num","BA","color"];
 
 % Clusters with 70-79 subjects (still interesting)
 clustinfo_minor = table;
@@ -328,12 +328,12 @@ end
 
 %% Plot the maps
 studyName = string(STUDY.task);
-for i = 1:height(clustinfo)
+for i = 1:height(clustinfo_minor)
    std_topoplot(STUDY, ALLEEG, 'clusters', clustinfo_minor.num(i));
    fig.("c"+string(i)+"_topo") = get(groot,'CurrentFigure');
 end
 
-for i = 1:height(clustinfo)
+for i = 1:height(clustinfo_minor)
     fN = "c"+string(i)+"_topo"; % fieldNames
     print(fig.(fN), img_path + fN + "_" + studyName + ".pdf","-dpdf","-r300");
     print(fig.(fN), img_path + fN + "_" + studyName + ".png","-dpng","-r300");
