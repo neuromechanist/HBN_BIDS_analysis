@@ -1,10 +1,10 @@
 function [ALLEEG, STUDY] = expand_ica_toAll(ALLEEG, STUDY)
 
 %% initialize
-addpath('~/_git/eeglab_pulls')
-addpath(genpath('~/_git/HBN_BIDS_analysis/'))
+addpath('~/Documents/git/eeglab_pulls')
+addpath(genpath('~/Documents/git/HBN_BIDS_analysis/'))
 
-input_dir = '~/yahya/hbn_derivatives/ds005505_processed/';
+input_dir = '~/Library/CloudStorage/GoogleDrive-pulcher88@gmail.com/My Drive/to Share/ds005505_4subj/';
 out_dir = [input_dir 'derivatives/nemar'];
 
 eeglab; close;
@@ -56,4 +56,8 @@ if isfield(ALLEEG(1).BIDS.pInfoDesc, 'seqLearning')
 end
 
 %% reexport
-bids_reexport(ALLEEG, 'targetdir', [input_dir 'derivatives/testReExport/'], 'checkderivative', '/expanse/projects/nemar/yahya/hbn_bids_R1/')
+% Use the new descriptiontag parameter to explicitly set the description
+% and specify which file types should receive the description tag
+bids_reexport(ALLEEG, 'targetdir', [input_dir 'derivatives/testReExport/'], ...
+              'descriptiontag', 'nemar', ...
+              'comparefiles', 'off'}  % Only add description to data files
