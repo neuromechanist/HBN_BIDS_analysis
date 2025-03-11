@@ -1,15 +1,18 @@
 function [ALLEEG, STUDY] = expand_ica_toAll(ALLEEG, STUDY)
 
 %% initialize
-addpath('~/Documents/git/eeglab_pulls')
-addpath(genpath('~/Documents/git/HBN_BIDS_analysis/'))
+addpath('~/_git/eeglab_pulls')
+addpath(genpath('~/_git/HBN_BIDS_analysis/'))
 
-input_dir = '~/Library/CloudStorage/GoogleDrive-pulcher88@gmail.com/My Drive/to Share/ds005505_4subj/';
-out_dir = [input_dir 'derivatives/nemar'];
+target_ds = 'ds005505';
+
+input_dir = ['~/yahya/hbn_derivatives/source/' target_ds '_processed/'];
+temp_dir = ['~/yahya/hbn_derivatives/temp/' target_ds '_temp/'];
+out_dir = ['~/yahya/hbn_derivatives/' target_ds '_nemar/'];
 
 eeglab; close;
 %% load the data
-[STUDY, ALLEEG] = pop_importbids(input_dir, 'bidsevent','off','bidschanloc','on','bidsevent', 'on', 'outputdir',out_dir);
+[STUDY, ALLEEG] = pop_importbids(input_dir,'bidschanloc','off','bidsevent', 'on', 'outputdir',temp_dir);
 CURRENTSTUDY = 1; EEG = 1;
 
 %% for each subject, only one file (undert taskname combined has te ICA values adn cleaned channels, so we need to expand it to all the files)
@@ -65,7 +68,7 @@ SourceDatasets.DOI = '10.18112/openneuro.ds005505.v1.0.1';
 %% reexport
 % Use the new descriptionTag parameter to explicitly set the description
 % and specify which file types should receive the description tag
-bids_reexport(ALLEEG, 'targetdir', [input_dir 'derivatives/testReExport/'], 'elecexport', 'off',...
+bids_reexport(ALLEEG, 'targetdir', out_dir, 'elecexport', 'off',...
               'descriptionTag', 'nemar', 'GeneratedBy', GeneratedBy, ...
               'SourceDatasets', SourceDatasets, ...
               'comparefiles', 'off')  % Only add description to data files
