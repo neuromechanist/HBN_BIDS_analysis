@@ -55,9 +55,17 @@ if isfield(ALLEEG(1).BIDS.pInfoDesc, 'seqLearning')
     ALLEEG(1).BIDS.pInfoDesc = rmfield(ALLEEG(1).BIDS.pInfoDesc, 'seqLearning');
 end
 
+%% GeneratedBy infrmation
+GeneratedBy.Name = 'NEMAR-pipeline';
+GeneratedBy.Description = 'A validated EEG pipeline for preprocessing and decomposition of EEG datasets';
+GeneratedBy.Version = '1.0';
+GeneratedBy.CodeURL = 'https://github.com/sccn/NEMAR-pipeline/blob/main/eeg_nemar_preprocess.m';
+SourceDatasets.DOI = '10.18112/openneuro.ds005505.v1.0.1';
+
 %% reexport
-% Use the new descriptiontag parameter to explicitly set the description
+% Use the new descriptionTag parameter to explicitly set the description
 % and specify which file types should receive the description tag
-bids_reexport(ALLEEG, 'targetdir', [input_dir 'derivatives/testReExport/'], ...
-              'descriptiontag', 'nemar', ...
-              'comparefiles', 'off'}  % Only add description to data files
+bids_reexport(ALLEEG, 'targetdir', [input_dir 'derivatives/testReExport/'], 'elecexport', 'off',...
+              'descriptionTag', 'nemar', 'GeneratedBy', GeneratedBy, ...
+              'SourceDatasets', SourceDatasets, ...
+              'comparefiles', 'off')  % Only add description to data files
