@@ -1,10 +1,11 @@
-function [ALLEEG, STUDY] = expand_ica_toAll(ALLEEG, STUDY)
+% function [ALLEEG, STUDY] = expand_ica_toAll(ALLEEG, STUDY)
 
 %% initialize
+clearvars
 addpath('~/_git/eeglab_pulls')
 addpath(genpath('~/_git/HBN_BIDS_analysis/'))
 
-target_ds = 'ds005505';
+target_ds = 'ds005506';
 
 input_dir = ['~/yahya/hbn_derivatives/source/' target_ds '_processed/'];
 temp_dir = ['~/yahya/hbn_derivatives/temp/' target_ds '_temp/'];
@@ -13,7 +14,7 @@ out_dir = ['~/yahya/hbn_derivatives/' target_ds '_nemar/'];
 eeglab; close;
 %% load the data
 [STUDY, ALLEEG] = pop_importbids(input_dir,'bidschanloc','off','bidsevent', 'on', 'outputdir',temp_dir);
-CURRENTSTUDY = 1; EEG = 1;
+CURRENTSTUDY = 1; EEG = 1;  
 
 %% for each subject, only one file (undert taskname combined has te ICA values adn cleaned channels, so we need to expand it to all the files)
 subj_list = string({STUDY.datasetinfo.subject});
@@ -30,7 +31,7 @@ for s = subj_list
         end
         % skip the file that has the ICA values
         if i == idx_ica
-            continue
+            continue 
         end
         % change the current datasset to update the channle locations and ICA values
         EEG = eeg_retrieve(ALLEEG, i);
