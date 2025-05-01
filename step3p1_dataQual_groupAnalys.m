@@ -40,7 +40,7 @@ for p = participant_list
 end
 
 %% load EEG files as well
-% Only run this section if the finls set files with channel and frame
+% Only run this section if the finals set files with channel and frame
 % rejection are NOT available.
 if load_setfiles
     f = waitbar(0,'updating the set files with frame rejections','Name','please be patient');
