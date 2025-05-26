@@ -5,7 +5,7 @@ clearvars
 addpath('~/_git/eeglab_pulls')
 addpath(genpath('~/_git/HBN_BIDS_analysis/'))
 
-target_ds = 'ds005506';
+target_ds = 'ds005508';
 
 input_dir = ['~/yahya/hbn_derivatives/source/' target_ds '_processed/'];
 temp_dir = ['~/yahya/hbn_derivatives/temp/' target_ds '_temp/'];
@@ -16,7 +16,7 @@ eeglab; close;
 [STUDY, ALLEEG] = pop_importbids(input_dir,'bidschanloc','off','bidsevent', 'on', 'outputdir',temp_dir);
 CURRENTSTUDY = 1; EEG = 1;  
 
-%% for each subject, only one file (undert taskname combined has te ICA values adn cleaned channels, so we need to expand it to all the files)
+% for each subject, only one file (under task name "combined" has the ICA values and cleaned channels, so we need to expand it to all the files)
 subj_list = string({STUDY.datasetinfo.subject});
 subj_list = unique(subj_list);
 for s = subj_list
@@ -33,7 +33,7 @@ for s = subj_list
         if i == idx_ica
             continue 
         end
-        % change the current datasset to update the channle locations and ICA values
+        % change the current dataset to update the channel locations and ICA values
         EEG = eeg_retrieve(ALLEEG, i);
         EEG = pop_select(EEG, 'channel', {ALLEEG(idx_ica).chanlocs.labels});
         EEG.icaweights = ALLEEG(idx_ica).icaweights;
@@ -52,14 +52,14 @@ for s = subj_list
 end
 [EEG, ALLEEG, CURRENTSET] = eeg_retrieve(ALLEEG, 1);
 
-%% small correction for older dataets
+%% small correction for older datasets
 if isfield(ALLEEG(1).BIDS.pInfoDesc, 'seqLearning')
     ALLEEG(1).BIDS.pInfoDesc.seqLearning6target = ALLEEG(1).BIDS.pInfoDesc.seqLearning;
     ALLEEG(1).BIDS.pInfoDesc.seqLearning8target = ALLEEG(1).BIDS.pInfoDesc.seqLearning;
     ALLEEG(1).BIDS.pInfoDesc = rmfield(ALLEEG(1).BIDS.pInfoDesc, 'seqLearning');
 end
 
-%% GeneratedBy infrmation
+% GeneratedBy information
 GeneratedBy.Name = 'NEMAR-pipeline';
 GeneratedBy.Description = 'A validated EEG pipeline for preprocessing and decomposition of EEG datasets';
 GeneratedBy.Version = '1.0';
