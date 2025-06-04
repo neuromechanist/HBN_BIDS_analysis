@@ -273,6 +273,9 @@ STUDY = std_createclust(STUDY, ALLEEG, 'parentcluster', 'on');  % Update the par
 
 %% run optimal k-means using GUI or with 29 clusters and 3std oultiers below
 
+% After completing, save the STUDY
+[STUDY EEG] = pop_savestudy( STUDY, EEG, 'filename',char(target_task+"_clustered"+".study"),'filepath',char(out_path), 'resavedatasets', 'on');
+[EEG, ALLEEG, CURRENTSET] = eeg_retrieve(EEG, 1:length(EEG));
 
 %% plot the summary
 STUDY = std_dipplot(STUDY,ALLEEG,'clusters',2:length(STUDY.cluster), 'design', 1, 'compBA', 'on');
