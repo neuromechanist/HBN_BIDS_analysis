@@ -1,4 +1,6 @@
 #!/bin/bash
+# This script is used to separate the seqLearning task into two tasks: 6_target and 8_target.
+# The way it works is that it checks the number of targets in the seqLearning task "events.tsv" file, and then adds two new columns to the participants.tsv file: 6_target and 8_target, with 6_target being true if the number of targets is 6, and 8_target being true if the number of targets is 8.
 
 # Set the BIDS root directory
 BIDS_DIR="."

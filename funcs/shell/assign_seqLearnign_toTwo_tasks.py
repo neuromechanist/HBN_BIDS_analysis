@@ -1,3 +1,8 @@
+# This script is used to assign the seqLearning task to the two tasks: 6_target and 8_target.
+# The way it works is that it checks the seqLearning column in the participants.tsv file, and then adds the
+# seqLearning column to the 6_target and 8_target columns.
+# INPUT: master_participants_list_short.tsv but this needs the true/false flags for 6_target and 8_target.
+
 import pandas as pd
 import argparse
 

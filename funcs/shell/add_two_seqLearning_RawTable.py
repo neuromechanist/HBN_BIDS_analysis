@@ -1,3 +1,6 @@
+# This script is used to change the filenames of the seqLearning task to the two tasks: 6_target and 8_target.
+# This is needed when working on the raw data and not the BIDS data.
+
 # %% Import necessary libraries and handle the data
 import pandas as pd
 
