@@ -17,29 +17,32 @@ clearvars -except target_tasks write_qtable
 if ~exist("target_tasks","var") || isempty(target_tasks)
     target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", ...
     "SAIIT_2AFC_Block1", "SAIIT_2AFC_Block2", "SAIIT_2AFC_Block3",...
-    "SurroundSupp_Block1", "SurroundSupp_Block2", "vis_learn6t", "vis_learn8t", "WISC_ProcSpeed"];
+    "SurroundSupp_Block1", "SurroundSupp_Block2", "vis_learn", "WISC_ProcSpeed"]; % "vis_learn6t", "vis_learn8t"
 end
 
 if ~exist("write_qtable","var") || isempty(write_qtable), write_qtable = 0; end
 if write_qtable, writePInfoOnly = 'on'; else, writePInfoOnly = 'off'; end
 
-target_release = "R11";  % Can be also a string vector, but change the export path.
+target_release = "R12";  % Can be also a string vector, but change the export path.
 num_subjects = -1; % if -1, all subjects in the release will be added.
 
-p2l = init_paths("linux", "expanse", "HBN", 1, 1);
+p2l = init_paths("mac", "mini", "HBN", 1, 1);
 addpath(genpath(p2l.codebase))
 f2l.elocs = p2l.codebase + "funcs/GSN_HydroCel_129.sfp";  % f2l = file to load
 
     %% even more paths
-plist = readtable("participants_augmented_filesize_twoSeqLearning.csv", "FileType", "text");
-plist.Full_Pheno = string(plist{:,"Full_Pheno"}); % to change the variable type to string
-plist.Commercial_Use = string(plist{:,"Commercial_Use"});
-plist.Sex = string(plist{:,"Sex"});
-plist.Sex(plist.Sex=="1") = "F"; plist.Sex(plist.Sex=="0") = "M";
+% plist = readtable("participants_augmented_filesize_twoSeqLearning.csv", "FileType", "text");
+% plist.Full_Pheno = string(plist{:,"Full_Pheno"}); % to change the variable type to string
+% plist.Commercial_Use = string(plist{:,"Commercial_Use"});
+% plist.Sex = string(plist{:,"Sex"});
+% plist.Sex(plist.Sex=="1") = "F"; plist.Sex(plist.Sex=="0") = "M";
+plist = readtable("r12_participants_augmented_filesize.csv", "FileType", 'text');
+plist.release_number = repmat("R12",height(plist),1);
+plist.participant_id = string(plist.participant_id);
 
 % remove the dublicates
-duplicate_ids = ["NDARDZ322ZFC","NDARNZ792HBN"]; % the ids were found by shell-cmd inspection upto R11.
-for i = duplicate_ids, dup_idx = find(strcmp(plist{:,"participant_id"},i)); plist(dup_idx(end),:) =[]; end
+% duplicate_ids = ["NDARDZ322ZFC","NDARNZ792HBN"]; % the ids were found by shell-cmd inspection upto R11.
+% for i = duplicate_ids, dup_idx = find(strcmp(plist{:,"participant_id"},i)); plist(dup_idx(end),:) =[]; end
 plist.Properties.RowNames = plist.participant_id;
 
 bifactor_table = readtable("HBN_cbcl_bifactor_scores_2024.tsv", "FileType", "text");
@@ -87,7 +90,8 @@ end
 max_allowed_missing_dataset = length(BIDS_set_name)-1; % effectively letting any subkect with as few as one run to be included
 
 % Fields are all in lower case, follwing the BIDS convention
-base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno", bifactors];
+% base_info = ["participant_id","release_number","Sex","Age","EHQ_Total","Commercial_Use","Full_Pheno", bifactors];
+base_info = ["participant_id",bifactors];
 req_info = [base_info, target_tasks];
 
 %% define the pInfo descriptions, eInfo, eInfo descriptions, and tInfo

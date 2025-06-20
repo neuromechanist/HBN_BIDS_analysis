@@ -11,7 +11,7 @@ convert_HBN2BIDS(target_tasks);
 target_tasks = ["SurroundSupp_Block1", "SurroundSupp_Block2"];
 convert_HBN2BIDS(target_tasks);
 %%
-target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", "vis_learn6t", "vis_learn8t", "WISC_ProcSpeed"];
+target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", "vis_learn", "WISC_ProcSpeed"];  % "vis_learn6t", "vis_learn8t"
 for t = target_tasks
     convert_HBN2BIDS(t);
 end
