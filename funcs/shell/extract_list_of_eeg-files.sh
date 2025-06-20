@@ -16,7 +16,7 @@ while IFS='\n' read -r line
 do
 # echo "$line" | cat -et
 printf "$line\n" >> eeg_content_r12.txt
-ls /Volumes/S1/Datasets/HBN/R12/$line/EEG/raw/mat_format/ >> eeg_content_r12.txt
+ls -l /Volumes/S1/Datasets/HBN/R12/$line/EEG/raw/mat_format/ >> eeg_content_r12.txt
 done < "$input"
 
 # Sanity check
