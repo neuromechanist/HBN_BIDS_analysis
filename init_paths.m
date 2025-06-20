@@ -21,10 +21,10 @@ if project == "HBN"
         p2l.raw = "/Volumes/Yahya/Datasets/HBN/EEG/";
         p2l.eegRepo = p2l.raw; % Data is saved in the same directory
        else
-           p2l.raw = "/Volumes/S1/Datasets/HBN/";
-           p2l.yahya = "/Volumes/S1/Datasets/tempwork/";
+           p2l.raw = "/Volumes/S1/Datasets/HBN/R12/";
+           p2l.yahya = "/Volumes/S1/Datasets/";
            p2l.eegRepo = p2l.yahya + "HBN/EEG/";
-           p2l.temp = p2l.yahya + "HBN/";
+           p2l.temp = p2l.yahya + "HBN/temp";
        end
         p2l.eeglab = "/Users/yahya/Documents/git/eeglab/";
         p2l.codebase = "/Users/yahya/Documents/git/HBN_BIDS_analysis/";
