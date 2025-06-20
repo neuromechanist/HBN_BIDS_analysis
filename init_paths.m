@@ -17,16 +17,16 @@ if ~exist('have_gui','var') || isempty(have_gui), have_gui = true; end
 %% Set up the paths
 if project == "HBN"
    if ismac
-       if subplat ~= "sccn"
+       if subplat ~= "mini"
         p2l.raw = "/Volumes/Yahya/Datasets/HBN/EEG/";
         p2l.eegRepo = p2l.raw; % Data is saved in the same directory
        else
-           p2l.raw = "/Volumes/qumulo/child-mind-uncompressed/";
-           p2l.yahya = "/Volumes/qumulo/yahya/";
+           p2l.raw = "/Volumes/S1/Datasets/HBN/";
+           p2l.yahya = "/Volumes/S1/Datasets/tempwork/";
            p2l.eegRepo = p2l.yahya + "HBN/EEG/";
            p2l.temp = p2l.yahya + "HBN/";
        end
-        p2l.eeglab = "/Users/yahya/Documents/git/eeglab_dev/";
+        p2l.eeglab = "/Users/yahya/Documents/git/eeglab/";
         p2l.codebase = "/Users/yahya/Documents/git/HBN_BIDS_analysis/";
    elseif isunix
        if subplat == "sccn", prefix = "/data/qumulo/";
