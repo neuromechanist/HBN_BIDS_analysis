@@ -5,16 +5,19 @@
 %
 % (c) Seyed Yahya Shirazi, 10/2023 SCCN, INC, UCSD
 
-target_tasks = ["SAIIT_2AFC_Block1", "SAIIT_2AFC_Block2", "SAIIT_2AFC_Block3"];
-convert_HBN2BIDS(target_tasks);
-%%
-target_tasks = ["SurroundSupp_Block1", "SurroundSupp_Block2"];
-convert_HBN2BIDS(target_tasks);
+
 %%
 target_tasks = ["RestingState", "Video_DM", "Video_FF", "Video_TP", "Video_WK", "vis_learn", "WISC_ProcSpeed"];  % "vis_learn6t", "vis_learn8t"
 for t = target_tasks
     convert_HBN2BIDS(t);
 end
+
+%%
+target_tasks = ["SAIIT_2AFC_Block1", "SAIIT_2AFC_Block2", "SAIIT_2AFC_Block3"];
+convert_HBN2BIDS(target_tasks);
+%%
+target_tasks = ["SurroundSupp_Block1", "SurroundSupp_Block2"];
+convert_HBN2BIDS(target_tasks);
 
 %% create the nice participant.tsv file
 convert_HBN2BIDS([],1);
