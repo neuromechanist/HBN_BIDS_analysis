@@ -74,7 +74,7 @@ def select_top_subjects(participants, n_subjects):
 def copy_root_files(source_dir, output_dir, exclude_patterns=None):
     """Copy all root-level files except subject directories and participants.tsv."""
     if exclude_patterns is None:
-        exclude_patterns = ['sub-*', 'participants.tsv']
+        exclude_patterns = ['sub-*', 'participants.tsv', 'derivatives']
     
     source_path = Path(source_dir)
     output_path = Path(output_dir)
@@ -94,7 +94,7 @@ def copy_root_files(source_dir, output_dir, exclude_patterns=None):
             shutil.copy2(item, dest_item)
         elif item.is_dir():
             print(f"Copying directory: {item.name}")
-            shutil.copytree(item, dest_item, dirs_exist_ok=True)
+            shutil.copytree(item, dest_item)
 
 
 def copy_subject_directories(source_dir, output_dir, selected_subjects):
@@ -109,7 +109,7 @@ def copy_subject_directories(source_dir, output_dir, selected_subjects):
         
         if source_subject_dir.exists():
             print(f"Copying subject directory: {subject_id}")
-            shutil.copytree(source_subject_dir, dest_subject_dir, dirs_exist_ok=True)
+            shutil.copytree(source_subject_dir, dest_subject_dir)
         else:
             print(f"Warning: Subject directory not found: {subject_id}")
 
